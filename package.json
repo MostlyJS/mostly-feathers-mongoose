@@ -1,7 +1,7 @@
 {
-  "name": "mostly-feathers",
-  "version": "1.0.2",
-  "description": "MostlyJS microservice integration with feathers",
+  "name": "mostly-feathers-mongoose",
+  "version": "1.0.0",
+  "description": "Create a Mostly Mongoose Service for Feathers.",
   "author": "Forafish",
   "license": "MIT",
   "main": "index.js",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/MostlyJS/mostly-feathers.git"
+    "url": "git+https://github.com/MostlyJS/mostly-feathers-mongoose.git"
   },
   "dependencies": {
     "babel-polyfill": "^6.23.0",
