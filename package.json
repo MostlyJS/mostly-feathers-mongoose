@@ -1,0 +1,56 @@
+{
+  "name": "mostly-feathers",
+  "version": "1.0.2",
+  "description": "MostlyJS microservice integration with feathers",
+  "author": "Forafish",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "npm run compile",
+    "publish": "git push origin --tags && git push origin",
+    "release:patch": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish",
+    "compile": "rimraf -rf lib/ && babel --source-maps -d lib/ src/",
+    "watch": "babel --watch -d lib/ src/",
+    "lint": "eslint-if-supported semistandard --fix",
+    "mocha": "mocha --opts mocha.opts",
+    "coverage": "istanbul cover node_modules/mocha/bin/_mocha -- --opts mocha.opts",
+    "test": "npm run compile && npm run lint && npm run coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MostlyJS/mostly-feathers.git"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.23.0",
+    "debug": "^2.6.6",
+    "feathers-commons": "^0.8.7",
+    "feathers-errors": "^2.8.0",
+    "feathers-mongoose": "^5.1.0",
+    "lodash": "^4.17.4",
+    "minimatch": "^3.0.4",
+    "mongoose": "^4.9.8",
+    "mostly-entity": "^1.0.4",
+    "rubberduck": "^1.1.1",
+    "uberproto": "^1.2.0",
+    "validator": "^7.0.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-plugin-add-module-exports": "^0.2.1",
+    "babel-plugin-root-import": "^5.1.0",
+    "babel-preset-env": "^1.4.0",
+    "eslint-if-supported": "^1.0.1",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-changed": "^3.0.0",
+    "gulp-eslint": "^3.0.1",
+    "gulp-nodemon": "^2.2.1",
+    "gulp-sourcemaps": "^2.6.0",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.3.0",
+    "rimraf": "^2.6.1"
+  }
+}
