@@ -1,13 +1,13 @@
-import mongoose_cache from './mongoose_cache';
-import mongoose_paginator from './mongoose_paginator';
-import mongoose_random from './mongoose_random';
-import soft_delete from './soft_delete';
+import mongooseCache from './mongoose_cache';
+import mongoosePaginator from './mongoose_paginator';
+import mongooseRandom from './mongoose_random';
+import softDelete from './soft_delete';
 import sortable from './sortable';
 
 export {
-  mongoose_cache,
-  mongoose_paginator,
-  mongoose_random,
-  soft_delete,
+  mongooseCache,
+  mongoosePaginator,
+  mongooseRandom,
+  softDelete,
   sortable
 };
