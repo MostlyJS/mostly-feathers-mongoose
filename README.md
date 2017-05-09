@@ -10,7 +10,7 @@ Create a [MostlyJS](https://github.com/MostlyJS) wrapped [Mongoose](http://mongo
 ## Installation
 
 ```bash
-npm install mostly-feathers-mongoose
+npm install mostly-feathers-mongoose --save
 ```
 
 # License
