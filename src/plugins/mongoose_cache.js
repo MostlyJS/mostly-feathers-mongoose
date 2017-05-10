@@ -80,7 +80,7 @@ let genKeyAggregate = function(aggregate, populate) {
 // This make regexp serialize properly in queries with regular expressions
 if(!RegExp.prototype.hasOwnProperty('toJSON')) {
   Object.assign(RegExp.prototype, {
-    toJSON: () => {
+    toJSON: function() {
       let str = this.toString();
       let obj = { $regexp: this.source };
       let opts = str.substring(str.lastIndexOf('/') + 1);

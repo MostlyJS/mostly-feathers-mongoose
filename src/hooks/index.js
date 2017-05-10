@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import assert from 'assert';
-import { Entity } from 'mostly-entity';
+import Entity from 'mostly-entity';
 import { filter, filterField } from './filter';
 import { convertId } from './convertId';
 import { cascadeUpdate } from './cascadeUpdate';
@@ -22,7 +22,7 @@ export {
 
 export function presentEntity(entity) {
   return function(hook) {
-    assert(Entity.isEntity(entity), 'Must be a valid Entity: ' + entity);
+    assert(entity && entity.parse, 'Must be a valid Entity: ' + entity);
     assert(hook.result, 'Must be a valid id, hook.result is null');
     // debug('presentEntity', entity._name, hook.result);
     if (hook.result.data) {

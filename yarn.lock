@@ -2468,9 +2468,9 @@ mongoose@^4.9.8:
     regexp-clone "0.0.1"
     sliced "1.0.1"
 
-mostly-entity@^1.0.4:
-  version "1.0.4"
-  resolved "https://registry.yarnpkg.com/mostly-entity/-/mostly-entity-1.0.4.tgz#fc4edefd7b786e2e33879c6f00fb84bfbe033c37"
+mostly-entity@^1.0.5:
+  version "1.0.5"
+  resolved "https://registry.yarnpkg.com/mostly-entity/-/mostly-entity-1.0.5.tgz#102ca4406d9da08e88fa25e1866a1f1f3024e84c"
   dependencies:
     babel-polyfill "^6.23.0"
     debug "^2.6.6"
