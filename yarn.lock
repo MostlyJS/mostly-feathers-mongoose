@@ -1139,6 +1139,10 @@ eslint-if-supported@^1.0.1:
   version "1.0.1"
   resolved "http://registry.npm.taobao.org/eslint-if-supported/download/eslint-if-supported-1.0.1.tgz#c2a6583b134a2d4d838eae35ee4b8bc8d37e856e"
 
+eslint-plugin-promise@^3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-promise/-/eslint-plugin-promise-3.5.0.tgz#78fbb6ffe047201627569e85a6c5373af2a68fca"
+
 eslint@^3.0.0:
   version "3.19.0"
   resolved "http://registry.npm.taobao.org/eslint/download/eslint-3.19.0.tgz#c8fc6201c7f40dd08941b87c085767386a679acc"
