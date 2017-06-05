@@ -39,7 +39,7 @@ export class Service extends BaseService {
       delete params.query.$after;
     }
     // search
-    Object.keys(params.query).forEach(field => {
+    Object.keys(params.query || []).forEach(field => {
       if (params.query[field] && params.query[field].$search && field.indexOf('$') === -1) {
         params.query[field] = { $regex: new RegExp(params.query[field].$search), $options: 'i' };
       }
