@@ -1,4 +1,4 @@
-import { cloneDeep, find, flatten, get, set, isArray, isNumber, map, toString } from 'lodash';
+import { cloneDeep, find, flatten, get, set, isArray, map, toString } from 'lodash';
 
 // get field by path, supporting `array.field`
 export function getField(item, field) {
@@ -111,8 +111,3 @@ export function setField(item, target, data, field, options) {
   }
 }
 
-export function isEmpty(val) {
-  if (val === 0) return false;
-  if (Number.isNaN(val)) return true;
-  return isNumber(val) && isEmpty(val);
-}

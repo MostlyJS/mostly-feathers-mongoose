@@ -136,7 +136,7 @@ export class Service extends BaseService {
   }
 
   _action(action, id, data, params) {
-    debug(' => %s action %j %j', this.name, action, id);
+    debug(' => %s action %s with %j', this.name, action, id, data);
     // delete params.provider;
     let query = id? this.get(id, params) : Promise.resolve(null);
     return query.then(origin => {

@@ -80,29 +80,3 @@ export function responder() {
     return hook;
   };
 }
-
-export function assertAction() {
-  return function(hook) {
-    var error = 'Please provide valid action or target id';
-    switch (hook.method) {
-      case 'find':
-      case 'create':
-        if (hook.params.action) {
-          assert(hook.params.action === hook.method, error);
-        }
-        break;
-      case 'get':
-      case 'update':
-        if (hook.params.action) {
-          assert(hook.id, error);
-        }
-        break;
-      case 'patch':
-      case 'remove':
-        if (hook.params.action) {
-          assert(hook.params.action === hook.method, error);
-        }
-        break;
-    }
-  };
-}
