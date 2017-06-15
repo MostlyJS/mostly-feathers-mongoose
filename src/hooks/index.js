@@ -23,13 +23,15 @@ export {
 export function presentEntity(entity) {
   return function(hook) {
     assert(entity && entity.parse, 'Must be a valid Entity: ' + entity);
-    assert(hook.result, 'Must be a valid id, hook.result is null');
     // debug('presentEntity', entity._name, hook.result);
-    if (hook.result.data) {
-      hook.result.data = entity.parse(hook.result.data);
-    } else {
-      hook.result = entity.parse(hook.result);
+    if (hook.result) {
+      if (hook.result.data) {
+        hook.result.data = entity.parse(hook.result.data);
+      } else {
+        hook.result = entity.parse(hook.result);
+      }
     }
+    return hook;
   };
 }
 
@@ -61,11 +63,13 @@ export function responder() {
     }
 
     let metadata = {};
-    if (hook.result.data) {
+    let data = hook.result;
+
+    if (hook.result && hook.result.data) {
       metadata = _.omit(hook.result, 'data');
+      data = hook.result.data;
     }
 
-    let data = hook.result.data || hook.result || '';
     hook.result = {
       status: 0,
       message: '',

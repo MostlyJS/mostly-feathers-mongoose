@@ -10,7 +10,8 @@ const debug = require('debug')('mostly:feathers-mongoose:plugins:mongoose_cache_
 const defaultOptions = {
   cache: true,
   ttl: 60,
-  prefix: 'mostly:mongoose:'
+  prefix: 'mostly:mongoose:',
+  cacheStrageries: []
 };
 
 let isMongoosePatched = false;
@@ -143,7 +144,7 @@ export default function mongooseCache(mongoose, redis, options) {
     var self = this,
       populate = this.options.populate || {},
       cached = this.options.cached || this.cached,
-      ttl = config.cacheStrageries[this.model.collection.name] || this.ttl;
+      ttl = this.options.cacheStrageries[this.model.collection.name] || this.ttl;
 
     // remove our temp options
     delete this._mongooseOptions.cache;

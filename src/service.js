@@ -1,3 +1,4 @@
+import { map } from 'lodash';
 import makeDebug from 'debug';
 import { Service as BaseService } from 'feathers-mongoose';
 
@@ -48,21 +49,12 @@ export class Service extends BaseService {
     });
 
     debug('service %s find %j', this.name, params.query);
-
-    const action = params.__action;
-    if (!action || action === 'find') {
-      return super.find(params);
-    }
-
-    if (action === 'count') {
-      delete params.__action;
-      return this.count(params);
-    } else {
-      throw new Error("No such **find** action: " + action);
-    }
+    return super.find(params);
   }
 
   get(id, params) {
+    if (id === 'null') id = null;
+    
     const action = params.__action;
     if (!action || action === 'get') {
       debug('service %s get %j', this.name, id);
@@ -71,14 +63,9 @@ export class Service extends BaseService {
     
     if (this[action]) {
       delete params.__action;
-      return this.action(action, id, {}, params);
+      return this._action(action, id, {}, params);
     }
     throw new Error("No such **get** action: " + action);
-  }
-
-  // override to validate before create/update/patch
-  validate() {
-    return Promise.resolve(true);
   }
 
   create(data, params) {
@@ -86,31 +73,29 @@ export class Service extends BaseService {
     if (Array.isArray(data)) {
       return Promise.all(data.map(current => this.create(current, params)));
     }
-    return this.validate(data).then(() => {
-      return super.create(data, params);
-    });
+    return super.create(data, params);
   }
 
   update(id, data, params) {
+    if (id === 'null') id = null;
     if (!id && !params.query.$mutiple) throw new Error("Mutiple update is prohibit now.");
 
     const action = params.__action;
     if (!action || action === 'update') {
-      return this.validate(data).then(() => {
-        delete params.query.$mutiple;
-        return super.update(id, data, params);
-      });
+      delete params.query.$mutiple;
+      return super.update(id, data, params);
     }
     
-    if (!this[action]) {
+    if (this[action]) {
       delete params.__action;
-      return this.action(action, id, data, params);
+      return this._action(action, id, data, params);
     } else {
       throw new Error("No such **put** action: " + action);
     }
   }
 
   patch(id, data, params) {
+    if (id === 'null') id = null;
     if (!id && !params.query.$mutiple) throw new Error("Mutiple patch is prohibit now.");
 
     const action = params.__action;
@@ -118,16 +103,16 @@ export class Service extends BaseService {
       delete params.query.$mutiple;
       return super.patch(id, data, params);
     }
-    debug('#####', action, this[action]);
     if (this[action]) {
       delete params.__action;
-      return this.action(action, id, data, params);
+      return this._action(action, id, data, params);
     } else {
       throw new Error("No such **patch** action: " + action);
     }
   }
 
   remove(id, params) {
+    if (id === 'null') id = null;
     if (!id && !params.query.$mutiple) throw new Error("Mutiple remove is prohibit now.");
     
     const action = params.__action;
@@ -150,25 +135,44 @@ export class Service extends BaseService {
     }
   }
 
-  action(action, id, data, params) {
+  _action(action, id, data, params) {
+    debug(' => %s action %j %j', this.name, action, id);
     // delete params.provider;
-    return this.get(id, params).then(origin => {
-      origin = origin.data || origin;
-      if (!origin) {
+    let query = id? this.get(id, params) : Promise.resolve(null);
+    return query.then(origin => {
+      if (origin && origin.data) {
+        origin = origin.data;
+      }
+      if (id && !origin) {
         throw new Error('No such record ' + id + ' in ' + this.Model.modelName);
       }
       return this[action].call(this, id, data, params, origin);
     });
   }
 
-  restore(id, params) {
-    const data = { destroyedAt: null };
-    return super.patch(id, data, params);
+  // some reserved words
+
+  count(id, data, params) {
+    debug(' => count %s %j %j', this.name, id, data, params);
+    params.query.$limit = 0;
+    return super.find(params).then(result => result.total);
   }
 
-  count(params) {
-    params.query.$limit = 0;
-    return this.find(params).then(result => result.total);
+  first(id, data, params) {
+    params.query.$limit = 1;
+    return super.find(params).then(results => results.total > 0? results.data[0] : null);
+  }
+
+  last(id, data, params) {
+    return this.count(id, data, params).then(total => {
+      params.query.$limit = 1;
+      params.query.$skip = total - 1;
+      return super.find(params).then(results => results.total > 0? results.data[0] : null);
+    });
+  }
+
+  restore(id, data, params) {
+    return super.patch(id, { destroyedAt: null }, params);
   }
 }
 
