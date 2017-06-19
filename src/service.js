@@ -48,8 +48,18 @@ export class Service extends BaseService {
       }
     });
 
-    debug('service %s find %j', this.name, params.query);
-    return super.find(params);
+    const action = params.__action;
+
+    if (!action || action === 'find') {
+      debug('service %s find %j', this.name, params.query);
+      return super.find(params);
+    }
+
+    if (this[action]) {
+      delete params.__action;
+      return this._action(action, null, {}, params);
+    }
+    throw new Error("No such **get** action: " + action);
   }
 
   get(id, params) {
