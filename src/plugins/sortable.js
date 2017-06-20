@@ -22,7 +22,7 @@ export default function(schema, options) {
     let item = this;
     const Model = mongoose.model(item.constructor.modelName);
 
-    const addLast = function (done) { 
+    const addLast = function (done) {
       let query = Model.findOne();
       if (options.classify) {
         query.where(options.classify).eq(item[options.classify]);
@@ -62,7 +62,7 @@ export default function(schema, options) {
     const end = (newPos > prevPos) ? newPos : prevPos - 1;
     return self.where('position').gte(start).lte(end)
       .setOptions({ multi: true })
-      .update({ $inc: { sortOrder: whichWay } })
+      .update({ $inc: { position: whichWay } })
       .then(function() {
         return self.findOneAndUpdate({ _id: item._id }, { position: newPos });
       });
