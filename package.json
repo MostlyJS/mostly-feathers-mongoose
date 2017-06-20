@@ -1,6 +1,6 @@
 {
   "name": "mostly-feathers-mongoose",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Create a Mostly Mongoose Service for Feathers.",
   "author": "Forafish",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "lodash": "^4.17.4",
     "minimatch": "^3.0.4",
     "mongoose": "^4.9.8",
-    "mostly-entity": "^1.0.5",
+    "mostly-entity": "^1.0.6",
     "rubberduck": "^1.1.1",
     "uberproto": "^1.2.0",
     "validator": "^7.0.0"
