@@ -351,7 +351,7 @@ babel-plugin-check-es2015-constants@^6.22.0:
 
 babel-plugin-root-import@^5.1.0:
   version "5.1.0"
-  resolved "http://registry.npm.taobao.org/babel-plugin-root-import/download/babel-plugin-root-import-5.1.0.tgz#80ea1cd5945b463a5e3f7e204a69478c573e328c"
+  resolved "https://registry.yarnpkg.com/babel-plugin-root-import/-/babel-plugin-root-import-5.1.0.tgz#80ea1cd5945b463a5e3f7e204a69478c573e328c"
   dependencies:
     slash "^1.0.0"
 
@@ -2472,9 +2472,9 @@ mongoose@^4.9.8:
     regexp-clone "0.0.1"
     sliced "1.0.1"
 
-mostly-entity@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/mostly-entity/-/mostly-entity-1.0.5.tgz#102ca4406d9da08e88fa25e1866a1f1f3024e84c"
+mostly-entity@^1.0.6:
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/mostly-entity/-/mostly-entity-1.0.6.tgz#1b8a4333e2e9ee15565cf110bd3ac4c3e6824b07"
   dependencies:
     babel-polyfill "^6.23.0"
     debug "^2.6.6"
