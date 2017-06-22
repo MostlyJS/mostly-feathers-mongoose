@@ -24,7 +24,7 @@ export default function mongoosePaginator(mongoose, options) {
     let model = query.model;
     
     if (!query.options.sort) {
-      query.options.sort = {};
+      query.options.sort = { _id: -1 };
     }
 
     return new Promise(function(resolve, reject) {
