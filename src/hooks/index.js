@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import assert from 'assert';
+import makeDebug from 'debug';
 import Entity from 'mostly-entity';
 import { filter, filterField } from './filter';
 import { convertId } from './convertId';
@@ -7,6 +8,8 @@ import { cascadeUpdate } from './cascadeUpdate';
 import populate from './populate';
 import validation from './validation';
 import { restrictToAcls } from './restrict';
+
+const debug = makeDebug('mostly:feathers-mongoose:hooks');
 
 export {
   convertId,
