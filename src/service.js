@@ -174,19 +174,19 @@ export class Service extends BaseService {
   // some reserved words
 
   count(id, data, params) {
-    params = params || { query: {} };
+    params = params || id || { query: {} };
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
   first(id, data, params) {
-    params = params || { query: {} };
+    params = params || id || { query: {} };
     params.query.$limit = 1;
     return super.find(params).then(results => results.total > 0? results.data[0] : null);
   }
 
   last(id, data, params) {
-    params = params || { query: {} };
+    params = params || id || { query: {} };
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;

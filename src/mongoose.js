@@ -45,3 +45,11 @@ export function createModel(app, name, config) {
   const schema = new mongooseClient.Schema({ any: {} }, {strict: false});
   return mongooseClient.model(name, schema);
 }
+
+export function createService(app, Service, Model, options) {
+  if (!options.Model) {
+    options.Model = new Model(app, options.ModelName);
+  }
+  const service = new Service(options);
+  return service;
+}
