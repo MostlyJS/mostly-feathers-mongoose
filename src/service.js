@@ -4,8 +4,28 @@ import { Service as BaseService } from 'feathers-mongoose';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
+const defaultOptions = {
+  lean: true,
+  paginate: {
+    default: 10,
+    max: 50
+  }
+};
+
+// prevent accidental multiple operations
+const assertMultiple = function(id, params, message) {
+  if (!id) {
+    if (params && params.query && params.query.$multiple) {
+      delete params.query.$multiple;
+    } else {
+      throw new Error(message);
+    }
+  }
+}
+
 export class Service extends BaseService {
   constructor(options) {
+    options = Object.assign({}, defaultOptions, options);
     super(options);
     this.name = options.name || 'MongooseService';
   }
@@ -17,11 +37,6 @@ export class Service extends BaseService {
   find(params) {
     // default behaviours for external call
     if (params.provider && params.query) {
-      // fix id query as _ids
-      if (params.query.id) {
-        params.query._id = params.query.id;
-        delete params.query.id;
-      }
       // filter destroyed item by default
       if (!params.query.destroyedAt) {
         params.query.destroyedAt = null;
@@ -79,7 +94,7 @@ export class Service extends BaseService {
   }
 
   create(data, params) {
-    // add support to create mutiple objects
+    // add support to create multiple objects
     if (Array.isArray(data)) {
       return Promise.all(data.map(current => this.create(current, params)));
     }
@@ -88,11 +103,10 @@ export class Service extends BaseService {
 
   update(id, data, params) {
     if (id === 'null') id = null;
-    if (!id && !params.query.$mutiple) throw new Error("Mutiple update is prohibit now.");
+    assertMultiple(id, params, "Mutiple update must be called with $multiple true.");
 
     const action = params.__action;
     if (!action || action === 'update') {
-      delete params.query.$mutiple;
       return super.update(id, data, params);
     }
     
@@ -106,11 +120,10 @@ export class Service extends BaseService {
 
   patch(id, data, params) {
     if (id === 'null') id = null;
-    if (!id && !params.query.$mutiple) throw new Error("Mutiple patch is prohibit now.");
+    assertMultiple(id, params, "Mutiple patch must be called with $multiple true.");
 
     const action = params.__action;
     if (!action || action === 'patch') {
-      delete params.query.$mutiple;
       return super.patch(id, data, params);
     }
     if (this[action]) {
@@ -123,17 +136,15 @@ export class Service extends BaseService {
 
   remove(id, params) {
     if (id === 'null') id = null;
-    if (!id && !params.query.$mutiple) throw new Error("Mutiple remove is prohibit now.");
+    assertMultiple(id, params, "Mutiple remove must be called with $multiple true.");
     
     const action = params.__action;
     if (!action || action === 'remove') {
-      if (params.query.$force) {
-        delete params.query.$mutiple;
-        delete params.query.$force;
-        return super.remove(id, params);
+      if (params.query.$soft) {
+        delete params.query.$soft;
+        return super.patch(id, { destroyedAt: new Date() }, params);
       } else {
-        const data = { destroyedAt: new Date() };
-        return super.patch(id, data, params);
+        return super.remove(id, params);
       }
     }
 
@@ -163,17 +174,19 @@ export class Service extends BaseService {
   // some reserved words
 
   count(id, data, params) {
-    debug(' => count %s %j %j', this.name, id, data, params);
+    params = params || { query: {} };
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
   first(id, data, params) {
+    params = params || { query: {} };
     params.query.$limit = 1;
     return super.find(params).then(results => results.total > 0? results.data[0] : null);
   }
 
   last(id, data, params) {
+    params = params || { query: {} };
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
