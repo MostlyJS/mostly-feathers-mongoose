@@ -87,6 +87,7 @@ export class Service extends BaseService {
       return super.find(params).then(transform);
     }
 
+    // TODO secure action call by find
     if (this[action]) {
       delete params.__action;
       return this._action(action, null, {}, params);
@@ -103,6 +104,7 @@ export class Service extends BaseService {
       return super.get(id, params).then(transform);
     }
     
+    // TODO secure action call by get
     if (this[action]) {
       delete params.__action;
       return this._action(action, id, {}, params);

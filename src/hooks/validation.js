@@ -13,6 +13,8 @@ export default function validation(accepts) {
   return (hook) => {
     const action = hook.params.__action || hook.method;
     debug("validation action %s with %j", action, accepts[action]);
+    if (!accepts[action]) return hook;
+
     let errors = null;
     switch (hook.method) {
       case 'find':
