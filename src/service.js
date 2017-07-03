@@ -23,6 +23,18 @@ const assertMultiple = function(id, params, message) {
   }
 }
 
+// transform the results
+const transform = function(results) {
+  let data = [].concat(results.data || results);
+  data.forEach(item => {
+    // output id instead of _id
+    item.id = item._id || item.id;
+    delete item._id;
+    delete item.__v;
+  });
+  return Promise.resolve(results);
+}
+
 export class Service extends BaseService {
   constructor(options) {
     options = Object.assign({}, defaultOptions, options);
@@ -37,6 +49,11 @@ export class Service extends BaseService {
   find(params) {
     // default behaviours for external call
     if (params.provider && params.query) {
+      // fix id query as _ids
+      if (params.query.id) {
+        params.query._id = params.query.id;
+        delete params.query.id;
+      }
       // filter destroyed item by default
       if (!params.query.destroyedAt) {
         params.query.destroyedAt = null;
@@ -67,7 +84,7 @@ export class Service extends BaseService {
 
     if (!action || action === 'find') {
       debug('service %s find %j', this.name, params.query);
-      return super.find(params);
+      return super.find(params).then(transform);
     }
 
     if (this[action]) {
@@ -83,7 +100,7 @@ export class Service extends BaseService {
     const action = params.__action;
     if (!action || action === 'get') {
       debug('service %s get %j', this.name, id);
-      return super.get(id, params);
+      return super.get(id, params).then(transform);
     }
     
     if (this[action]) {
@@ -98,16 +115,16 @@ export class Service extends BaseService {
     if (Array.isArray(data)) {
       return Promise.all(data.map(current => this.create(current, params)));
     }
-    return super.create(data, params);
+    return super.create(data, params).then(transform);
   }
 
   update(id, data, params) {
     if (id === 'null') id = null;
-    assertMultiple(id, params, "Mutiple update must be called with $multiple true.");
+    assertMultiple(id, params, "Found null id, update must be called with $multiple.");
 
     const action = params.__action;
     if (!action || action === 'update') {
-      return super.update(id, data, params);
+      return super.update(id, data, params).then(transform);
     }
     
     if (this[action]) {
@@ -120,11 +137,11 @@ export class Service extends BaseService {
 
   patch(id, data, params) {
     if (id === 'null') id = null;
-    assertMultiple(id, params, "Mutiple patch must be called with $multiple true.");
+    assertMultiple(id, params, "Found null id, patch must be called with $multiple.");
 
     const action = params.__action;
     if (!action || action === 'patch') {
-      return super.patch(id, data, params);
+      return super.patch(id, data, params).then(transform);
     }
     if (this[action]) {
       delete params.__action;
@@ -136,15 +153,15 @@ export class Service extends BaseService {
 
   remove(id, params) {
     if (id === 'null') id = null;
-    assertMultiple(id, params, "Mutiple remove must be called with $multiple true.");
+    assertMultiple(id, params, "Found null id, remove must be called with $multiple..");
     
     const action = params.__action;
     if (!action || action === 'remove') {
       if (params.query.$soft) {
         delete params.query.$soft;
-        return super.patch(id, { destroyedAt: new Date() }, params);
+        return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
       } else {
-        return super.remove(id, params);
+        return super.remove(id, params).then(transform);
       }
     }
 
@@ -182,7 +199,7 @@ export class Service extends BaseService {
   first(id, data, params) {
     params = params || id || { query: {} };
     params.query.$limit = 1;
-    return super.find(params).then(results => results.total > 0? results.data[0] : null);
+    return super.find(params).then(results => results.total > 0? results.data[0] : null).then(transform);
   }
 
   last(id, data, params) {
@@ -190,12 +207,12 @@ export class Service extends BaseService {
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
-      return super.find(params).then(results => results.total > 0? results.data[0] : null);
+      return super.find(params).then(results => results.total > 0? results.data[0] : null).then(transform);
     });
   }
 
   restore(id, data, params) {
-    return super.patch(id, { destroyedAt: null }, params);
+    return super.patch(id, { destroyedAt: null }, params).then(transform);
   }
 }
 
