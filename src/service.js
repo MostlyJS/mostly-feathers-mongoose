@@ -101,7 +101,7 @@ export class Service extends BaseService {
     
     const action = params.__action;
     if (!action || action === 'get') {
-      debug('service %s get %j', this.name, id);
+      debug('service %s get %j', this.name, id, params);
       return super.get(id, params).then(transform);
     }
     
@@ -127,6 +127,7 @@ export class Service extends BaseService {
 
     const action = params.__action;
     if (!action || action === 'update') {
+      debug('service %s update %j', this.name, id);
       return super.update(id, data, params).then(transform);
     }
     
@@ -148,6 +149,7 @@ export class Service extends BaseService {
     }
     if (this[action]) {
       delete params.__action;
+      debug('service %s patch %j', this.name, id);
       return this._action(action, id, data, params);
     } else {
       throw new Error("No such **patch** action: " + action);
@@ -161,9 +163,11 @@ export class Service extends BaseService {
     const action = params.__action;
     if (!action || action === 'remove') {
       if (params.query.$soft) {
+        debug('service %s remove soft %j', this.name, id);
         delete params.query.$soft;
         return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
       } else {
+        debug('service %s remove %j', this.name, id);
         return super.remove(id, params).then(transform);
       }
     }

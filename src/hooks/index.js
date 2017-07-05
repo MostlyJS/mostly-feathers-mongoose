@@ -28,10 +28,11 @@ export function presentEntity(entity) {
     assert(entity && entity.parse, 'Must be a valid Entity: ' + entity);
     // debug('presentEntity', entity._name, hook.result);
     if (hook.result) {
+      let options = { provider: hook.params.provider };
       if (hook.result.data) {
-        hook.result.data = entity.parse(hook.result.data);
+        hook.result.data = entity.parse(hook.result.data, options);
       } else {
-        hook.result = entity.parse(hook.result);
+        hook.result = entity.parse(hook.result, options);
       }
     }
     return hook;

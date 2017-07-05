@@ -105,7 +105,7 @@ export default function populate(target, options) {
       //console.log('populate:', field, id, params);
 
       params.populate = options.recursive; // recursive populate
-      params.softDelete = options.softDelete; // enforce destroyedAt
+      params.softDelete = options.softDelete || false; // enforce destroyedAt
 
       // If the relationship is an array of ids, fetch and resolve an object for each,
       // otherwise just fetch the object.
