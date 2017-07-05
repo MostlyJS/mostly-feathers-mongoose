@@ -25,7 +25,8 @@ const assertMultiple = function(id, params, message) {
 
 // transform the results
 const transform = function(results) {
-  let data = [].concat(results.data || results);
+  // debug('transform', results);
+  let data = [].concat(results? results.data || results : []);
   data.forEach(item => {
     // output id instead of _id
     item.id = item._id || item.id;
@@ -201,7 +202,12 @@ export class Service extends BaseService {
   first(id, data, params) {
     params = params || id || { query: {} };
     params.query.$limit = 1;
-    return super.find(params).then(results => results.total > 0? results.data[0] : null).then(transform);
+    return this.find(params).then(results => {
+      if (results && Array.isArray(results.data) && results.data.length > 0) {
+        return results.data[0];
+      }
+      return null;
+    });
   }
 
   last(id, data, params) {
@@ -209,7 +215,12 @@ export class Service extends BaseService {
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
-      return super.find(params).then(results => results.total > 0? results.data[0] : null).then(transform);
+      return this.find(params).then(results => {
+        if (results && Array.isArray(results.data) && results.data.length > 0) {
+          return results.data[0];
+        }
+        return null;
+      });
     });
   }
 
