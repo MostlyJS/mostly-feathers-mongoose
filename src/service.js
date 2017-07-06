@@ -73,10 +73,7 @@ export class Service extends BaseService {
 
     // search by regex
     Object.keys(params.query || []).forEach(field => {
-      if (params.query[field] && params.query[field].$search && field.indexOf('$') === -1) {
-        params.query[field] = { $regex: new RegExp(params.query[field].$search), $options: 'i' };
-      }
-      if (params.query[field] && params.query[field].$like && field.indexOf('$') === -1) {
+      if (params.query[field] && params.query[field].$like !== undefined && field.indexOf('$') === -1) {
         params.query[field] = { $regex: new RegExp(params.query[field].$like), $options: 'i' };
       }
     });
