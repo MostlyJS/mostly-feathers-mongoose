@@ -48,6 +48,7 @@ export class Service extends BaseService {
   }
 
   find(params) {
+    params = params || { query: {} };
     // default behaviours for external call
     if (params.provider && params.query) {
       // fix id query as _ids
@@ -95,7 +96,8 @@ export class Service extends BaseService {
 
   get(id, params) {
     if (id === 'null') id = null;
-    
+    params = params || { query: {} };
+
     const action = params.__action;
     if (!action || action === 'get') {
       debug('service %s get %j', this.name, id, params);
@@ -111,6 +113,7 @@ export class Service extends BaseService {
   }
 
   create(data, params) {
+    params = params || { query: {} };
     // add support to create multiple objects
     if (Array.isArray(data)) {
       return Promise.all(data.map(current => this.create(current, params)));
@@ -120,6 +123,7 @@ export class Service extends BaseService {
 
   update(id, data, params) {
     if (id === 'null') id = null;
+    params = params || {};
     assertMultiple(id, params, "Found null id, update must be called with $multiple.");
 
     const action = params.__action;
@@ -138,6 +142,7 @@ export class Service extends BaseService {
 
   patch(id, data, params) {
     if (id === 'null') id = null;
+    params = params || {};
     assertMultiple(id, params, "Found null id, patch must be called with $multiple.");
 
     const action = params.__action;
@@ -155,6 +160,7 @@ export class Service extends BaseService {
 
   remove(id, params) {
     if (id === 'null') id = null;
+    params = params || {};
     assertMultiple(id, params, "Found null id, remove must be called with $multiple..");
     
     const action = params.__action;
