@@ -28,8 +28,8 @@ const transform = function(results) {
   // debug('transform', results);
   let data = [].concat(results? results.data || results : []);
   data.forEach(item => {
-    // output id instead of _id
-    item.id = item._id || item.id;
+    // output id string instead of _id
+    item.id = (item._id || item.id).toString();
     delete item._id;
     delete item.__v;
   });
@@ -128,7 +128,7 @@ export class Service extends BaseService {
 
     const action = params.__action;
     if (!action || action === 'update') {
-      debug('service %s update %j', this.name, id);
+      debug('service %s update %j', this.name, id, data, typeof data.parent);
       return super.update(id, data, params).then(transform);
     }
     

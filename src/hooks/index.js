@@ -5,7 +5,7 @@ import Entity from 'mostly-entity';
 import { filter, filterField } from './filter';
 import { convertId } from './convertId';
 import { cascadeUpdate } from './cascadeUpdate';
-import populate from './populate';
+import { populate, depopulate } from './populate';
 import validation from './validation';
 import { restrictToAcls } from './restrict';
 
@@ -14,6 +14,7 @@ const debug = makeDebug('mostly:feathers-mongoose:hooks');
 export {
   convertId,
   cascadeUpdate,
+  depopulate,
   filter,
   populate,
   validation,

@@ -2,8 +2,8 @@ import util from 'util';
 import errors from 'feathers-errors';
 import validator from 'validator';
 import makeDebug from 'debug';
-import { getField, setField } from '../helpers';
-import { compact, flatten, flattenDeep, isArray, map, reduce } from 'lodash';
+import { getField, setField, setFieldByKey } from '../helpers';
+import { compact, flatten, flattenDeep, get, isArray, map, reduce, set } from 'lodash';
 
 const debug = makeDebug('mostly:feathers-mongoose:common:hooks:populate');
 
@@ -54,7 +54,7 @@ function isPopulated(obj) {
  *
  * If 'senderId' is an array of keys, then 'sender' will be an array of populated items.
  */
-export default function populate(target, options) {
+export function populate(target, options) {
   options = Object.assign({}, options);
 
   if (!options.service) {
@@ -170,5 +170,35 @@ export default function populate(target, options) {
       }
       return hook;
     });
+  };
+}
+
+export function depopulate(target, options = { idField: 'id' }) {
+  options = Object.assign({}, options);
+
+  return function(hook) {
+    function getDepopulated(item, target) {
+      let field = get(item, target);
+      if (isArray(field)) {
+        field = map(field, it => it[options.idField] || it);
+      } else if (field) {
+        field = field[options.idField] || field
+      }
+      return field? field : null;
+    }
+
+    if (hook.type === 'before') {
+      set(hook.data, target, getDepopulated(hook.data, target));
+    } else {
+      if (hook.result) {
+        if (hook.result.data) {
+          set(hook.result.data, target, getDepopulated(hook.result.data, target));
+        } else {
+          set(hook.result, target, getDepopulated(hook.result, target));
+        }
+      }
+    }
+    debug('depopulate', hook.data.parent, typeof hook.data.parent, hook.data);
+    return hook;
   };
 }
