@@ -33,7 +33,7 @@ const transform = function(results) {
     delete item._id;
     delete item.__v;
   });
-  return Promise.resolve(results);
+  return results;
 }
 
 export class Service extends BaseService {
@@ -241,3 +241,4 @@ export default function init (options) {
 }
 
 init.Service = Service;
+init.transform = transform;
