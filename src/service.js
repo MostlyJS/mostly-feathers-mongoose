@@ -192,7 +192,7 @@ export class Service extends BaseService {
         origin = origin.data;
       }
       if (id && !origin) {
-        throw new Error('No such record ' + id + ' in ' + this.Model.modelName);
+        throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
       }
       return this[action].call(this, id, data, params, origin);
     });
