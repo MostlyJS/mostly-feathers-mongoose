@@ -179,6 +179,7 @@ export function depopulate(target, options = { idField: 'id' }) {
   return function(hook) {
     function getDepopulated(item, target) {
       let field = get(item, target);
+      if (field === undefined) return undefined;
       if (isArray(field)) {
         field = map(field, it => it[options.idField] || it);
       } else if (field) {
@@ -187,18 +188,26 @@ export function depopulate(target, options = { idField: 'id' }) {
       return field? field : null;
     }
 
+    function setTarget(data, target, value) {
+      if (value !== undefined) {
+        set(data, target, value);
+      }
+    }
+
     if (hook.type === 'before') {
-      set(hook.data, target, getDepopulated(hook.data, target));
+      setTarget(hook.data, target, getDepopulated(hook.data, target));
     } else {
       if (hook.result) {
         if (hook.result.data) {
-          set(hook.result.data, target, getDepopulated(hook.result.data, target));
+          setTarget(hook.result.data, target, getDepopulated(hook.result.data, target));
         } else {
-          set(hook.result, target, getDepopulated(hook.result, target));
+          setTarget(hook.result, target, getDepopulated(hook.result, target));
         }
       }
     }
-    debug('depopulate', hook.data.parent, typeof hook.data.parent, hook.data);
+    if (target === 'parent') {
+      debug('depopulate parent', hook.data.parent, typeof hook.data.parent, hook.data);
+    }
     return hook;
   };
 }
