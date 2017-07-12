@@ -95,10 +95,14 @@ export class Service extends BaseService {
   }
 
   get(id, params) {
-    if (id === 'null') id = null;
+    if (id === 'null' || id === '0') id = null;
     params = params || { query: {} };
 
-    const action = params.__action;
+    let action = params.__action;
+
+    // if id is null, try find the first one with params
+    if (id === null) action = 'first';
+
     if (!action || action === 'get') {
       debug('service %s get %j', this.name, id, params);
       return super.get(id, params).then(transform);
