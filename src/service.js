@@ -101,7 +101,7 @@ export class Service extends BaseService {
     let action = params.__action;
 
     // if id is null, try find the first one with params
-    if (id === null) action = 'first';
+    if (id === null && !action) action = 'first';
 
     if (!action || action === 'get') {
       debug('service %s get %j', this.name, id, params);
