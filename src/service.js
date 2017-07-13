@@ -40,6 +40,7 @@ export class Service extends BaseService {
   constructor(options) {
     options = Object.assign({}, defaultOptions, options);
     super(options);
+    this.options = options;
     this.name = options.name || 'MongooseService';
   }
 
