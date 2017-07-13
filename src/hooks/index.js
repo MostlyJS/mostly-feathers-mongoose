@@ -24,14 +24,13 @@ export {
 
 // common hooks share all across services
 
-export function presentEntity(entity) {
+export function presentEntity(entity, options = {}) {
   assert(entity && entity.parse, 'Must be a valid Entity: ' + entity);
 
   return function(hook) {
-    // debug('presentEntity', entity._name, hook.result);
-    let options = { provider: hook.params.provider };
+    options.provider = hook.params.provider;
+    
     if (hook.result) {
-      let options = { provider: hook.params.provider };
       if (hook.result.data) {
         hook.result.data = entity.parse(hook.result.data, options);
       } else {

@@ -40,8 +40,12 @@ export class Service extends BaseService {
   constructor(options) {
     options = Object.assign({}, defaultOptions, options);
     super(options);
+
+    delete options.Model;
+    delete options.ModelName;
+
     this.options = options;
-    this.name = options.name || 'MongooseService';
+    this.name = options.name || 'mongoose-service';
   }
 
   setup(app) {
