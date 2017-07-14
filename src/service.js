@@ -21,7 +21,7 @@ const assertMultiple = function(id, params, message) {
       throw new Error(message);
     }
   }
-}
+};
 
 // transform the results
 const transform = function(results) {
@@ -34,7 +34,7 @@ const transform = function(results) {
     delete item.__v;
   });
   return results;
-}
+};
 
 export class Service extends BaseService {
   constructor(options) {

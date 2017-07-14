@@ -67,43 +67,47 @@ export function setField(item, target, data, field, options) {
 
   function warn(which, id) {
     console.warn(' >>> WARN %d: setField %s/%s(id=%j) not found with item %s',
-      which, target, field, id, item.id || item._id);
+      which, target, field, id, item[options.idField]);
   }
 
   // avoid duplicate setField
   function cloneById(v, k) {
     if (isArray(v)) {
-      let match = find(v, it => toString(it.id || it._id) === toString(k));
+      let match = find(v, it => toString(it[options.idField]) === toString(k));
       return match ? cloneDeep(match) : (options.preserveValue ? k : null);
     } else {
-      return toString(v.id || v._id) === toString(k)? cloneDeep(v) : (options.preserveValue ? k : null);
+      return toString(v[options.idField]) === toString(k)? cloneDeep(v) : (options.preserveValue ? k : null);
     }
   }
 
   if (isArray(value) && !value[key]) {
     value.forEach(function(v) {
-      let id = v[key];
-      if(Array.isArray(id)) {
-        let dest = [];
-        id.forEach(item => {
-          dest.push(cloneById(data, item));
-        });
-        set(v, key, dest);
-      }
-      else {
+      let entry = v[key];
+      if(Array.isArray(entry)) {
+        set(v, key, entry.map(it => {
+          let id = options.serviceBy? it[options.idField] : it;
+          return cloneById(data, id);
+        }));
+        if (!get(v, key)) warn(1, entry);
+      } else {
+        let id = options.serviceBy? entry[options.idField] : entry;
         set(v, key, cloneById(data, id));
-        if (!get(v, key)) warn(1, id);
+        if (!get(v, key)) warn(2, entry);
       }
     });
   } else {
     if (value && value[key]) {
-      let id = value[key];
-      if (isArray(id)) {
-        set(item, target, map(id, vk => cloneById(data, vk)));
-        if (!get(item, target)) warn(2, id);
+      let entry = value[key];
+      if (isArray(entry)) {
+        set(item, target, entry.map(it => {
+          let id = options.serviceBy? it[options.idField] : it;
+          return cloneById(data, id);
+        }));
+        if (!get(item, target)) warn(3, entry);
       } else {
+        let id = options.serviceBy? entry[options.idField] : entry;
         set(item, target, cloneById(data, id));
-        if (!get(item, target)) warn(3, id);
+        if (!get(item, target)) warn(4, entry);
       }
     } else {
       warn(4, '<no-such-field>');
