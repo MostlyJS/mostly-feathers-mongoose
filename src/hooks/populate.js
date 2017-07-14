@@ -132,7 +132,7 @@ export function populate(target, options) {
       }
       return promise.then(result => {
         let data = result.data || result;
-        debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
+        // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
         if (isArray(item)) {
           item.forEach(it => setField(it, target, data, field, options));
         } else {
