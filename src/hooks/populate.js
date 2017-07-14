@@ -1,11 +1,17 @@
-import util from 'util';
-import errors from 'feathers-errors';
-import validator from 'validator';
+import assert from 'assert';
 import makeDebug from 'debug';
-import { getField, setField, setFieldByKey } from '../helpers';
+import errors from 'feathers-errors';
 import { compact, flatten, flattenDeep, get, isArray, map, reduce, set } from 'lodash';
+import { plural } from 'pluralize';
+import validator from 'validator';
+import util from 'util';
+import { getField, setField, setFieldByKey } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:common:hooks:populate');
+
+const defaultOptions = {
+  idField: 'id'
+};
 
 function isPopulated(obj) {
   if (isArray(obj)) {
@@ -55,9 +61,9 @@ function isPopulated(obj) {
  * If 'senderId' is an array of keys, then 'sender' will be an array of populated items.
  */
 export function populate(target, options) {
-  options = Object.assign({}, options);
+  options = Object.assign({}, defaultOptions, options);
 
-  if (!options.service) {
+  if (!options.service && !options.serviceBy) {
     throw new Error('You need to provide a service');
   }
 
@@ -66,29 +72,26 @@ export function populate(target, options) {
     options.recursive = !!hook.params.provider;
 
     function populate(item, target, options) {
-      const service = hook.app.service(options.service);
-      if (!service) {
-        throw new Error("No such service: " + options.service);
-      }
       let field = options.field || target;
 
       // Find by the field value by default or a custom query
-      let id = null;
+      let entry = null;
       if (isArray(item)) {
-        id = compact(flattenDeep(map(item, i => getField(i, field))));
+        entry = compact(flattenDeep(map(item, i => getField(i, field))));
       } else {
-        id = getField(item, field);
+        entry = getField(item, field);
       }
-      //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, id);
-      //debug(' \n\twith: %j', item);
 
-      // invalid id
-      if (!id || id.length === 0) {
+      // invalid entry id
+      if (!entry || entry.length === 0) {
         return Promise.resolve(item);
       }
 
-      if (isPopulated(id)) {
-        debug('==> %s already populate %s/%s, \n\tid: %j', options.service, target, field, id);
+      //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
+      //debug(' \n\twith: %j', item);
+
+      if (!options.serviceBy && isPopulated(entry)) {
+        debug('==> %s already populate %s/%s, \n\tid: %j', options, target, field, entry);
         return Promise.resolve(item);
       }
 
@@ -102,7 +105,7 @@ export function populate(target, options) {
       }
       // Remove any query from params as it's not related
       let params = {}; // Object.assign({}, hook.params, { query: undefined });
-      //console.log('populate:', field, id, params);
+      //console.log('populate:', field, entry, params);
 
       params.populate = options.recursive; // recursive populate
       params.softDelete = options.softDelete || false; // enforce destroyedAt
@@ -111,19 +114,27 @@ export function populate(target, options) {
       // otherwise just fetch the object.
       let promise = null;
 
-      if (isArray(id) && id.length > 1) {
-        params.query = { _id: { $in: id } };
+      if (isArray(entry)) {
+        let service = options.service;
+        let ids = entry;
+        if (options.serviceBy) {
+          service = plural(entry[0][options.serviceBy]) || service;
+          assert(service, 'Not such serviceBy field', item, service);
+          ids = entry.map(i => i[options.idField]);
+        }
+        params.query = { _id: { $in: ids } };
         params.paginate = false; // disable paginate
-        promise = service.find(params);
+        promise = hook.app.service(service).find(params);
       } else {
-        if (isArray(id)) id = id[0];
-        promise = service.get(id, params);
+        let service = options.service;
+        let id = entry;
+        promise = hook.app.service(service).get(id, params);
       }
       return promise.then(result => {
-        //debug('setField %j \n ==> %s \n ==> %j', item, field, result.data || result);
         let data = result.data || result;
+        debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
         if (isArray(item)) {
-          item.forEach(i => setField(i, target, data, field, options));
+          item.forEach(it => setField(it, target, data, field, options));
         } else {
           setField(item, target, data, field, options);
         }
@@ -183,7 +194,7 @@ export function depopulate(target, options = { idField: 'id' }) {
       if (isArray(field)) {
         field = map(field, it => it[options.idField] || it);
       } else if (field) {
-        field = field[options.idField] || field
+        field = field[options.idField] || field;
       }
       return field? field : null;
     }
