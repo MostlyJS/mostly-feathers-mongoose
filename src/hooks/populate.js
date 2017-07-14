@@ -118,9 +118,13 @@ export function populate(target, options) {
         let service = options.service;
         let ids = entry;
         if (options.serviceBy) {
-          service = plural(entry[0][options.serviceBy]) || service;
-          assert(service, 'Not such serviceBy field', item, service);
-          ids = entry.map(i => i[options.idField]);
+          if (entry[0] && entry[0][options.serviceBy]) {
+            service = plural(entry[0][options.serviceBy]);
+          } else {
+            service = options.serviceBy;
+          }
+          ids = entry.map(it => it[options.idField]);
+          debug('populate service', service, ids);
         }
         params.query = { _id: { $in: ids } };
         params.paginate = false; // disable paginate
@@ -128,11 +132,20 @@ export function populate(target, options) {
       } else {
         let service = options.service;
         let id = entry;
+        if (options.serviceBy) {
+          if (entry[options.serviceBy]) {
+            service = plural(entry[options.serviceBy]);
+          } else {
+            service = options.serviceBy;
+          }
+          id = entry[options.idField];
+          debug('populate service', service, id);
+        }
         promise = hook.app.service(service).get(id, params);
       }
       return promise.then(result => {
         let data = result.data || result;
-        // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
+        debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
         if (isArray(item)) {
           item.forEach(it => setField(it, target, data, field, options));
         } else {
