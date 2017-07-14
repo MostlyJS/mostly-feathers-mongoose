@@ -1,4 +1,4 @@
-import { cloneDeep, find, flatten, get, set, isArray, map, toString } from 'lodash';
+import { cloneDeep, defaults, find, flatten, get, set, isArray, map, toString } from 'lodash';
 
 // get field by path, supporting `array.field`
 export function getField(item, field) {
@@ -86,12 +86,14 @@ export function setField(item, target, data, field, options) {
       if(Array.isArray(entry)) {
         set(v, key, entry.map(it => {
           let id = options.serviceBy? it[options.idField] : it;
-          return cloneById(data, id);
+          let clone = cloneById(data, id);
+          return defaults(it, clone);
         }));
         if (!get(v, key)) warn(1, entry);
       } else {
         let id = options.serviceBy? entry[options.idField] : entry;
-        set(v, key, cloneById(data, id));
+        let clone = cloneById(data, id);
+        set(v, key, defaults(entry, clone));
         if (!get(v, key)) warn(2, entry);
       }
     });
@@ -101,12 +103,14 @@ export function setField(item, target, data, field, options) {
       if (isArray(entry)) {
         set(item, target, entry.map(it => {
           let id = options.serviceBy? it[options.idField] : it;
-          return cloneById(data, id);
+          let clone = cloneById(data, id);
+          return defaults(it, clone);
         }));
         if (!get(item, target)) warn(3, entry);
       } else {
         let id = options.serviceBy? entry[options.idField] : entry;
-        set(item, target, cloneById(data, id));
+        let clone = cloneById(data, id);
+        set(item, target, defaults(entry, clone));
         if (!get(item, target)) warn(4, entry);
       }
     } else {
