@@ -1,6 +1,7 @@
 import { map } from 'lodash';
 import makeDebug from 'debug';
 import { Service as BaseService } from 'feathers-mongoose';
+import { errorHandler } from 'feathers-mongoose/lib/error-handler';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
@@ -15,8 +16,8 @@ const defaultOptions = {
 // prevent accidental multiple operations
 const assertMultiple = function(id, params, message) {
   if (!id) {
-    if (params && params.query && params.query.$multiple) {
-      delete params.query.$multiple;
+    if (params && params.query && (params.$multi || params.query.$multi)) {
+      delete params.query.$multi;
     } else {
       throw new Error(message);
     }
@@ -25,13 +26,14 @@ const assertMultiple = function(id, params, message) {
 
 // transform the results
 const transform = function(results) {
-  // debug('transform', results);
   let data = [].concat(results? results.data || results : []);
   data.forEach(item => {
+    // item = Object.assign({}, item);
     // output id string instead of _id
     item.id = (item._id || item.id).toString();
     delete item._id;
     delete item.__v;
+    // debug('transform item %j', item);
   });
   return results;
 };
@@ -133,7 +135,7 @@ export class Service extends BaseService {
   update(id, data, params) {
     if (id === 'null') id = null;
     params = params || {};
-    assertMultiple(id, params, "Found null id, update must be called with $multiple.");
+    assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
     const action = params.__action;
     if (!action || action === 'update') {
@@ -152,7 +154,7 @@ export class Service extends BaseService {
   patch(id, data, params) {
     if (id === 'null') id = null;
     params = params || {};
-    assertMultiple(id, params, "Found null id, patch must be called with $multiple.");
+    assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
     const action = params.__action;
     if (!action || action === 'patch') {
@@ -169,9 +171,8 @@ export class Service extends BaseService {
 
   remove(id, params) {
     if (id === 'null') id = null;
-    params = params || {};
-    assertMultiple(id, params, "Found null id, remove must be called with $multiple..");
-    
+    assertMultiple(id, params, "Found null id, remove must be called with $multi.");
+
     const action = params.__action;
     if (!action || action === 'remove') {
       if (params.query.$soft) {
@@ -207,7 +208,17 @@ export class Service extends BaseService {
     });
   }
 
-  // some reserved words
+  // some reserved actions
+
+  upsert(data, params) {
+    params = params || {};
+    let query = params.query || data;  // default find by input data
+    return this.Model.findOneAndUpdate(query,
+        Object.assign({}, data), { upsert: true, new: true })
+      .lean()
+      .then(transform)
+      .catch(errorHandler);
+  }
 
   count(id, data, params) {
     params = params || id || { query: {} };
