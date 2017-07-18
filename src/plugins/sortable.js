@@ -14,41 +14,50 @@ export default function(schema, options) {
 
   schema.index({ position: 1 });
 
-  schema.pre('save', function(next) {
-    if (typeof this.position === 'number') {
+  const preUpdate = function(item, Model, next) {
+    if (typeof item.position === 'number') {
       return next();
     }
 
-    let item = this;
-    const Model = mongoose.model(item.constructor.modelName);
-
-    const addLast = function (done) {
+    const addLast = function(done) {
       let query = Model.findOne();
       if (options.classify) {
         query.where(options.classify).eq(item[options.classify]);
       }
-      query.sort('-position').then(max => {
+      query.sort('-position').then((max) => {
         item.position = (max && max.position) ? max.position + 1 : 1;
         done();
       });
     };
 
     if (options.unshift === true) {
-      Model.where('position').exists().setOptions({ multi: true }).update(
-        { $inc: { position: 1 } },
-        function (err) {
+      Model.where('position').exists().setOptions({ multi: true })
+        .update({
+          $inc: { position: 1 }
+        }, (err) => {
           if (err) {
-            console.error('err', err);
+            console.error('sortable $inc error:', err);
             return addLast(next);
           } else {
             item.position = 1;
-            next();
+            return next();
           }
-        }
-      );
+        });
     } else {
-      addLast(next);
+      return addLast(next);
     }
+  };
+
+  schema.pre('save', function(next) {
+    let item = this;
+    const Model = mongoose.model(item.constructor.modelName);
+    preUpdate(item, Model, next);
+  });
+  
+  schema.pre('findOneAndUpdate', function(next) {
+    let item = this.getUpdate();
+    const Model = mongoose.model(this.model.modelName);
+    preUpdate(item, Model, next);
   });
 
   schema.statics.reorderPosition = function(item, newPos) {
@@ -63,7 +72,7 @@ export default function(schema, options) {
     return self.where('position').gte(start).lte(end)
       .setOptions({ multi: true })
       .update({ $inc: { position: whichWay } })
-      .then(function() {
+      .then(() => {
         return self.findOneAndUpdate({ _id: item._id }, { position: newPos });
       });
   };
