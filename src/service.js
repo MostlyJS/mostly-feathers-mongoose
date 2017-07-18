@@ -230,10 +230,12 @@ export class Service extends BaseService {
     params = params || id || { query: {} };
     params.query.$limit = 1;
     return this.find(params).then(results => {
-      if (results && Array.isArray(results.data) && results.data.length > 0) {
-        return results.data[0];
+      results = results.data || results;
+      if (Array.isArray(results) && results.length > 0) {
+        return results[0];
+      } else {
+        return results;
       }
-      return null;
     });
   }
 
@@ -243,10 +245,12 @@ export class Service extends BaseService {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
       return this.find(params).then(results => {
-        if (results && Array.isArray(results.data) && results.data.length > 0) {
-          return results.data[0];
+        results = results.data || results;
+        if (Array.isArray(results) && results.length > 0) {
+          return results[0];
+        } else {
+          return results;
         }
-        return null;
       });
     });
   }

@@ -53,27 +53,11 @@ export default function(schema, options) {
     const Model = mongoose.model(item.constructor.modelName);
     preUpdate(item, Model, next);
   });
-  
+
   schema.pre('findOneAndUpdate', function(next) {
     let item = this.getUpdate();
     const Model = mongoose.model(this.model.modelName);
     preUpdate(item, Model, next);
   });
-
-  schema.statics.reorderPosition = function(item, newPos) {
-    const prevPos = parseInt(item.position);
-    newPos = parseInt(newPos);
-
-    const self = this;
-
-    const whichWay = (newPos > prevPos) ? -1 : 1;
-    const start = (newPos > prevPos) ? prevPos + 1 : newPos;
-    const end = (newPos > prevPos) ? newPos : prevPos - 1;
-    return self.where('position').gte(start).lte(end)
-      .setOptions({ multi: true })
-      .update({ $inc: { position: whichWay } })
-      .then(() => {
-        return self.findOneAndUpdate({ _id: item._id }, { position: newPos });
-      });
-  };
+  
 }

@@ -118,3 +118,23 @@ export function setField(item, target, data, field, options) {
     }
   }
 }
+
+export function reorderPosition(Model, item, newPos, options = {}) {
+  const prevPos = parseInt(item.position);
+  newPos = parseInt(newPos);
+
+  const whichWay = (newPos > prevPos) ? -1 : 1;
+  const start = (newPos > prevPos) ? prevPos + 1 : newPos;
+  const end = (newPos > prevPos) ? newPos : prevPos - 1;
+
+  const cond = {
+    position: { '$gte': start, '$lte': end }
+  };
+  if (options.classify) {
+    cond[options.classify] = { $eq : item[options.classify] };
+  }
+  return Model.update(cond, { $inc: { position: whichWay } }, { multi: true })
+    .then(() => {
+      return Model.findOneAndUpdate({ _id: item._id || item.id }, { position: newPos });
+    });
+}
