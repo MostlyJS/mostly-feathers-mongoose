@@ -1,4 +1,4 @@
-import fp from 'lodash/fp';
+import fp from 'ramda';
 import makeDebug from 'debug';
 import { Service as BaseService } from 'feathers-mongoose';
 import { errorHandler } from 'feathers-mongoose/lib/error-handler';
@@ -38,9 +38,9 @@ const transform = function(results) {
   return results;
 };
 
-const unsetOptions = fp.flow(
-  fp.unset('Model'),
-  fp.unset('ModelName')
+const unsetOptions = fp.pipe(
+  fp.dissoc('Model'),
+  fp.dissoc('ModelName')
 );
 
 export class Service extends BaseService {
@@ -91,7 +91,7 @@ export class Service extends BaseService {
 
     // TODO secure action call by find
     if (this[action]) {
-      params = fp.unset('__action', params);
+      params = fp.dissoc('__action', params);
       return this._action(action, null, {}, params);
     }
     throw new Error("No such **get** action: " + action);
@@ -113,7 +113,7 @@ export class Service extends BaseService {
     
     // TODO secure action call by get
     if (this[action]) {
-      params = fp.unset('__action', params);
+      params = fp.dissoc('__action', params);
       return this._action(action, id, {}, params);
     }
     throw new Error("No such **get** action: " + action);
@@ -140,7 +140,7 @@ export class Service extends BaseService {
     }
     
     if (this[action]) {
-      params = fp.unset('__action', params);
+      params = fp.dissoc('__action', params);
       return this._action(action, id, data, params);
     } else {
       throw new Error("No such **put** action: " + action);
@@ -158,7 +158,7 @@ export class Service extends BaseService {
     }
     if (this[action]) {
       debug('service %s patch %j', this.name, id);
-      params = fp.unset('__action', params);
+      params = fp.dissoc('__action', params);
       return this._action(action, id, data, params);
     } else {
       throw new Error("No such **patch** action: " + action);
@@ -173,7 +173,7 @@ export class Service extends BaseService {
     if (!action || action === 'remove') {
       if (params.query.$soft) {
         debug('service %s remove soft %j', this.name, id);
-        params = fp.unset('query.$soft', params);
+        params = fp.dissocPath(['query', '$soft'], params);
         return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
       } else {
         debug('service %s remove %j', this.name, id);
@@ -182,7 +182,7 @@ export class Service extends BaseService {
     }
 
     if (action === 'restore') {
-      params = fp.unset('query.$soft')(params);
+      params = fp.dissoc('__action', params);
       return this.restore(id, params);
     } else {
       throw new Error("No such **remove** action: " + action);

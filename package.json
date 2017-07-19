@@ -33,6 +33,7 @@
     "mongoose": "^4.11.1",
     "mostly-entity": "^1.0.6",
     "pluralize": "^5.0.0",
+    "ramda": "^0.24.1",
     "rubberduck": "^1.1.1",
     "uberproto": "^1.2.0",
     "validator": "^7.0.0"
