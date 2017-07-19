@@ -1,4 +1,4 @@
-import { map } from 'lodash';
+import fp from 'lodash/fp';
 import makeDebug from 'debug';
 import { Service as BaseService } from 'feathers-mongoose';
 import { errorHandler } from 'feathers-mongoose/lib/error-handler';
@@ -38,15 +38,17 @@ const transform = function(results) {
   return results;
 };
 
+const unsetOptions = fp.flow(
+  fp.unset('Model'),
+  fp.unset('ModelName')
+);
+
 export class Service extends BaseService {
   constructor(options) {
     options = Object.assign({}, defaultOptions, options);
     super(options);
 
-    delete options.Model;
-    delete options.ModelName;
-
-    this.options = options;
+    this.options = unsetOptions(options);
     this.name = options.name || 'mongoose-service';
   }
 
@@ -73,12 +75,6 @@ export class Service extends BaseService {
       }
     }
 
-    // allow extra params to be used only in after hook
-    if (params.query && params.query.$after) {
-      params.after = params.query.$after;
-      delete params.query.$after;
-    }
-
     // search by regex
     Object.keys(params.query || []).forEach(field => {
       if (params.query[field] && params.query[field].$like !== undefined && field.indexOf('$') === -1) {
@@ -95,7 +91,7 @@ export class Service extends BaseService {
 
     // TODO secure action call by find
     if (this[action]) {
-      delete params.__action;
+      params = fp.unset('__action', params);
       return this._action(action, null, {}, params);
     }
     throw new Error("No such **get** action: " + action);
@@ -117,7 +113,7 @@ export class Service extends BaseService {
     
     // TODO secure action call by get
     if (this[action]) {
-      delete params.__action;
+      params = fp.unset('__action', params);
       return this._action(action, id, {}, params);
     }
     throw new Error("No such **get** action: " + action);
@@ -144,7 +140,7 @@ export class Service extends BaseService {
     }
     
     if (this[action]) {
-      delete params.__action;
+      params = fp.unset('__action', params);
       return this._action(action, id, data, params);
     } else {
       throw new Error("No such **put** action: " + action);
@@ -161,8 +157,8 @@ export class Service extends BaseService {
       return super.patch(id, data, params).then(transform);
     }
     if (this[action]) {
-      delete params.__action;
       debug('service %s patch %j', this.name, id);
+      params = fp.unset('__action', params);
       return this._action(action, id, data, params);
     } else {
       throw new Error("No such **patch** action: " + action);
@@ -177,7 +173,7 @@ export class Service extends BaseService {
     if (!action || action === 'remove') {
       if (params.query.$soft) {
         debug('service %s remove soft %j', this.name, id);
-        delete params.query.$soft;
+        params = fp.unset('query.$soft', params);
         return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
       } else {
         debug('service %s remove %j', this.name, id);
@@ -186,7 +182,7 @@ export class Service extends BaseService {
     }
 
     if (action === 'restore') {
-      delete params.__action;
+      params = fp.unset('query.$soft')(params);
       return this.restore(id, params);
     } else {
       throw new Error("No such **remove** action: " + action);
