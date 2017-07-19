@@ -235,7 +235,7 @@ export class Service extends BaseService {
       if (Array.isArray(results) && results.length > 0) {
         return results[0];
       } else {
-        return results;
+        return null;
       }
     });
   }

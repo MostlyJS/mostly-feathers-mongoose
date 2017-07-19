@@ -41,7 +41,6 @@ export function connectDb(url) {
 export function createModel(app, name, config) {
   const mongooseClient = app.get('mongoose');
   assert(mongooseClient, 'mongoose not set by app');
-  debug('mongoose connected', mongooseClient.connection.readyState);
   const schema = new mongooseClient.Schema({ any: {} }, {strict: false});
   return mongooseClient.model(name, schema);
 }
