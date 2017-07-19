@@ -13,6 +13,8 @@ const defaultOptions = {
   }
 };
 
+const defaultMethods = ['find', 'get', 'create', 'update', 'patch', 'remove'];
+
 // prevent accidental multiple operations
 const assertMultiple = function(id, params, message) {
   if (!id) {
@@ -90,11 +92,11 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by find
-    if (this[action]) {
+    if (this[action] && defaultMethods.indexOf(action) < 0) {
       params = fp.dissoc('__action', params);
       return this._action(action, null, {}, params);
     }
-    throw new Error("No such **get** action: " + action);
+    throw new Error("No such **find** action: " + action);
   }
 
   get(id, params) {
@@ -110,9 +112,9 @@ export class Service extends BaseService {
       debug('service %s get %j', this.name, id, params);
       return super.get(id, params).then(transform);
     }
-    
+
     // TODO secure action call by get
-    if (this[action]) {
+    if (this[action] && defaultMethods.indexOf(action) < 0) {
       params = fp.dissoc('__action', params);
       return this._action(action, id, {}, params);
     }
@@ -139,7 +141,8 @@ export class Service extends BaseService {
       return super.update(id, data, params).then(transform);
     }
     
-    if (this[action]) {
+    // TODO secure action call by get
+    if (this[action] && defaultMethods.indexOf(action) < 0) {
       params = fp.dissoc('__action', params);
       return this._action(action, id, data, params);
     } else {
@@ -156,7 +159,9 @@ export class Service extends BaseService {
     if (!action || action === 'patch') {
       return super.patch(id, data, params).then(transform);
     }
-    if (this[action]) {
+
+    // TODO secure action call by get
+    if (this[action] && defaultMethods.indexOf(action) < 0) {
       debug('service %s patch %j', this.name, id);
       params = fp.dissoc('__action', params);
       return this._action(action, id, data, params);
@@ -181,6 +186,7 @@ export class Service extends BaseService {
       }
     }
 
+    // TODO secure action call by get
     if (action === 'restore') {
       params = fp.dissoc('__action', params);
       return this.restore(id, params);
@@ -209,8 +215,7 @@ export class Service extends BaseService {
   upsert(data, params) {
     params = params || {};
     let query = params.query || data;  // default find by input data
-    return this.Model.findOneAndUpdate(query,
-        Object.assign({}, data), { upsert: true, new: true })
+    return this.Model.findOneAndUpdate(query, data, { upsert: true, new: true })
       .lean()
       .then(transform)
       .catch(errorHandler);
