@@ -34,8 +34,8 @@ const unsetOptions = fp.pipe(
 
 const unset_id = function(obj) {
   if (obj && obj._id) {
-    obj.id = String(obj._id);
     return fp.pipe(
+      fp.assoc('id', obj._id),
       fp.dissoc('_id'),
       fp.dissoc('__v')
     )(obj);
