@@ -1,3 +1,4 @@
+import assert from 'assert';
 import fp from 'ramda';
 import makeDebug from 'debug';
 import { Service as BaseService } from 'feathers-mongoose';
@@ -197,6 +198,8 @@ export class Service extends BaseService {
 
   _action(action, id, data, params) {
     debug(' => %s action %s with %j', this.name, action, id, data);
+    assert(this[action], 'No such action method: ' + action);
+
     // delete params.provider;
     let query = id? this.get(id, params) : Promise.resolve(null);
     return query.then(origin => {
