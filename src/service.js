@@ -27,24 +27,42 @@ const assertMultiple = function(id, params, message) {
   }
 };
 
-// transform the results
-const transform = function(results) {
-  let data = [].concat(results? results.data || results : []);
-  data.forEach(item => {
-    // item = Object.assign({}, item);
-    // output id string instead of _id
-    item.id = (item._id || item.id).toString();
-    delete item._id;
-    delete item.__v;
-    // debug('transform item %j', item);
-  });
-  return results;
-};
-
 const unsetOptions = fp.pipe(
   fp.dissoc('Model'),
   fp.dissoc('ModelName')
 );
+
+const unset_id = function(obj) {
+  if (obj && obj._id) {
+    obj.id = String(obj._id);
+    return fp.pipe(
+      fp.dissoc('_id'),
+      fp.dissoc('__v')
+    )(obj);
+  } else {
+    return obj;
+  }
+};
+
+const unsetObj = function(obj) {
+  if (Array.isArray(obj)) {
+    return fp.map(unset_id, obj);
+  } else {
+    return unset_id(obj);
+  }
+};
+
+// transform the results
+const transform = function(results) {
+  if (results) {
+    if (results.data) {
+      results.data = unsetObj(results.data);
+    } else {
+      results = unsetObj(results);
+    }
+  }
+  return results;
+};
 
 export class Service extends BaseService {
   constructor(options) {
