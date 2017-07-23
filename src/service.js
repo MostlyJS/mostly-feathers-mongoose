@@ -35,7 +35,7 @@ const unsetOptions = fp.pipe(
 const unset_id = function(obj) {
   if (obj && obj._id) {
     return fp.pipe(
-      fp.assoc('id', String(obj._id)),
+      fp.assoc('id', String(obj.id || obj._id)),
       fp.dissoc('_id'),
       fp.dissoc('__v')
     )(obj);
@@ -146,7 +146,20 @@ export class Service extends BaseService {
     if (Array.isArray(data)) {
       return Promise.all(data.map(current => this.create(current, params)));
     }
-    return super.create(data, params).then(transform);
+
+    const action = params.__action;
+    if (!action || action === 'create') {
+      debug('service %s create %j', this.name, data);
+      return super.create(data, params).then(transform);
+    }
+
+    // TODO secure action call by get
+    if (this[action] && defaultMethods.indexOf(action) < 0) {
+      params = fp.dissoc('__action', params);
+      return this._action(action, null, data, params);
+    } else {
+      throw new Error("No such **create** action: " + action);
+    }
   }
 
   update(id, data, params) {
@@ -156,7 +169,7 @@ export class Service extends BaseService {
 
     const action = params.__action;
     if (!action || action === 'update') {
-      debug('service %s update %j', this.name, id, data, typeof data.parent);
+      debug('service %s update %j', this.name, id, data);
       return super.update(id, data, params).then(transform);
     }
     
