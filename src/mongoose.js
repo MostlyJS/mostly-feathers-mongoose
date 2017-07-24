@@ -33,7 +33,9 @@ export function connectDb(url) {
       process.exit(1);
     });
 
-    mongoose.set('debug', true);
+    if ((process.env.DEBUG || '').indexOf('mongoose') > -1) {
+      mongoose.set('debug', true);
+    }
     app.set('mongoose', mongoose);
   };
 }

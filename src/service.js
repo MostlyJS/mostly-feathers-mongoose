@@ -264,6 +264,7 @@ export class Service extends BaseService {
   first(id, data, params) {
     params = params || id || { query: {} };
     params.query.$limit = 1;
+    params.paginate = false; // disable paginate
     return this.find(params).then(results => {
       results = results.data || results;
       if (Array.isArray(results) && results.length > 0) {
