@@ -72,7 +72,7 @@ export function responder() {
     let data = hook.result;
 
     if (hook.result && hook.result.data) {
-      metadata = _.omit(hook.result, 'data');
+      metadata = hook.result.metadata || _.omit(hook.result, 'data');
       data = hook.result.data;
     }
 
