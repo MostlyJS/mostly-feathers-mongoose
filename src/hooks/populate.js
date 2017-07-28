@@ -7,7 +7,7 @@ import validator from 'validator';
 import util from 'util';
 import { getField, setField, setFieldByKey } from '../helpers';
 
-const debug = makeDebug('mostly:feathers-mongoose:common:hooks:populate');
+const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');
 
 const defaultOptions = {
   idField: 'id'

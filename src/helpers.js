@@ -1,4 +1,7 @@
+import makeDebug from 'debug';
 import { cloneDeep, defaults, find, flatten, get, set, isArray, map, toString } from 'lodash';
+
+const debug = makeDebug('mostly:feathers-mongoose:helpers');
 
 // get field by path, supporting `array.field`
 export function getField(item, field) {
@@ -62,11 +65,20 @@ export function setField(item, target, data, field, options) {
   while (parts.length) {
     part = parts.shift();
     value = value[part];
+    if (isArray(value) && parts.length > 0) {
+      key = [...parts, key].join('.');
+      debug('setField with upper array', value, key);
+      break;
+    }
   }
-  if (!value) return; // nothing to setField
+
+  if (!value) {
+    warn(0, '<nothing-to-setField>');
+    return; // nothing to setField
+  }
 
   function warn(which, id) {
-    console.warn(' >>> WARN %d: setField %s/%s(id=%j) not found with item %s',
+    debug(' >>> WARN %d: setField %s/%s(id=%j) not found with item %s',
       which, target, field, id, item[options.idField]);
   }
 
@@ -82,7 +94,7 @@ export function setField(item, target, data, field, options) {
 
   if (isArray(value) && !value[key]) {
     value.forEach(function(v) {
-      let entry = v[key];
+      let entry = get(v, key);
       if(Array.isArray(entry)) {
         set(v, key, entry.map(it => {
           let id = options.serviceBy? it[options.idField] : it;
@@ -99,7 +111,7 @@ export function setField(item, target, data, field, options) {
     });
   } else {
     if (value && value[key]) {
-      let entry = value[key];
+      let entry = get(value, key);
       if (isArray(entry)) {
         set(item, target, entry.map(it => {
           let id = options.serviceBy? it[options.idField] : it;
