@@ -1,4 +1,4 @@
-import { map } from 'lodash';
+import _ from 'lodash';
 
 export function filterField(field, preset) {
   return hook => {
@@ -34,23 +34,42 @@ export function filter(target, options) {
     }
     
     let query = hook.params.query;
-    if (query && query[field] && query[field].$filter && field.indexOf('$') === -1) {
+    let filters = _.get(query, field);
+
+    if (filters) {
+      // in case of multiple filters query of same field
+      if (_.isArray(filters)) {
+        filters = _.filter(filters, it => it.$filter);
+      } else {
+        filters = [filters];
+      }
+
       const service = hook.app.service(options.service);
       if (!service) {
         throw new Error("No such service: " + options.service);
       }
       
-      let params = {};
-      params.query = query[field].$filter;
-      params.paginate = false;
-      //debug('service filter params %j', params);
-      return service.find(params).then(result => {
-        query[field] = { $in: map(result || result.data, 'id') };
+      let promises = _.map(filters, (filterField) => {
+        if (_.isObject(filterField.$filter)) {
+          return service.find({
+            query: filterField.$filter,
+            paginate: false,
+          });
+        } else {
+          return Promise.resolve([]);
+        }
+      });
+      return Promise.all(promises).then((results) => {
+        if (results) {
+          results.forEach((result) => {
+            result = result && result.data || result;
+            _.set(query, field, { $in: _.map(result, 'id') });
+          });
+        }
+        hook.params.query = query;
         //debug('service filter query', field, query[field]);
         return hook;
       });
-    } else {
-      return hook;
     }
   };
 }
