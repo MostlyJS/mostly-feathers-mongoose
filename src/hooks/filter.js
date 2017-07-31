@@ -56,14 +56,18 @@ export function filter(target, options) {
             paginate: false,
           });
         } else {
-          return Promise.resolve([]);
+          return Promise.resolve(filterField);
         }
       });
       return Promise.all(promises).then((results) => {
         if (results) {
           results.forEach((result) => {
-            result = result && result.data || result;
-            _.set(query, field, { $in: _.map(result, 'id') });
+            if (_.isObject(result)) {
+              result = result && result.data || result;
+              _.set(query, field, { $in: _.map(result, 'id') });
+            } else {
+              _.set(query, field, result);
+            }
           });
         }
         hook.params.query = query;
