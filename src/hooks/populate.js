@@ -117,8 +117,10 @@ export function populate(target, options) {
       if (isArray(entry)) {
         let service = options.service;
         let ids = entry;
-        if (options.serviceBy) {
-          if (entry[0] && entry[0][options.serviceBy]) {
+        if (options.serviceId) {
+          service = plural(entry[0].split(':')[0]);
+        } else if (options.serviceBy) {
+          if (entry[0][options.serviceBy]) {
             service = plural(entry[0][options.serviceBy]);
           } else {
             service = options.serviceBy;
@@ -132,7 +134,9 @@ export function populate(target, options) {
       } else {
         let service = options.service;
         let id = entry;
-        if (options.serviceBy) {
+        if (options.serviceId) {
+          service = plural(entry.split(':')[0]);
+        } else if (options.serviceBy) {
           if (entry[options.serviceBy]) {
             service = plural(entry[options.serviceBy]);
           } else {
