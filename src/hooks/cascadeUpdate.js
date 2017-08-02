@@ -3,16 +3,16 @@ import makeDebug from 'debug';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cascadeUpdate');
 
-export function cascadeUpdate(target, options) {
-  options = Object.assign({}, options);
-
-  if (!options.service) {
+export function cascadeUpdate(target, opts) {
+  if (!opts.service) {
     throw new Error('You need to provide a service');
   }
 
-  var field = options.field;
+  var field = opts.field;
 
   return function(hook) {
+    let options = Object.assign({}, opts);
+
     if (hook.type !== 'after') {
       throw new Error(`The 'cascadeUpdate' hook should only be used as a 'after' hook.`);
     }

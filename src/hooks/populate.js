@@ -60,14 +60,16 @@ function isPopulated(obj) {
  *
  * If 'senderId' is an array of keys, then 'sender' will be an array of populated items.
  */
-export function populate(target, options) {
-  options = Object.assign({}, defaultOptions, options);
+export function populate(target, opts) {
+  opts = Object.assign({}, defaultOptions, opts);
 
-  if (!options.service && !options.serviceBy) {
+  if (!opts.service && !opts.serviceBy && !opts.serviceId) {
     throw new Error('You need to provide a service');
   }
 
   return function(hook) {
+    let options = Object.assign({}, opts);  // clone for change
+
     // If it was an internal call then do not recursive populate
     options.recursive = !!hook.params.provider;
 
@@ -201,10 +203,11 @@ export function populate(target, options) {
   };
 }
 
-export function depopulate(target, options = { idField: 'id' }) {
-  options = Object.assign({}, options);
+export function depopulate(target, opts = { idField: 'id' }) {
 
   return function(hook) {
+    let options = Object.assign({}, opts);
+
     function getDepopulated(item, target) {
       let field = get(item, target);
       if (field === undefined) return undefined;

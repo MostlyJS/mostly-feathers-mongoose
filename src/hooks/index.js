@@ -2,24 +2,26 @@ import _ from 'lodash';
 import assert from 'assert';
 import makeDebug from 'debug';
 import Entity from 'mostly-entity';
-import { filter, filterField } from './filter';
-import { convertId } from './convertId';
 import { cascadeUpdate } from './cascadeUpdate';
+import { convertId } from './convertId';
+import { filter, filterField } from './filter';
 import { populate, depopulate } from './populate';
-import validation from './validation';
+import { publishEvent } from './publishEvent';
 import { restrictToAcls } from './restrict';
+import validation from './validation';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks');
 
 export {
-  convertId,
   cascadeUpdate,
+  convertId,
   depopulate,
   filter,
-  populate,
-  validation,
   filterField,
-  restrictToAcls
+  populate,
+  publishEvent,
+  restrictToAcls,
+  validation
 };
 
 // common hooks share all across services
