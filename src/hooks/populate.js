@@ -16,11 +16,11 @@ const defaultOptions = {
 function isPopulated(obj) {
   if (isArray(obj)) {
     return reduce(obj, (result, val) => {
-      return result && !validator.isMongoId(val.toString());
+      return result && val && !validator.isMongoId(val.toString());
     }, true);
   } else {
     if (obj) {
-      return !validator.isMongoId(obj.toString());
+      return obj && !validator.isMongoId(obj.toString());
     } else {
       return false;
     }

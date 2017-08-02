@@ -1,5 +1,5 @@
 import makeDebug from 'debug';
-import { cloneDeep, defaults, find, flatten, get, set, isArray, map, toString } from 'lodash';
+import { cloneDeep, compact, defaults, find, flatten, get, set, map } from 'lodash';
 import fp from 'ramda';
 import { plural } from 'pluralize';
 
@@ -11,14 +11,14 @@ export function getField(item, field) {
   let value = item, part;
   while (parts.length) {
     part = parts.shift();
-    if (isArray(value)) {
+    if (Array.isArray(value)) {
       value = map(value, part);
     } else {
       value = value? value[part] : null;
     }
   }
 
-  return Array.isArray(value) ? flatten(value) : value;
+  return Array.isArray(value) ? compact(flatten(value)) : value;
 }
 
 export function setFieldByKey(item, field, data) {
@@ -31,10 +31,10 @@ export function setFieldByKey(item, field, data) {
   }
   if (!value) return; // nothing to setField
 
-  if (isArray(value) && !value[key]) {
+  if (Array.isArray(value) && !value[key]) {
     value.forEach(function(v) {
       let id = v[key];
-      if (isArray(id)) {
+      if (Array.isArray(id)) {
         set(v, key, map(id, it => data[it] || it));
       } else {
         set(v, key, data[id] || id);
@@ -43,7 +43,7 @@ export function setFieldByKey(item, field, data) {
   } else {
     if (value && value[key]) {
       let id = value[key];
-      if (isArray(id)) {
+      if (Array.isArray(id)) {
         set(item, field, map(id, it => data[it] || it));
       } else {
         set(item, field, data[id] || id);
@@ -67,7 +67,7 @@ export function setField(item, target, data, field, options) {
   while (parts.length) {
     part = parts.shift();
     value = value[part];
-    if (isArray(value) && parts.length > 0) {
+    if (Array.isArray(value) && parts.length > 0) {
       key = [...parts, key].join('.');
       debug('setField with upper array', value, key);
       break;
@@ -86,15 +86,15 @@ export function setField(item, target, data, field, options) {
 
   // avoid duplicate setField
   function cloneById(v, k) {
-    if (isArray(v)) {
-      let match = find(v, it => toString(it[options.idField]) === toString(k));
+    if (Array.isArray(v)) {
+      let match = find(v, it => String(it[options.idField]) === String(k));
       return match ? cloneDeep(match) : (options.preserveValue ? k : null);
     } else {
-      return toString(v[options.idField]) === toString(k)? cloneDeep(v) : (options.preserveValue ? k : null);
+      return String(v[options.idField]) === String(k)? cloneDeep(v) : (options.preserveValue ? k : null);
     }
   }
 
-  if (isArray(value) && !value[key]) {
+  if (Array.isArray(value) && !value[key]) {
     value.forEach(function(v) {
       let entry = get(v, key);
       if(Array.isArray(entry)) {
@@ -114,7 +114,7 @@ export function setField(item, target, data, field, options) {
   } else {
     if (value && value[key]) {
       let entry = get(value, key);
-      if (isArray(entry)) {
+      if (Array.isArray(entry)) {
         set(item, target, entry.map(it => {
           let id = options.serviceBy? it[options.idField] : it;
           let clone = cloneById(data, id);
