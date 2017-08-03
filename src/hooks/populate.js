@@ -43,7 +43,7 @@ function populateField(hook, item, target, options) {
   //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
   //debug(' \n\twith: %j', item);
 
-  if (!options.serviceField && isPopulated(entry)) {
+  if (!options.path && isPopulated(entry)) {
     debug('==> %s already populate %s/%s, \n\tid: %j', options, target, field, entry);
     return Promise.resolve(item);
   }
@@ -70,11 +70,11 @@ function populateField(hook, item, target, options) {
   if (Array.isArray(entry)) {
     let service = options.service;
     let ids = entry;
-    if (options.serviceField) {
-      if (entry[0][options.serviceField]) {
-        service = plural(entry[0][options.serviceField]);
+    if (options.path) {
+      if (entry[0][options.path]) {
+        service = plural(entry[0][options.path]);
       } else {
-        service = options.serviceField;
+        service = options.path;
       }
       ids = fp.map(fp.prop(options.idField), entry);
       debug('populate service', service, ids);
@@ -85,11 +85,11 @@ function populateField(hook, item, target, options) {
   } else {
     let service = options.service;
     let id = entry;
-    if (options.serviceField) {
-      if (entry[options.serviceField]) {
-        service = plural(entry[options.serviceField]);
+    if (options.path) {
+      if (entry[options.path]) {
+        service = plural(entry[options.path]);
       } else {
-        service = options.serviceField;
+        service = options.path;
       }
       id = entry[options.idField];
       debug('populate service', service, id);
@@ -163,7 +163,7 @@ function populateField(hook, item, target, options) {
 export function populate(target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  if (!opts.service && !opts.serviceField) {
+  if (!opts.service && !opts.path) {
     throw new Error('You need to provide a service');
   }
 
