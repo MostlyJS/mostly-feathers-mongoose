@@ -52,7 +52,6 @@ function populateField(hook, item, target, options) {
     }
 
     options.path = '_type';
-    // options.retained = false;
     if (Array.isArray(entry)) {
       entry = fp.map((it) => getPath(it), entry);
       item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
@@ -68,6 +67,8 @@ function populateField(hook, item, target, options) {
     debug('==> %s already populate %s/%s, \n\tid: %j', options, target, field, entry);
     return Promise.resolve(item);
   }
+
+  assert(options.service || options.path, 'You need to provide a service or path');
 
   // If it's a mongoose model then
   if (typeof item.toObject === 'function') {
