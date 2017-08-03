@@ -99,15 +99,15 @@ export function setField(item, target, data, field, options) {
       let entry = get(v, key);
       if(Array.isArray(entry)) {
         set(v, key, entry.map(it => {
-          let id = options.serviceBy? it[options.idField] : it;
+          let id = options.serviceField? it[options.idField] : it;
           let clone = cloneById(data, id);
-          return options.serviceBy? defaults(it, clone) : clone;
+          return options.serviceField? defaults(it, clone) : clone;
         }));
         if (!get(v, key)) warn(1, entry);
       } else {
-        let id = options.serviceBy? entry[options.idField] : entry;
+        let id = options.serviceField? entry[options.idField] : entry;
         let clone = cloneById(data, id);
-        set(v, key, options.serviceBy? defaults(entry, clone) : clone);
+        set(v, key, options.serviceField? defaults(entry, clone) : clone);
         if (!get(v, key)) warn(2, entry);
       }
     });
@@ -116,15 +116,15 @@ export function setField(item, target, data, field, options) {
       let entry = get(value, key);
       if (Array.isArray(entry)) {
         set(item, target, entry.map(it => {
-          let id = options.serviceBy? it[options.idField] : it;
+          let id = options.serviceField? it[options.idField] : it;
           let clone = cloneById(data, id);
-          return options.serviceBy? defaults(it, clone) : clone;
+          return options.serviceField? defaults(it, clone) : clone;
         }));
         if (!get(item, target)) warn(3, entry);
       } else {
-        let id = options.serviceBy? entry[options.idField] : entry;
+        let id = options.serviceField? entry[options.idField] : entry;
         let clone = cloneById(data, id);
-        set(item, target, options.serviceBy? defaults(entry, clone) : clone);
+        set(item, target, options.serviceField? defaults(entry, clone) : clone);
         if (!get(item, target)) warn(4, entry);
       }
     } else {

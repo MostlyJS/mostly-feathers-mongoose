@@ -14,17 +14,10 @@ const defaultOptions = {
 };
 
 function isPopulated(obj) {
-  if (Array.isArray(obj)) {
-    return fp.reduce((result, val) => {
-      return result && val && !validator.isMongoId(val.toString());
-    }, true, obj);
-  } else {
-    if (obj) {
-      return obj && !validator.isMongoId(obj.toString());
-    } else {
-      return false;
-    }
-  }
+  const isPlain = (val) => val && !(fp.is(String, val) || validator.isMongoId(val.toString()));
+  return fp.reduce((result, val) => {
+    return result && isPlain(val)
+  }, true, [].concat(obj));
 }
 
 function populateField(hook, item, target, options) {
@@ -50,7 +43,7 @@ function populateField(hook, item, target, options) {
   //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
   //debug(' \n\twith: %j', item);
 
-  if (!options.serviceBy && isPopulated(entry)) {
+  if (!options.serviceField && isPopulated(entry)) {
     debug('==> %s already populate %s/%s, \n\tid: %j', options, target, field, entry);
     return Promise.resolve(item);
   }
@@ -77,11 +70,11 @@ function populateField(hook, item, target, options) {
   if (Array.isArray(entry)) {
     let service = options.service;
     let ids = entry;
-    if (options.serviceBy) {
-      if (entry[0][options.serviceBy]) {
-        service = plural(entry[0][options.serviceBy]);
+    if (options.serviceField) {
+      if (entry[0][options.serviceField]) {
+        service = plural(entry[0][options.serviceField]);
       } else {
-        service = options.serviceBy;
+        service = options.serviceField;
       }
       ids = fp.map(fp.prop(options.idField), entry);
       debug('populate service', service, ids);
@@ -92,11 +85,11 @@ function populateField(hook, item, target, options) {
   } else {
     let service = options.service;
     let id = entry;
-    if (options.serviceBy) {
-      if (entry[options.serviceBy]) {
-        service = plural(entry[options.serviceBy]);
+    if (options.serviceField) {
+      if (entry[options.serviceField]) {
+        service = plural(entry[options.serviceField]);
       } else {
-        service = options.serviceBy;
+        service = options.serviceField;
       }
       id = entry[options.idField];
       debug('populate service', service, id);
@@ -170,7 +163,7 @@ function populateField(hook, item, target, options) {
 export function populate(target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  if (!opts.service && !opts.serviceBy) {
+  if (!opts.service && !opts.serviceField) {
     throw new Error('You need to provide a service');
   }
 
