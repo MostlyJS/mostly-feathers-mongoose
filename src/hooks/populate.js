@@ -1,8 +1,8 @@
 import assert from 'assert';
 import makeDebug from 'debug';
 import errors from 'feathers-errors';
-import { compact, flatten, flattenDeep, get, isArray, map, reduce, set } from 'lodash';
 import { plural } from 'pluralize';
+import fp from 'ramda';
 import validator from 'validator';
 import util from 'util';
 import { getField, setField, setFieldByKey } from '../helpers';
@@ -14,10 +14,10 @@ const defaultOptions = {
 };
 
 function isPopulated(obj) {
-  if (isArray(obj)) {
-    return reduce(obj, (result, val) => {
+  if (Array.isArray(obj)) {
+    return fp.reduce((result, val) => {
       return result && val && !validator.isMongoId(val.toString());
-    }, true);
+    }, true, obj);
   } else {
     if (obj) {
       return obj && !validator.isMongoId(obj.toString());
@@ -25,6 +25,113 @@ function isPopulated(obj) {
       return false;
     }
   }
+}
+
+function populateField(hook, item, target, options) {
+  let field = options.field || target;
+
+  // Find by the field value by default or a custom query
+  let entry = null;
+  if (Array.isArray(item)) {
+    entry = fp.compose(
+      fp.filter(fp.isNil),
+      fp.flatten,
+      fp.map(it => getField(it, field))
+    )(item);
+  } else {
+    entry = getField(item, field);
+  }
+
+  // invalid entry id
+  if (!entry || entry.length === 0) {
+    return Promise.resolve(item);
+  }
+
+  //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
+  //debug(' \n\twith: %j', item);
+
+  if (!options.serviceBy && isPopulated(entry)) {
+    debug('==> %s already populate %s/%s, \n\tid: %j', options, target, field, entry);
+    return Promise.resolve(item);
+  }
+
+  // If it's a mongoose model then
+  if (typeof item.toObject === 'function') {
+    item = item.toObject(options);
+  }
+  // If it's a Sequelize model
+  else if (typeof item.toJSON === 'function') {
+    item = item.toJSON(options);
+  }
+  // Remove any query from params as it's not related
+  let params = {}; // Object.assign({}, hook.params, { query: undefined });
+  //console.log('populate:', field, entry, params);
+
+  params.populate = options.recursive; // recursive populate
+  params.softDelete = options.softDelete || false; // enforce destroyedAt
+
+  // If the relationship is an array of ids, fetch and resolve an object for each,
+  // otherwise just fetch the object.
+  let promise = null;
+
+  if (Array.isArray(entry)) {
+    let service = options.service;
+    let ids = entry;
+    if (options.serviceBy) {
+      if (entry[0][options.serviceBy]) {
+        service = plural(entry[0][options.serviceBy]);
+      } else {
+        service = options.serviceBy;
+      }
+      ids = fp.map(fp.prop(options.idField), entry);
+      debug('populate service', service, ids);
+    }
+    params.query = { _id: { $in: ids } };
+    params.paginate = false; // disable paginate
+    promise = hook.app.service(service).find(params);
+  } else {
+    let service = options.service;
+    let id = entry;
+    if (options.serviceBy) {
+      if (entry[options.serviceBy]) {
+        service = plural(entry[options.serviceBy]);
+      } else {
+        service = options.serviceBy;
+      }
+      id = entry[options.idField];
+      debug('populate service', service, id);
+    }
+    promise = hook.app.service(service).get(id, params);
+  }
+  return promise.then(result => {
+    let data = result.data || result;
+    // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
+    if (Array.isArray(item)) {
+      item.forEach(it => setField(it, target, data, field, options));
+    } else {
+      setField(item, target, data, field, options);
+    }
+
+    // try nested populate(s)
+    if (options.populate) {
+      let pPopulates = Array.isArray(options.populate)? options.populate : [options.populate];
+      let pPromises = fp.reduce((promises, pOptions) => {
+        let pItem = fp.flatten(getField(item, field));
+        let pTarget = pOptions.target || pOptions.field;
+        //debug('>>> nested populate %s/%s(options=%s) with %s',
+        //  pTarget, pOptions.field, util.inspect(pOptions), util.inspect(pItem));
+        promises.push(populateField(pItem, pTarget, pOptions));
+        return promises;
+      }, [], pPopulates);
+      return Promise.all(pPromises).then(() => item);
+    } else {
+      return item;
+    }
+  }).catch(function(err) {
+    console.error(" ERROR: populate %s error %s", options.service, util.inspect(err));
+    setField(item, target, {}, field, options);
+    return item;
+  });
 }
 
 /**
@@ -63,7 +170,7 @@ function isPopulated(obj) {
 export function populate(target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  if (!opts.service && !opts.serviceBy && !opts.serviceId) {
+  if (!opts.service && !opts.serviceBy) {
     throw new Error('You need to provide a service');
   }
 
@@ -72,113 +179,6 @@ export function populate(target, opts) {
 
     // If it was an internal call then do not recursive populate
     options.recursive = !!hook.params.provider;
-
-    function populate(item, target, options) {
-      let field = options.field || target;
-
-      // Find by the field value by default or a custom query
-      let entry = null;
-      if (isArray(item)) {
-        entry = compact(flattenDeep(map(item, i => getField(i, field))));
-      } else {
-        entry = getField(item, field);
-      }
-
-      // invalid entry id
-      if (!entry || entry.length === 0) {
-        return Promise.resolve(item);
-      }
-
-      //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
-      //debug(' \n\twith: %j', item);
-
-      if (!options.serviceBy && isPopulated(entry)) {
-        debug('==> %s already populate %s/%s, \n\tid: %j', options, target, field, entry);
-        return Promise.resolve(item);
-      }
-
-      // If it's a mongoose model then
-      if (typeof item.toObject === 'function') {
-        item = item.toObject(options);
-      }
-      // If it's a Sequelize model
-      else if (typeof item.toJSON === 'function') {
-        item = item.toJSON(options);
-      }
-      // Remove any query from params as it's not related
-      let params = {}; // Object.assign({}, hook.params, { query: undefined });
-      //console.log('populate:', field, entry, params);
-
-      params.populate = options.recursive; // recursive populate
-      params.softDelete = options.softDelete || false; // enforce destroyedAt
-
-      // If the relationship is an array of ids, fetch and resolve an object for each,
-      // otherwise just fetch the object.
-      let promise = null;
-
-      if (isArray(entry)) {
-        let service = options.service;
-        let ids = entry;
-        if (options.serviceId) {
-          service = plural(entry[0].split(':')[0]);
-        } else if (options.serviceBy) {
-          if (entry[0][options.serviceBy]) {
-            service = plural(entry[0][options.serviceBy]);
-          } else {
-            service = options.serviceBy;
-          }
-          ids = entry.map(it => it[options.idField]);
-          debug('populate service', service, ids);
-        }
-        params.query = { _id: { $in: ids } };
-        params.paginate = false; // disable paginate
-        promise = hook.app.service(service).find(params);
-      } else {
-        let service = options.service;
-        let id = entry;
-        if (options.serviceId) {
-          service = plural(entry.split(':')[0]);
-        } else if (options.serviceBy) {
-          if (entry[options.serviceBy]) {
-            service = plural(entry[options.serviceBy]);
-          } else {
-            service = options.serviceBy;
-          }
-          id = entry[options.idField];
-          debug('populate service', service, id);
-        }
-        promise = hook.app.service(service).get(id, params);
-      }
-      return promise.then(result => {
-        let data = result.data || result;
-        // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
-        if (isArray(item)) {
-          item.forEach(it => setField(it, target, data, field, options));
-        } else {
-          setField(item, target, data, field, options);
-        }
-
-        // try nested populate(s)
-        if (options.populate) {
-          let pPopulates = isArray(options.populate)? options.populate : [options.populate];
-          let pPromises = reduce(pPopulates, (promises, pOptions) => {
-            let pItem = flatten(getField(item, field));
-            let pTarget = pOptions.target || pOptions.field;
-            //debug('>>> nested populate %s/%s(options=%s) with %s',
-            //  pTarget, pOptions.field, util.inspect(pOptions), util.inspect(pItem));
-            promises.push(populate(pItem, pTarget, pOptions));
-            return promises;
-          }, []);
-          return Promise.all(pPromises).then(() => item);
-        } else {
-          return item;
-        }
-      }).catch(function(err) {
-        console.error(" ERROR: populate %s error %s", options.service, util.inspect(err));
-        setField(item, target, {}, field, options);
-        return item;
-      });
-    }
 
     if (hook.type !== 'after') {
       throw new errors.GeneralError('Can not populate on before hook. (populate)');
@@ -189,9 +189,9 @@ export function populate(target, opts) {
     let isPaginated = hook.method === 'find' && hook.result.data;
     let data = isPaginated ? hook.result.data : hook.result;
 
-    if (isArray(data) && data.length === 0) return hook;
-
-    return populate(data, target, options).then(result => {
+    if (Array.isArray(data) && data.length === 0) return hook;
+    
+    return populateField(hook, data, target, options).then(result => {
       //debug('> populate result', util.inspect(result));
       if (isPaginated) {
         hook.result.data = result;
@@ -209,10 +209,10 @@ export function depopulate(target, opts = { idField: 'id' }) {
     let options = Object.assign({}, opts);
 
     function getDepopulated(item, target) {
-      let field = get(item, target);
+      let field = fp.prop(target, item);
       if (field === undefined) return undefined;
-      if (isArray(field)) {
-        field = map(field, it => it[options.idField] || it);
+      if (Array.isArray(field)) {
+        field = fp.map((it) => it[options.idField] || it, field);
       } else if (field) {
         field = field[options.idField] || field;
       }
@@ -221,18 +221,18 @@ export function depopulate(target, opts = { idField: 'id' }) {
 
     function setTarget(data, target, value) {
       if (value !== undefined) {
-        set(data, target, value);
+        return fp.assocPath(target.split('.'), value, data);
       }
     }
 
     if (hook.type === 'before') {
-      setTarget(hook.data, target, getDepopulated(hook.data, target));
+      hook.data = setTarget(hook.data, target, getDepopulated(hook.data, target));
     } else {
       if (hook.result) {
         if (hook.result.data) {
-          setTarget(hook.result.data, target, getDepopulated(hook.result.data, target));
+          hook.result.data = setTarget(hook.result.data, target, getDepopulated(hook.result.data, target));
         } else {
-          setTarget(hook.result, target, getDepopulated(hook.result, target));
+          hook.result = setTarget(hook.result, target, getDepopulated(hook.result, target));
         }
       }
     }
