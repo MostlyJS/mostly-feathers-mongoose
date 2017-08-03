@@ -27,7 +27,7 @@ function populateField(hook, item, target, options) {
   let entry = null;
   if (Array.isArray(item)) {
     entry = fp.compose(
-      fp.filter(fp.isNil),
+      fp.reject(fp.isNil),
       fp.flatten,
       fp.map(it => getField(it, field))
     )(item);
@@ -68,20 +68,24 @@ function populateField(hook, item, target, options) {
   let promise = null;
 
   if (Array.isArray(entry)) {
-    let service = options.service;
-    let ids = entry;
+    let services = [];
     if (options.path) {
-      if (entry[0][options.path]) {
-        service = plural(entry[0][options.path]);
-      } else {
-        service = options.path;
-      }
-      ids = fp.map(fp.prop(options.idField), entry);
-      debug('populate service', service, ids);
+      let entries = fp.groupBy(fp.prop(options.path), entry);
+      services = fp.map((entry) => {
+        return fp.map(fp.prop(options.idField), entry);
+      }, entries);
+      debug('populate services', services);
+    } else {
+      services = {
+        [options.service]: entry
+      };
     }
-    params.query = { _id: { $in: ids } };
     params.paginate = false; // disable paginate
-    promise = hook.app.service(service).find(params);
+    promise = Promise.all(fp.map((service) => {
+      let groupParams = Object.assign({}, params);
+      groupParams.query = { _id: { $in: services[service] } };
+      return hook.app.service(plural(service)).find(groupParams);
+    }, Object.keys(services)));
   } else {
     let service = options.service;
     let id = entry;
@@ -96,8 +100,12 @@ function populateField(hook, item, target, options) {
     }
     promise = hook.app.service(service).get(id, params);
   }
-  return promise.then(result => {
-    let data = result.data || result;
+  return promise.then((results) => {
+    debug('services found', results);
+    let data = results.data || results;
+    if (Array.isArray(results)) {
+      data = fp.flatten(fp.map(result => result.data || result, results));
+    }
     // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
     if (Array.isArray(item)) {
       item.forEach(it => setField(it, target, data, field, options));
