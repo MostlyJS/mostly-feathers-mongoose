@@ -88,9 +88,9 @@ export function setField(item, target, data, field, options) {
   function cloneById(v, k) {
     if (Array.isArray(v)) {
       let match = find(v, it => String(it[options.idField]) === String(k));
-      return match ? cloneDeep(match) : (options.preserveValue ? k : null);
+      return match ? cloneDeep(match) : (options.preserveOrigin ? k : null);
     } else {
-      return String(v[options.idField]) === String(k)? cloneDeep(v) : (options.preserveValue ? k : null);
+      return String(v[options.idField]) === String(k)? cloneDeep(v) : (options.preserveOrigin ? k : null);
     }
   }
 
@@ -101,13 +101,13 @@ export function setField(item, target, data, field, options) {
         set(v, key, entry.map(it => {
           let id = options.path? it[options.idField] : it;
           let clone = cloneById(data, id);
-          return options.path? defaults(it, clone) : clone;
+          return options.retained? defaults(it, clone) : clone;
         }));
         if (!get(v, key)) warn(1, entry);
       } else {
         let id = options.path? entry[options.idField] : entry;
         let clone = cloneById(data, id);
-        set(v, key, options.path? defaults(entry, clone) : clone);
+        set(v, key, options.retained? defaults(entry, clone) : clone);
         if (!get(v, key)) warn(2, entry);
       }
     });
@@ -118,13 +118,13 @@ export function setField(item, target, data, field, options) {
         set(item, target, entry.map(it => {
           let id = options.path? it[options.idField] : it;
           let clone = cloneById(data, id);
-          return options.path? defaults(it, clone) : clone;
+          return options.retained? defaults(it, clone) : clone;
         }));
         if (!get(item, target)) warn(3, entry);
       } else {
         let id = options.path? entry[options.idField] : entry;
         let clone = cloneById(data, id);
-        set(item, target, options.path? defaults(entry, clone) : clone);
+        set(item, target, options.retained? defaults(entry, clone) : clone);
         if (!get(item, target)) warn(4, entry);
       }
     } else {

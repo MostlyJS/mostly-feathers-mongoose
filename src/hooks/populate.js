@@ -10,7 +10,8 @@ import { getField, setField, setFieldByKey } from '../helpers';
 const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');
 
 const defaultOptions = {
-  idField: 'id'
+  idField: 'id',
+  retained: true // retain existing field when populate as path
 };
 
 function isPopulated(obj) {
@@ -40,6 +41,25 @@ function populateField(hook, item, target, options) {
     return Promise.resolve(item);
   }
 
+  // id with service `document:1`, convert as options.path
+  if (!options.path && !options.service) {
+    function getPath(value) {
+      if (value.indexOf(':') > 0) {
+        let [path, id] = value.split(':');
+        return { _id: value, _type: path, [options.idField]: id };
+      }
+      return value;
+    }
+
+    options.path = '_type';
+    if (Array.isArray(entry)) {
+      entry = fp.map((it) => getPath(it), entry);
+      item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
+    } else {
+      entry = getPath(entry);
+      setField(item, field, entry, field, { idField: '_id' });
+    }
+  }
   //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
   //debug(' \n\twith: %j', item);
 
@@ -170,10 +190,6 @@ function populateField(hook, item, target, options) {
  */
 export function populate(target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
-
-  if (!opts.service && !opts.path) {
-    throw new Error('You need to provide a service');
-  }
 
   return function(hook) {
     let options = Object.assign({}, opts);  // clone for change
