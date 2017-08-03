@@ -11,7 +11,7 @@ const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');
 
 const defaultOptions = {
   idField: 'id',
-  retained: true // retain existing field when populate as path
+  retained: false // retain existing field when populate as path
 };
 
 function isPopulated(obj) {
@@ -242,6 +242,7 @@ export function depopulate(target, opts = { idField: 'id' }) {
       if (value !== undefined) {
         return fp.assocPath(target.split('.'), value, data);
       }
+      return data;
     }
 
     if (hook.type === 'before') {
@@ -254,9 +255,6 @@ export function depopulate(target, opts = { idField: 'id' }) {
           hook.result = setTarget(hook.result, target, getDepopulated(hook.result, target));
         }
       }
-    }
-    if (target === 'parent') {
-      debug('depopulate parent', hook.data.parent, typeof hook.data.parent, hook.data);
     }
     return hook;
   };

@@ -5,6 +5,7 @@ import Entity from 'mostly-entity';
 import { cascadeUpdate } from './cascadeUpdate';
 import { convertId } from './convertId';
 import { filter, filterField } from './filter';
+import { isAction } from './isAction';
 import { populate, depopulate } from './populate';
 import { publishEvent } from './publishEvent';
 import { restrictToAcls } from './restrict';
@@ -18,6 +19,7 @@ export {
   depopulate,
   filter,
   filterField,
+  isAction,
   populate,
   publishEvent,
   restrictToAcls,
