@@ -52,6 +52,7 @@ function populateField(hook, item, target, options) {
     }
 
     options.path = '_type';
+    // options.retained = false;
     if (Array.isArray(entry)) {
       entry = fp.map((it) => getPath(it), entry);
       item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
