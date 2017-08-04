@@ -41,6 +41,25 @@ function populateField(hook, item, target, options) {
     return Promise.resolve(item);
   }
 
+  // absolute path for the service
+  if (options.path && options.path.startsWith('@')) {
+    function getPath(value) {
+      return {
+        _type: getField(value, options.path.substr(1)),
+        [options.idField]: getField(value, field)
+      };
+    }
+
+    options.path = '_type';
+    if (Array.isArray(item)) {
+      entry = fp.map(getPath, item);
+      item.forEach((it) => setField(it, field, entry, field, { idField: options.idField }));
+    } else {
+      entry = getPath(item);
+      setField(item, field, entry, field, { idField: options.idField });
+    }
+  }
+
   // id with service `document:1`, convert as options.path
   if (!options.path && !options.service) {
     function getPath(value) {
@@ -53,13 +72,14 @@ function populateField(hook, item, target, options) {
 
     options.path = '_type';
     if (Array.isArray(entry)) {
-      entry = fp.map((it) => getPath(it), entry);
+      entry = fp.map(getPath, entry);
       item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
     } else {
       entry = getPath(entry);
       setField(item, field, entry, field, { idField: '_id' });
     }
   }
+
   //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
   //debug(' \n\twith: %j', item);
 

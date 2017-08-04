@@ -171,14 +171,14 @@ export function populateByService(app, idField, typeField, options = {}) {
   return (list) => {
     let types = fp.groupBy(fp.prop(typeField), list);
     return Promise.all(
-      Object.keys(types).map((type) => {
+      fp.map((type) => {
         let entries = types[type];
         return app.service(plural(type)).find(Object.assign({
           query: {
             _id: { $in: fp.map(fp.prop(idField), entries) },
           }
         }, options));
-      })
+      }, Object.keys(types))
     ).then((results) => {
       return fp.pipe(
         fp.map(fp.prop('data')),
