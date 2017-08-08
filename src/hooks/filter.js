@@ -40,7 +40,7 @@ export function filter(target, opts) {
     if (filters) {
       // in case of multiple filters query of same field
       if (_.isArray(filters)) {
-        filters = _.filter(filters, it => it.$filter);
+        filters = _.filter(filters, it => it.$filter || it);
       } else {
         filters = [filters];
       }
@@ -62,16 +62,25 @@ export function filter(target, opts) {
       });
       return Promise.all(promises).then((results) => {
         if (results) {
-          results.forEach((result) => {
+          let conditions = _.map(results, result => {
             if (_.isObject(result)) {
-              result = result && result.data || result;
-              _.set(query, field, { $in: _.map(result, 'id') });
+              return { $in: _.map(result.data || result, 'id') };
             } else {
-              _.set(query, field, result);
+              return result;
             }
           });
+          if (conditions.length > 1) {
+            conditions = _.map(conditions, cond => {
+              return { [field]: cond };
+            });
+            let newQuery = _.omit(query, field);
+            newQuery.$and = (query.$and || []).concat(conditions);
+            hook.params.query = newQuery;
+          } else {
+            _.set(query, field, conditions.length > 0? conditions[0] : undefined);
+            hook.params.query = query;
+          }
         }
-        hook.params.query = query;
         //debug('service filter query', field, query[field]);
         return hook;
       });
