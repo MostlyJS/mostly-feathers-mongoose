@@ -38,9 +38,15 @@ export function filter(target, opts) {
     let filters = _.get(query, field);
 
     if (filters) {
-      // in case of multiple filters query of same field
+      // in case of multiple filters query of same field, order matters
       if (_.isArray(filters)) {
-        filters = _.filter(filters, it => it.$filter || it);
+        filters = _.filter(filters, it => {
+          return it.$filter || it;
+        });
+      } else if (_.isObject(filters)) {
+        filters = _.map(Object.keys(filters), key => {
+          return filters[key] !== true? { [key]: filters[key] } : key;
+        });
       } else {
         filters = [filters];
       }
