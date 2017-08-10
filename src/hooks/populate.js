@@ -98,8 +98,10 @@ function populateField(hook, item, target, options) {
   else if (typeof item.toJSON === 'function') {
     item = item.toJSON(options);
   }
-  // Remove any query from params as it's not related
-  let params = {}; // Object.assign({}, hook.params, { query: undefined });
+  // Fall through the hook.params ?
+  let params = options.fallThrough
+    ? Object.assign({}, hook.params, { query: undefined })
+    : {};
   //console.log('populate:', field, entry, params);
 
   params.populate = options.recursive; // recursive populate
