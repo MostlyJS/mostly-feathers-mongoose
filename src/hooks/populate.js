@@ -50,7 +50,6 @@ function populateField(hook, item, target, options) {
       };
     }
 
-    options.path = '_type';
     if (Array.isArray(item)) {
       entry = fp.map(getPath, item);
       item.forEach((it) => setField(it, field, entry, field, { idField: options.idField }));
@@ -58,6 +57,7 @@ function populateField(hook, item, target, options) {
       entry = getPath(item);
       setField(item, field, entry, field, { idField: options.idField });
     }
+    options.path = '_type';
   }
 
   // id with service `document:1`, convert as options.path
@@ -70,7 +70,6 @@ function populateField(hook, item, target, options) {
       return value;
     }
 
-    options.path = '_type';
     if (Array.isArray(entry)) {
       entry = fp.map(getPath, entry);
       item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
@@ -78,6 +77,7 @@ function populateField(hook, item, target, options) {
       entry = getPath(entry);
       setField(item, field, entry, field, { idField: '_id' });
     }
+    options.path = '_type';
   }
 
   //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
