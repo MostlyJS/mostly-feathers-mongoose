@@ -70,7 +70,11 @@ export function filter(target, opts) {
         if (results) {
           let conditions = _.map(results, result => {
             if (_.isObject(result)) {
-              return { $in: _.map(result.data || result, 'id') };
+              return {
+                $in: _.flatMap(result.data || result, (it) => {
+                  return it.id || it;
+                })
+              };
             } else {
               return result;
             }
