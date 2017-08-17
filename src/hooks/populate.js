@@ -14,14 +14,14 @@ const defaultOptions = {
   retained: false // retain existing field when populate as path
 };
 
-function isPopulated(obj) {
+function isPopulated (obj) {
   const isPlain = (val) => val && !(fp.is(String, val) || validator.isMongoId(val.toString()));
   return fp.reduce((result, val) => {
     return result && isPlain(val)
   }, true, [].concat(obj));
 }
 
-function populateField(hook, item, target, options) {
+function populateField (hook, item, target, options) {
   let field = options.field || target;
 
   // Find by the field value by default or a custom query
@@ -212,7 +212,7 @@ function populateField(hook, item, target, options) {
  *
  * If 'senderId' is an array of keys, then 'sender' will be an array of populated items.
  */
-export function populate(target, opts) {
+export function populate (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return function(hook) {
@@ -244,7 +244,7 @@ export function populate(target, opts) {
   };
 }
 
-export function depopulate(target, opts = { idField: 'id' }) {
+export function depopulate (target, opts = { idField: 'id' }) {
 
   return function(hook) {
     let options = Object.assign({}, opts);
