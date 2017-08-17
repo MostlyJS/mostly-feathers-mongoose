@@ -112,8 +112,8 @@ export class Service extends BaseService {
 
     // TODO secure action call by find
     if (this[action] && defaultMethods.indexOf(action) < 0) {
-      let params2 = fp.dissoc('__action', params);
-      return this._action(action, null, {}, params2);
+      params = fp.dissoc('__action', params);
+      return this._action(action, null, {}, params);
     }
     throw new Error("No such **find** action: " + action);
   }
@@ -127,8 +127,8 @@ export class Service extends BaseService {
     // check if id is action for find
     if (id && !action) {
       if (this[id] && defaultMethods.indexOf(id) < 0) {
-        let params2 = fp.assoc('__action', id, params);
-        return this.find(params2);
+        params = fp.assoc('__action', id, params);
+        return this.find(params);
       }
     }
 
@@ -139,8 +139,8 @@ export class Service extends BaseService {
 
     // TODO secure action call by get
     if (this[action] && defaultMethods.indexOf(action) < 0) {
-      let params2 = fp.dissoc('__action', params);
-      return this._action(action, id, {}, params2);
+      params = fp.dissoc('__action', params);
+      return this._action(action, id, {}, params);
     }
     throw new Error("No such **get** action: " + action);
   }
@@ -160,8 +160,8 @@ export class Service extends BaseService {
 
     // TODO secure action call by get
     if (this[action] && defaultMethods.indexOf(action) < 0) {
-      let params2 = fp.dissoc('__action', params);
-      return this._action(action, null, data, params2);
+      params = fp.dissoc('__action', params);
+      return this._action(action, null, data, params);
     } else {
       throw new Error("No such **create** action: " + action);
     }
@@ -180,8 +180,8 @@ export class Service extends BaseService {
     
     // TODO secure action call by get
     if (this[action] && defaultMethods.indexOf(action) < 0) {
-      let params2 = fp.dissoc('__action', params);
-      return this._action(action, id, data, params2);
+      params = fp.dissoc('__action', params);
+      return this._action(action, id, data, params);
     } else {
       throw new Error("No such **put** action: " + action);
     }
@@ -200,8 +200,8 @@ export class Service extends BaseService {
     // TODO secure action call by get
     if (this[action] && defaultMethods.indexOf(action) < 0) {
       debug('service %s patch %j', this.name, id);
-      let params2 = fp.dissoc('__action', params);
-      return this._action(action, id, data, params2);
+      params = fp.dissoc('__action', params);
+      return this._action(action, id, data, params);
     } else {
       throw new Error("No such **patch** action: " + action);
     }
@@ -215,8 +215,8 @@ export class Service extends BaseService {
     if (!action || action === 'remove') {
       if (params.query.$soft) {
         debug('service %s remove soft %j', this.name, id);
-        let params2 = fp.dissocPath(['query', '$soft'], params);
-        return super.patch(id, { destroyedAt: new Date() }, params2).then(transform);
+        params = fp.dissocPath(['query', '$soft'], params);
+        return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
       } else {
         debug('service %s remove %j', this.name, id);
         return super.remove(id, params).then(transform);
@@ -224,9 +224,9 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by get
-    if (action === 'restore') {
-      let params2 = fp.dissoc('__action', params);
-      return this.restore(id, params2);
+    if (id && action === 'restore') {
+      params = fp.dissoc('__action', params);
+      return this.restore(id, params);
     } else {
       throw new Error("No such **remove** action: " + action);
     }
