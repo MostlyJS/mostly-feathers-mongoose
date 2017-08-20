@@ -113,7 +113,7 @@ export class Service extends BaseService {
     // TODO secure action call by find
     if (this[action] && defaultMethods.indexOf(action) < 0) {
       params = fp.dissoc('__action', params);
-      return this._action(action, null, {}, params);
+      return this.action('find', action, null, {}, params);
     }
     throw new Error("No such **find** action: " + action);
   }
@@ -140,7 +140,7 @@ export class Service extends BaseService {
     // TODO secure action call by get
     if (this[action] && defaultMethods.indexOf(action) < 0) {
       params = fp.dissoc('__action', params);
-      return this._action(action, id, {}, params);
+      return this.action('get', action, id, {}, params);
     }
     throw new Error("No such **get** action: " + action);
   }
@@ -161,7 +161,7 @@ export class Service extends BaseService {
     // TODO secure action call by get
     if (this[action] && defaultMethods.indexOf(action) < 0) {
       params = fp.dissoc('__action', params);
-      return this._action(action, null, data, params);
+      return this.action('create', action, null, data, params);
     } else {
       throw new Error("No such **create** action: " + action);
     }
@@ -181,7 +181,7 @@ export class Service extends BaseService {
     // TODO secure action call by get
     if (this[action] && defaultMethods.indexOf(action) < 0) {
       params = fp.dissoc('__action', params);
-      return this._action(action, id, data, params);
+      return this.action('update', action, id, data, params);
     } else {
       throw new Error("No such **put** action: " + action);
     }
@@ -201,7 +201,7 @@ export class Service extends BaseService {
     if (this[action] && defaultMethods.indexOf(action) < 0) {
       debug('service %s patch %j', this.name, id);
       params = fp.dissoc('__action', params);
-      return this._action(action, id, data, params);
+      return this.action('patch', action, id, data, params);
     } else {
       throw new Error("No such **patch** action: " + action);
     }
@@ -209,11 +209,12 @@ export class Service extends BaseService {
 
   remove(id, params) {
     if (id === 'null') id = null;
+    params = params || {};
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
     const action = params.__action;
     if (!action || action === 'remove') {
-      if (params.query.$soft) {
+      if (params.query && params.query.$soft) {
         debug('service %s remove soft %j', this.name, id);
         params = fp.dissocPath(['query', '$soft'], params);
         return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
@@ -232,9 +233,10 @@ export class Service extends BaseService {
     }
   }
 
-  _action(action, id, data, params) {
+  action(method, action, id, data, params) {
     debug(' => %s action %s with %j', this.name, action, id, data);
-    assert(this[action], 'No such action method: ' + action);
+    assert(defaultMethods.indexOf(method) > -1 && this[action],
+      'No such action method: ' + method + '->' + action);
 
     // delete params.provider;
     let query = id? this.get(id, params) : Promise.resolve(null);
@@ -252,7 +254,7 @@ export class Service extends BaseService {
   // some reserved actions
 
   upsert(data, params) {
-    params = params || {};
+    params = params || { query: {} };
     let query = params.query || data;  // default find by input data
     return this.Model.findOneAndUpdate(query, data, { upsert: true, new: true })
       .lean()
