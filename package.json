@@ -27,7 +27,7 @@
     "debug": "^2.6.6",
     "feathers-commons": "^0.8.7",
     "feathers-errors": "^2.8.0",
-    "feathers-mongoose": "^5.1.0",
+    "feathers-mongoose": "^5.1.2",
     "lodash": "^4.17.4",
     "minimatch": "^3.0.4",
     "mongoose": "^4.11.1",

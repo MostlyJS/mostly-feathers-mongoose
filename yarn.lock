@@ -1303,9 +1303,9 @@ feathers-errors@^2.0.1, feathers-errors@^2.8.0:
   dependencies:
     debug "^2.2.0"
 
-feathers-mongoose@^5.1.0:
-  version "5.1.0"
-  resolved "https://registry.yarnpkg.com/feathers-mongoose/-/feathers-mongoose-5.1.0.tgz#56cc94b631bb5177dc601d3579a425594080bd8a"
+feathers-mongoose@^5.1.2:
+  version "5.1.2"
+  resolved "https://registry.yarnpkg.com/feathers-mongoose/-/feathers-mongoose-5.1.2.tgz#8d30897e8e670edbde503f9ae7695c1f453215fe"
   dependencies:
     feathers-commons "^0.8.4"
     feathers-errors "^2.0.1"

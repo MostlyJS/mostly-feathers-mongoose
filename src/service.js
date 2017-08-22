@@ -272,11 +272,11 @@ export class Service extends BaseService {
   // some reserved actions
 
   upsert(data, params) {
-    params = params || {};
+    params = Object.assign({}, params);
     params.mongoose = Object.assign({}, params.mongoose, { upsert: true });
     params.query = params.query || data;  // default find by input data
-    return super.patch(null, data, params).then(result => {
-      return Array.isArray(result) && result.length > 0? result[0] : result;
+    return super.patch(null, data, params).then(results => {
+      return results.length > 0? results[0] : null;
     });
   }
 
@@ -290,8 +290,9 @@ export class Service extends BaseService {
     params = params || id || { query: {} };
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
+    // use this.find instead of super.find for hooks to work
     return this.find(params).then(results => {
-      return Array.isArray(results) && results.length > 0? results[0] : results;
+      return results.length > 0? results[0] : null;
     });
   }
 
@@ -300,6 +301,7 @@ export class Service extends BaseService {
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
+      // use this.find instead of super.find for hooks to work
       return this.find(params).then(results => {
         results = results.data || results;
         if (Array.isArray(results) && results.length > 0) {
