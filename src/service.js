@@ -276,7 +276,7 @@ export class Service extends BaseService {
     params.mongoose = Object.assign({}, params.mongoose, { upsert: true });
     params.query = params.query || data;  // default find by input data
     return super.patch(null, data, params).then(results => {
-      return results.length > 0? results[0] : null;
+      return results && results.length > 0? results[0] : null;
     });
   }
 
@@ -292,7 +292,8 @@ export class Service extends BaseService {
     params.paginate = false; // disable paginate
     // use this.find instead of super.find for hooks to work
     return this.find(params).then(results => {
-      return results.length > 0? results[0] : null;
+      results = results.data || results;
+      return results && results.length > 0? results[0] : null;
     });
   }
 
