@@ -101,10 +101,9 @@ function populateField (hook, item, target, options) {
   // Fall through the hook.params ?
   let params = options.fallThrough
     ? Object.assign({}, hook.params, { query: undefined })
-    : {};
+    : { populate: hook.params.populate };
   //console.log('populate:', field, entry, params);
 
-  params.populate = options.recursive; // recursive populate
   params.softDelete = options.softDelete || false; // enforce destroyedAt
 
   // If the relationship is an array of ids, fetch and resolve an object for each,
@@ -144,6 +143,7 @@ function populateField (hook, item, target, options) {
     }
     promise = hook.app.service(service).get(id, params);
   }
+
   return promise.then((results) => {
     debug('services found', results);
     let data = results.data || results;
@@ -218,11 +218,15 @@ export function populate (target, opts) {
   return function(hook) {
     let options = Object.assign({}, opts);  // clone for change
 
-    // If it was an internal call then do not recursive populate
-    options.recursive = !!hook.params.provider;
-
     if (hook.type !== 'after') {
       throw new errors.GeneralError('Can not populate on before hook. (populate)');
+    }
+
+    // field must be specified by $select to populate
+    if (hook.params.populate === undefined) {
+      let field = options.field || target;
+      let select = [].concat(hook.params.query.$select || []);
+      hook.params.populate = fp.contains(field, select);
     }
 
     if (hook.params.populate === false) return hook;

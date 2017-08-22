@@ -22,7 +22,9 @@ export function assoc(target, opts) {
       throw new Error('You need to provide a service and a field');
     }
 
-    if (!hook.params.provider) return hook;
+    // target must be specified by $select to assoc
+    let select = [].concat(hook.params.query.$select || []);
+    if (!fp.contains(target, select)) return hook;
 
     const assocField = function (data, target) {
       const service = hook.app.service(options.service);

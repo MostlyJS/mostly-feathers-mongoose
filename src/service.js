@@ -52,6 +52,19 @@ const unsetObj = function(obj) {
   }
 };
 
+const filterSelect = function(params) {
+  // select by *
+  if (params.query && params.query.$select) {
+    if (fp.is(String, params.query.$select)) {
+      params.query.$select = fp.map(fp.trim, fp.split(',', params.query.$select));
+    }
+    if (fp.contains('*', params.query.$select)) {
+      return fp.dissocPath(['query', '$select'], params);
+    }
+  }
+  return params;
+}
+
 // transform the results
 const transform = function(results) {
   if (results) {
@@ -103,6 +116,9 @@ export class Service extends BaseService {
       }
     });
 
+    // filter $select
+    params = filterSelect(params);
+
     const action = params.__action;
 
     if (!action || action === 'find') {
@@ -121,6 +137,9 @@ export class Service extends BaseService {
   get(id, params) {
     if (id === 'null' || id === '0') id = null;
     params = params || { query: {} };
+
+    // filter $select
+    params = filterSelect(params);
 
     let action = params.__action;
 
