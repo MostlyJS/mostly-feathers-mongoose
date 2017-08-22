@@ -1,7 +1,7 @@
-import mongooseCache from './mongoose_cache';
-import mongoosePaginator from './mongoose_paginator';
-import mongooseRandom from './mongoose_random';
-import softDelete from './soft_delete';
+import mongooseCache from './mongoose-cache';
+import mongoosePaginator from './mongoose-paginator';
+import mongooseRandom from './mongoose-random';
+import softDelete from './soft-delete';
 import sortable from './sortable';
 
 export {

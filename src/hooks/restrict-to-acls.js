@@ -3,7 +3,7 @@ import errors from 'feathers-errors';
 import makeDebug from 'debug';
 import minimatch from 'minimatch';
 
-const debug = makeDebug('mostly:feathers-mongoose:hooks:restrict');
+const debug = makeDebug('mostly:feathers-mongoose:hooks:restrict-to-acls');
 
 const defaults = {
   rolesField: 'roles',

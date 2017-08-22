@@ -1,7 +1,7 @@
 import { get } from 'lodash';
 import makeDebug from 'debug';
 
-const debug = makeDebug('mostly:feathers-mongoose:hooks:cascadeUpdate');
+const debug = makeDebug('mostly:feathers-mongoose:hooks:cascade-update');
 
 export function cascadeUpdate(target, opts) {
   if (!opts.service) {
@@ -10,7 +10,7 @@ export function cascadeUpdate(target, opts) {
 
   var field = opts.field;
 
-  return function(hook) {
+  return function (hook) {
     let options = Object.assign({}, opts);
 
     if (hook.type !== 'after') {

@@ -2,20 +2,22 @@ import _ from 'lodash';
 import assert from 'assert';
 import makeDebug from 'debug';
 import Entity from 'mostly-entity';
+import { asUpsert } from './as-upsert';
 import { assoc } from './assoc';
-import { cascadeUpdate } from './cascadeUpdate';
-import { convertId } from './convertId';
+import { cascadeUpdate } from './cascade-update';
+import { convertId } from './convert-id';
 import { filter, filterField } from './filter';
-import { isAction } from './isAction';
-import { isHeader } from './isHeader';
+import { isAction } from './is-action';
+import { isHeader } from './is-header';
 import { populate, depopulate } from './populate';
-import { publishEvent } from './publishEvent';
-import { restrictToAcls } from './restrict';
+import { publishEvent } from './publish-event';
+import { restrictToAcls } from './restrict-to-acls';
 import validation from './validation';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks');
 
 export {
+  asUpsert,
   assoc,
   cascadeUpdate,
   convertId,

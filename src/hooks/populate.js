@@ -17,7 +17,7 @@ const defaultOptions = {
 function isPopulated (obj) {
   const isPlain = (val) => val && !(fp.is(String, val) || validator.isMongoId(val.toString()));
   return fp.reduce((result, val) => {
-    return result && isPlain(val)
+    return result && isPlain(val);
   }, true, [].concat(obj));
 }
 
@@ -43,12 +43,12 @@ function populateField (hook, item, target, options) {
 
   // absolute path for the service
   if (options.path && options.path.startsWith('@')) {
-    function getPath(value) {
+    const getPath = function (value) {
       return {
         _type: getField(value, options.path.substr(1)),
         [options.idField]: getField(value, field)
       };
-    }
+    };
 
     if (Array.isArray(item)) {
       entry = fp.map(getPath, item);
@@ -62,13 +62,13 @@ function populateField (hook, item, target, options) {
 
   // id with service `document:1`, convert as options.path
   if (!options.path && !options.service) {
-    function getPath(value) {
+    const getPath =  function (value) {
       if (value.indexOf(':') > 0) {
         let [path, id] = value.split(':');
         return { _id: value, _type: path, [options.idField]: id };
       }
       return value;
-    }
+    };
 
     if (Array.isArray(entry)) {
       entry = fp.map(getPath, entry);

@@ -2,7 +2,6 @@ import assert from 'assert';
 import fp from 'ramda';
 import makeDebug from 'debug';
 import { Service as BaseService } from 'feathers-mongoose';
-import { errorHandler } from 'feathers-mongoose/lib/error-handler';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
@@ -63,7 +62,7 @@ const filterSelect = function(params) {
     }
   }
   return params;
-}
+};
 
 // transform the results
 const transform = function(results) {
@@ -273,12 +272,12 @@ export class Service extends BaseService {
   // some reserved actions
 
   upsert(data, params) {
-    params = params || { query: {} };
-    let query = params.query || data;  // default find by input data
-    return this.Model.findOneAndUpdate(query, data, { upsert: true, new: true })
-      .lean()
-      .then(transform)
-      .catch(errorHandler);
+    params = params || {};
+    params.mongoose = Object.assign({}, params.mongoose, { upsert: true });
+    params.query = params.query || data;  // default find by input data
+    return super.patch(null, data, params).then(result => {
+      return Array.isArray(result) && result.length > 0? result[0] : result;
+    });
   }
 
   count(id, data, params) {
@@ -292,12 +291,7 @@ export class Service extends BaseService {
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
     return this.find(params).then(results => {
-      results = results.data || results;
-      if (Array.isArray(results) && results.length > 0) {
-        return results[0];
-      } else {
-        return null;
-      }
+      return Array.isArray(results) && results.length > 0? results[0] : results;
     });
   }
 

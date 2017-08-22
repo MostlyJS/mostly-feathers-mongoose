@@ -5,7 +5,7 @@
 import util from 'util';
 import crypto from 'crypto';
 
-const debug = require('debug')('mostly:feathers-mongoose:plugins:mongoose_cache_plugin');
+const debug = require('debug')('mostly:feathers-mongoose:plugins:mongoose-cache');
 
 const defaultOptions = {
   cache: true,
