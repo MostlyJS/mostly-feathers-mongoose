@@ -223,7 +223,7 @@ export function populate (target, opts) {
     }
 
     // field must be specified by $select to populate
-    if (hook.params.populate === undefined) {
+    if (hook.params.query && hook.params.populate === undefined) {
       let field = options.field || target;
       let select = [].concat(hook.params.query.$select || []);
       hook.params.populate = fp.contains(field, select);
