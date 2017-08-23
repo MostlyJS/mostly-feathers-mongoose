@@ -51,12 +51,20 @@ const unsetObj = function(obj) {
   }
 };
 
+const splitHead = fp.compose(fp.head, fp.split('.'));
+
 const filterSelect = function(params) {
-  // select by *
+  // select by * and field.*
   if (params.query && params.query.$select) {
     if (fp.is(String, params.query.$select)) {
       params.query.$select = fp.map(fp.trim, fp.split(',', params.query.$select));
     }
+
+    // save original $select for hooks (e.g. populate)
+    params.$select = params.query.$select;
+    // split $select to current level field
+    params.query.$select = fp.map(splitHead, params.query.$select);
+
     if (fp.contains('*', params.query.$select)) {
       return fp.dissocPath(['query', '$select'], params);
     }

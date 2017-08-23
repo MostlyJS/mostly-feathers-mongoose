@@ -98,13 +98,13 @@ function populateField (app, item, target, params, options) {
   else if (typeof item.toJSON === 'function') {
     item = item.toJSON(options);
   }
-  // Fall through the params ?
-  params = options.fallThrough
-    ? Object.assign({}, params, { query: undefined })
-    : { populate: params.populate };
+
+  // remove any query (except $select) from params as it's not related
+  params = fp.omit(['query', 'provider'], params);
+  params.query = { $select : params.$select };
   //console.log('populate:', field, entry, params);
 
-  params.softDelete = options.softDelete || false; // enforce destroyedAt
+  params.softDelete = options.softDelete || false; // filter deleted records
 
   // If the relationship is an array of ids, fetch and resolve an object for each,
   // otherwise just fetch the object.
@@ -161,7 +161,7 @@ function populateField (app, item, target, params, options) {
 
     // try nested populate(s)
     if (options.populate) {
-      let subPopulates = fp.reduce((promises, subOpts) => {
+      let subPopulates = fp.map((subOpts) => {
         let subItem = fp.flatten(getField(item, field));
         let subTarget = subOpts.target || subOpts.field;
         let subParams = fp.clone(params);
@@ -169,7 +169,7 @@ function populateField (app, item, target, params, options) {
         //  subTarget, subOptions.field, util.inspect(subOptions), util.inspect(subItem));
         promises.push(populateField(app, subItem, subTarget, subParams, subOpts));
         return promises;
-      }, [], [].concat(options.populate));
+      }, [].concat(options.populate));
       return Promise.all(subPopulates).then(() => item);
     } else {
       return item;
@@ -218,7 +218,7 @@ export function populate (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return function(hook) {
-    let options = Object.assign({}, opts);  // clone for change
+    const options = Object.assign({}, opts);  // clone for change
 
     if (hook.type !== 'after') {
       throw new errors.GeneralError('Can not populate on before hook. (populate)');
@@ -226,18 +226,20 @@ export function populate (target, opts) {
 
     // each target field should have its own params
     let params = Object.assign({}, hook.params);
+    
+    const splitTail = fp.compose(fp.join('.'), fp.tail, fp.split('.'));
 
-    // target field must be specified by $select to populate
-    if (params.query && params.populate === undefined) {
-      let field = options.field || target;
-      let select = [].concat(params.query.$select || []);
-      params.populate = fp.contains(field, select);
+    let isSelect = false;
+    if (params.query) {
+      isSelect = fp.contains(options.field || target, params.query.$select || []);
+      params.$select = fp.map(splitTail, params.$select || []); // $select for next populate level
     }
 
-    if (params.populate === false) return hook;
+    // target field must be specified by $select to populate
+    if (isSelect === false) return hook;
 
-    let isPaginated = hook.method === 'find' && hook.result.data;
-    let data = isPaginated ? hook.result.data : hook.result;
+    const isPaginated = hook.method === 'find' && hook.result.data;
+    const data = isPaginated ? hook.result.data : hook.result;
 
     if (Array.isArray(data) && data.length === 0) return hook;
     
