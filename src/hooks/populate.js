@@ -21,7 +21,7 @@ function isPopulated (obj) {
   }, true, [].concat(obj));
 }
 
-function populateField (hook, item, target, options) {
+function populateField (app, item, target, params, options) {
   let field = options.field || target;
 
   // Find by the field value by default or a custom query
@@ -98,10 +98,10 @@ function populateField (hook, item, target, options) {
   else if (typeof item.toJSON === 'function') {
     item = item.toJSON(options);
   }
-  // Fall through the hook.params ?
-  let params = options.fallThrough
-    ? Object.assign({}, hook.params, { query: undefined })
-    : { populate: hook.params.populate };
+  // Fall through the params ?
+  params = options.fallThrough
+    ? Object.assign({}, params, { query: undefined })
+    : { populate: params.populate };
   //console.log('populate:', field, entry, params);
 
   params.softDelete = options.softDelete || false; // enforce destroyedAt
@@ -117,17 +117,18 @@ function populateField (hook, item, target, options) {
       services = fp.map((entry) => {
         return fp.map(fp.prop(options.idField), entry);
       }, entries);
-      debug('populate services', services);
     } else {
       services = {
         [options.service]: entry
       };
     }
+    debug('populate ', field, services);
+
     params.paginate = false; // disable paginate
     promise = Promise.all(fp.map((service) => {
       let groupParams = Object.assign({}, params);
       groupParams.query = { _id: { $in: services[service] } };
-      return hook.app.service(plural(service)).find(groupParams);
+      return app.service(plural(service)).find(groupParams);
     }, Object.keys(services)));
   } else {
     let service = options.service;
@@ -139,13 +140,14 @@ function populateField (hook, item, target, options) {
         service = options.path;
       }
       id = entry[options.idField];
-      debug('populate service', service, id);
     }
-    promise = hook.app.service(service).get(id, params);
+    debug('populate', field, { [service]: id });
+
+    promise = app.service(service).get(id, params);
   }
 
   return promise.then((results) => {
-    debug('services found', results);
+    debug('populate services found', results);
     let data = results.data || results;
     if (Array.isArray(results)) {
       data = fp.flatten(fp.map(result => result.data || result, results));
@@ -159,16 +161,16 @@ function populateField (hook, item, target, options) {
 
     // try nested populate(s)
     if (options.populate) {
-      let pPopulates = Array.isArray(options.populate)? options.populate : [options.populate];
-      let pPromises = fp.reduce((promises, pOptions) => {
-        let pItem = fp.flatten(getField(item, field));
-        let pTarget = pOptions.target || pOptions.field;
+      let subPopulates = fp.reduce((promises, subOpts) => {
+        let subItem = fp.flatten(getField(item, field));
+        let subTarget = subOpts.target || subOpts.field;
+        let subParams = fp.clone(params);
         //debug('>>> nested populate %s/%s(options=%s) with %s',
-        //  pTarget, pOptions.field, util.inspect(pOptions), util.inspect(pItem));
-        promises.push(populateField(pItem, pTarget, pOptions));
+        //  subTarget, subOptions.field, util.inspect(subOptions), util.inspect(subItem));
+        promises.push(populateField(app, subItem, subTarget, subParams, subOpts));
         return promises;
-      }, [], pPopulates);
-      return Promise.all(pPromises).then(() => item);
+      }, [], [].concat(options.populate));
+      return Promise.all(subPopulates).then(() => item);
     } else {
       return item;
     }
@@ -222,21 +224,24 @@ export function populate (target, opts) {
       throw new errors.GeneralError('Can not populate on before hook. (populate)');
     }
 
-    // field must be specified by $select to populate
-    if (hook.params.query && hook.params.populate === undefined) {
+    // each target field should have its own params
+    let params = Object.assign({}, hook.params);
+
+    // target field must be specified by $select to populate
+    if (params.query && params.populate === undefined) {
       let field = options.field || target;
-      let select = [].concat(hook.params.query.$select || []);
-      hook.params.populate = fp.contains(field, select);
+      let select = [].concat(params.query.$select || []);
+      params.populate = fp.contains(field, select);
     }
 
-    if (hook.params.populate === false) return hook;
+    if (params.populate === false) return hook;
 
     let isPaginated = hook.method === 'find' && hook.result.data;
     let data = isPaginated ? hook.result.data : hook.result;
 
     if (Array.isArray(data) && data.length === 0) return hook;
     
-    return populateField(hook, data, target, options).then(result => {
+    return populateField(hook.app, data, target, params, options).then(result => {
       //debug('> populate result', util.inspect(result));
       if (isPaginated) {
         hook.result.data = result;
