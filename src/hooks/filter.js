@@ -1,6 +1,5 @@
 import _ from 'lodash';
 
-
 export default function filter(target, opts) {
 
   if (!opts.service) {

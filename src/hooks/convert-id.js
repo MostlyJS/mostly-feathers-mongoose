@@ -1,7 +1,7 @@
 import { flatten, keyBy, mapValues } from 'lodash';
 import { getField, setFieldByKey } from '../helpers';
 
-export function convertId(target, opts) {
+export default function convertId(target, opts) {
   if (!opts.service) {
     throw new Error('You need to provide a service');
   }

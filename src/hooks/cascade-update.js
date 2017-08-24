@@ -3,7 +3,7 @@ import makeDebug from 'debug';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cascade-update');
 
-export function cascadeUpdate(target, opts) {
+export default function cascadeUpdate(target, opts) {
   if (!opts.service) {
     throw new Error('You need to provide a service');
   }

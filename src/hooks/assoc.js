@@ -8,7 +8,7 @@ const defaultOptions = {
 };
 
 // associcate current data as a foreign key to another service
-export function assoc(target, opts) {
+export default function assoc(target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return function(hook) {
