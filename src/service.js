@@ -269,11 +269,8 @@ export class Service extends BaseService {
       'No such action method: ' + method + '->' + action);
 
     // delete params.provider;
-    let query = id? this.get(id, params) : Promise.resolve(null);
+    let query = id? this.get(id) : Promise.resolve(null);
     return query.then(origin => {
-      if (origin && origin.data) {
-        origin = origin.data;
-      }
       if (id && !origin) {
         throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
       }

@@ -99,9 +99,9 @@ function populateField (app, item, target, params, options) {
     item = item.toJSON(options);
   }
 
-  // remove any query (except $select) from params as it's not related
+  // pass infomation of the $select and specified by options.fallThrough
   const selection = { $select: params.$select };
-  params = fp.omit(['query', '$select', 'provider'], params);
+  params = options.fallThrough? fp.pick(options.fallThrough, params) : {};
   params.query = selection;
 
   //console.log('populate:', field, entry, params);

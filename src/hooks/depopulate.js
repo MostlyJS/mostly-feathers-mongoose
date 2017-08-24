@@ -5,7 +5,7 @@ export default function depopulate (target, opts = { idField: 'id' }) {
   return function(hook) {
     let options = Object.assign({}, opts);
 
-    function getDepopulated(item, target) {
+    const getDepopulated = function (item, target) {
       let field = fp.prop(target, item);
       if (field === undefined) return undefined;
       if (Array.isArray(field)) {
@@ -14,14 +14,14 @@ export default function depopulate (target, opts = { idField: 'id' }) {
         field = field[options.idField] || field;
       }
       return field? field : null;
-    }
+    };
 
-    function setTarget(data, target, value) {
+    const setTarget = function (data, target, value) {
       if (value !== undefined) {
         return fp.assocPath(target.split('.'), value, data);
       }
       return data;
-    }
+    };
 
     if (hook.type === 'before') {
       hook.data = setTarget(hook.data, target, getDepopulated(hook.data, target));
