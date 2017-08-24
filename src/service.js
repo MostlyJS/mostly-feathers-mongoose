@@ -52,6 +52,7 @@ const unsetObj = function(obj) {
 };
 
 const splitHead = fp.compose(fp.head, fp.split('.'));
+const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
 
 const filterSelect = function(params) {
   // select by * and field.*
@@ -59,6 +60,8 @@ const filterSelect = function(params) {
     if (fp.is(String, params.query.$select)) {
       params.query.$select = fp.map(fp.trim, fp.split(',', params.query.$select));
     }
+    // repeat ** as recursive fields
+    params.query.$select = repeatDoubleStar(params.query.$select);
 
     // save original $select for hooks (e.g. populate),
     // or use existing params.$select if not deleted by hook
