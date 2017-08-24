@@ -13,7 +13,7 @@ const defaults = {
   owner: false
 };
 
-export function restrictToAcls(options = {}){
+export default function restrictToAcls(options = {}){
   if (!options.acls || !options.acls.length) {
     throw new Error(`You need to provide an array of 'acls' to check against.`);
   }

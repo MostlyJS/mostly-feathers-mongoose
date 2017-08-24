@@ -1,4 +1,4 @@
-export function isHeader (header, value) {
+export default function isHeader (header, value) {
   if (!header || !value) {
     throw new Error('Calling iff() predicate incorrectly. (isHeader)');
   }

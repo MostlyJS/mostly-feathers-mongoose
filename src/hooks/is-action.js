@@ -1,6 +1,6 @@
 import { errors } from 'feathers-errors';
 
-export function isAction (...actions) {
+export default function isAction (...actions) {
   if (!actions.length) {
     throw new errors.MethodNotAllowed('Calling iff() predicate incorrectly. (isAction)');
   }

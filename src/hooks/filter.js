@@ -1,25 +1,7 @@
 import _ from 'lodash';
 
-export function filterField(field, preset) {
-  return hook => {
-    // If it was an internal call then skip this hook
-    if (!hook.params.provider) {
-      return hook;
-    }
 
-    if(!Array.isArray(preset)) {
-      preset = [preset];
-    }
-
-    if (hook.params.query && !hook.params.query[field]) {
-      hook.params.query[field] = { $in: preset };
-    }
-
-    return hook;
-  };
-}
-
-export function filter(target, opts) {
+export default function filter(target, opts) {
 
   if (!opts.service) {
     throw new Error('You need to provide a service');

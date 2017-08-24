@@ -149,7 +149,7 @@ function populateField (app, item, target, params, options) {
   }
 
   return promise.then((results) => {
-    debug('populate services found', results);
+    // debug('populate services found', results);
     let data = results.data || results;
     if (Array.isArray(results)) {
       data = fp.flatten(fp.map(result => result.data || result, results));
@@ -216,7 +216,7 @@ function populateField (app, item, target, params, options) {
  *
  * If 'senderId' is an array of keys, then 'sender' will be an array of populated items.
  */
-export function populate (target, opts) {
+export default function populate (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return function(hook) {
@@ -232,20 +232,18 @@ export function populate (target, opts) {
     const splitTail = fp.compose(fp.join('.'), fp.tail, fp.split('.'));
     const selectTail = fp.pipe(
       fp.map(splitTail),     // remove the head
-      fp.tap(debug),
       fp.reject(fp.isEmpty), // remove empty
-      fp.tap(debug),
       fp.when(fp.complement(fp.isEmpty), fp.append('*')) // add * for non-empty
     );
-    let isSelect = false;
+    let selected = false;
     if (params.query) {
-      isSelect = fp.contains(options.field || target, params.query.$select || []);
+      selected = fp.contains(options.field || target, params.query.$select || []);
       // $select with * for next populate level
-      params.$select = selectTail(params.$select);
+      params.$select = selectTail(params.$select || []);
     }
 
     // target field must be specified by $select to populate
-    if (isSelect === false) return hook;
+    if (selected === false) return hook;
 
     const isPaginated = hook.method === 'find' && hook.result.data;
     const data = isPaginated ? hook.result.data : hook.result;
@@ -261,43 +259,5 @@ export function populate (target, opts) {
       }
       return hook;
     });
-  };
-}
-
-export function depopulate (target, opts = { idField: 'id' }) {
-
-  return function(hook) {
-    let options = Object.assign({}, opts);
-
-    function getDepopulated(item, target) {
-      let field = fp.prop(target, item);
-      if (field === undefined) return undefined;
-      if (Array.isArray(field)) {
-        field = fp.map((it) => it[options.idField] || it, field);
-      } else if (field) {
-        field = field[options.idField] || field;
-      }
-      return field? field : null;
-    }
-
-    function setTarget(data, target, value) {
-      if (value !== undefined) {
-        return fp.assocPath(target.split('.'), value, data);
-      }
-      return data;
-    }
-
-    if (hook.type === 'before') {
-      hook.data = setTarget(hook.data, target, getDepopulated(hook.data, target));
-    } else {
-      if (hook.result) {
-        if (hook.result.data) {
-          hook.result.data = setTarget(hook.result.data, target, getDepopulated(hook.result.data, target));
-        } else {
-          hook.result = setTarget(hook.result, target, getDepopulated(hook.result, target));
-        }
-      }
-    }
-    return hook;
   };
 }

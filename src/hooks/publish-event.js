@@ -5,7 +5,7 @@ const defaultOptions = {
   prefix: 'feathers'
 };
 
-export function publishEvent(name, opts) {
+export default function publishEvent(name, opts) {
   opts = Object.assign({}, defaultOptions, opts);
   const topic = `${opts.prefix}.events`;
 
