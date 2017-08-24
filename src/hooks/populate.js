@@ -100,7 +100,7 @@ function populateField (app, item, target, params, options) {
   }
 
   // remove any query (except $select) from params as it's not related
-  const selection = { $select: params.query.$select };
+  const selection = { $select: params.$select };
   params = fp.omit(['query', '$select', 'provider'], params);
   params.query = selection;
 
@@ -230,12 +230,18 @@ export function populate (target, opts) {
     let params = Object.assign({}, hook.params);
     
     const splitTail = fp.compose(fp.join('.'), fp.tail, fp.split('.'));
-
+    const selectTail = fp.pipe(
+      fp.map(splitTail),     // remove the head
+      fp.tap(debug),
+      fp.reject(fp.isEmpty), // remove empty
+      fp.tap(debug),
+      fp.when(fp.complement(fp.isEmpty), fp.append('*')) // add * for non-empty
+    );
     let isSelect = false;
     if (params.query) {
       isSelect = fp.contains(options.field || target, params.query.$select || []);
-      // $select for next populate level
-      params.$select = fp.reject(fp.isEmpty, fp.map(splitTail, params.$select || []));
+      // $select with * for next populate level
+      params.$select = selectTail(params.$select);
     }
 
     // target field must be specified by $select to populate
