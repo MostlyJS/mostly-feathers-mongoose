@@ -60,10 +60,11 @@ const filterSelect = function(params) {
       params.query.$select = fp.map(fp.trim, fp.split(',', params.query.$select));
     }
 
-    // save original $select for hooks (e.g. populate)
-    params.$select = params.query.$select;
+    // save original $select for hooks (e.g. populate),
+    // or use existing params.$select if not deleted by hook
+    params.$select = params.$select || params.query.$select; 
     // split $select to current level field
-    params.query.$select = fp.map(splitHead, params.query.$select);
+    params.query.$select = fp.map(splitHead, params.$select);
 
     if (fp.contains('*', params.query.$select)) {
       return fp.dissocPath(['query', '$select'], params);

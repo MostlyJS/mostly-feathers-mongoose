@@ -100,8 +100,10 @@ function populateField (app, item, target, params, options) {
   }
 
   // remove any query (except $select) from params as it's not related
-  params = fp.omit(['query', 'provider'], params);
-  params.query = { $select : params.$select };
+  const selection = { $select: params.query.$select };
+  params = fp.omit(['query', '$select', 'provider'], params);
+  params.query = selection;
+
   //console.log('populate:', field, entry, params);
 
   params.softDelete = options.softDelete || false; // filter deleted records
@@ -232,7 +234,8 @@ export function populate (target, opts) {
     let isSelect = false;
     if (params.query) {
       isSelect = fp.contains(options.field || target, params.query.$select || []);
-      params.$select = fp.map(splitTail, params.$select || []); // $select for next populate level
+      // $select for next populate level
+      params.$select = fp.reject(fp.isEmpty, fp.map(splitTail, params.$select || []));
     }
 
     // target field must be specified by $select to populate
