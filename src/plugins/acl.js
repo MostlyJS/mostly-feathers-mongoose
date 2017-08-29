@@ -8,13 +8,13 @@ export default function(schema) {
 
   schema.methods.setPublicReadAccess = function(bool) {
     this.ACL = this.ACL || {};
-    this.ACL['*'] = { 'Read': bool };
+    this.ACL['*'] = { permission: 'Read', granted: bool };
     return this.save();
   };
 
   schema.methods.setWriteAccess = function(user, bool) {
     this.ACL = this.ACL || {};
-    this.ACL[user] = { 'Write': bool };
+    this.ACL[user] = { permission: 'ReadWrite', granted: bool };
     return this.save();
   };
 }
