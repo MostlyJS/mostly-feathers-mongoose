@@ -104,9 +104,9 @@ export class Service extends BaseService {
   }
 
   find(params) {
-    params = params || { query: {} };
-    // default behaviours for external call
-    if (params.provider && params.query) {
+    params = Object.assign({ query: {} }, params);
+
+    if (params.query) {
       // fix id query as _ids
       if (params.query.id) {
         params.query._id = params.query.id;
@@ -149,7 +149,7 @@ export class Service extends BaseService {
 
   get(id, params) {
     if (id === 'null' || id === '0') id = null;
-    params = params || { query: {} };
+    params = Object.assign({ query: {} }, params);
 
     // filter $select
     params = filterSelect(params);
@@ -178,7 +178,8 @@ export class Service extends BaseService {
   }
 
   create(data, params) {
-    params = params || { query: {} };
+    params = Object.assign({ query: {} }, params);
+
     // add support to create multiple objects
     if (Array.isArray(data)) {
       return Promise.all(data.map(current => this.create(current, params)));
@@ -201,7 +202,8 @@ export class Service extends BaseService {
 
   update(id, data, params) {
     if (id === 'null') id = null;
-    params = params || {};
+    params = Object.assign({}, params);
+
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
     const action = params.__action;
@@ -221,7 +223,8 @@ export class Service extends BaseService {
 
   patch(id, data, params) {
     if (id === 'null') id = null;
-    params = params || {};
+    params = Object.assign({}, params);
+
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
     const action = params.__action;
@@ -241,7 +244,8 @@ export class Service extends BaseService {
 
   remove(id, params) {
     if (id === 'null') id = null;
-    params = params || {};
+    params = Object.assign({}, params);
+
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
     const action = params.__action;
@@ -284,6 +288,7 @@ export class Service extends BaseService {
 
   upsert(data, params) {
     params = Object.assign({}, params);
+
     params.mongoose = Object.assign({}, params.mongoose, { upsert: true });
     params.query = params.query || data;  // default find by input data
     return super.patch(null, data, params).then(results => {
@@ -292,13 +297,15 @@ export class Service extends BaseService {
   }
 
   count(id, data, params) {
-    params = params || id || { query: {} };
+    params = Object.assign({ query: {} }, params);
+
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
   first(id, data, params) {
-    params = params || id || { query: {} };
+    params = Object.assign({ query: {} }, params || id);
+
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
     // use this.find instead of super.find for hooks to work
@@ -309,7 +316,8 @@ export class Service extends BaseService {
   }
 
   last(id, data, params) {
-    params = params || id || { query: {} };
+    params = Object.assign({ query: {} }, params || id);
+
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
