@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import { cloneDeep, compact, defaults, find, flatten, get, set, map } from 'lodash';
-import fp from 'ramda';
+import fp from 'mostly-func';
 import { plural } from 'pluralize';
 
 const debug = makeDebug('mostly:feathers-mongoose:helpers');

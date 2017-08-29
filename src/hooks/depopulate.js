@@ -1,4 +1,4 @@
-import fp from 'ramda';
+import fp from 'mostly-func';
 
 export default function depopulate (target, opts = { idField: 'id' }) {
 

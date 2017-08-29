@@ -1,6 +1,6 @@
 import assert from 'assert';
-import fp from 'ramda';
 import makeDebug from 'debug';
+import fp from 'mostly-func';
 import { Service as BaseService } from 'feathers-mongoose';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');

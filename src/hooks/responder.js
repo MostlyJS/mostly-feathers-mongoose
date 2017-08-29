@@ -1,5 +1,5 @@
-import fp from 'ramda';
 import Entity from 'mostly-entity';
+import fp from 'mostly-func';
 
 // 返回值定制
 export default function responder() {

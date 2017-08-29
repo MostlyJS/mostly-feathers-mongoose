@@ -1,5 +1,5 @@
 import makeDebug from 'debug';
-import fp from 'ramda';
+import fp from 'mostly-func';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 

@@ -1,8 +1,8 @@
 import assert from 'assert';
 import makeDebug from 'debug';
 import errors from 'feathers-errors';
+import fp from 'mostly-func';
 import { plural } from 'pluralize';
-import fp from 'ramda';
 import validator from 'validator';
 import util from 'util';
 import { getField, setField, setFieldByKey } from '../helpers';
