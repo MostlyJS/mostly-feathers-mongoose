@@ -1,5 +1,17 @@
 import mongoose from 'mongoose';
 
+/**
+ * Add ACL schema
+ * {
+ *   begin: Date,
+ *   end: Date,
+ *   creator: ObjectId,
+ *   externalUser: Boolean,
+ *   granted: Boolean,
+ *   permission: enum: [Browse, Read, ReadCanCollect, ReadRemove, ReadWrite, Everything],
+ *   user: ObjectId
+ * }
+ */
 export default function(schema) {
 
   if (!schema.get('ACL')) {

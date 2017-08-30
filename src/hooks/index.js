@@ -3,6 +3,7 @@ import asUpsert from './as-upsert';
 import assoc from './assoc';
 import cascadeUpdate from './cascade-update';
 import convertId from './convert-id';
+import defaultAcls from './default-acls';
 import depopulate from './depopulate';
 import filter from './filter';
 import filterField from './filter-field';
@@ -21,6 +22,7 @@ export {
   assoc,
   cascadeUpdate,
   convertId,
+  defaultAcls,
   depopulate,
   filter,
   filterField,
