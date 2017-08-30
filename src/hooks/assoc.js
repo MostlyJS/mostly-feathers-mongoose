@@ -23,7 +23,9 @@ export default function assoc(target, opts) {
     }
 
     // target must be specified by $select to assoc
-    let select = [].concat(hook.params.query.$select || []);
+    let select = hook.params.query
+      ? [].concat(hook.params.query.$select || [])
+      : [];
     if (!fp.contains(target, select)) return hook;
 
     const assocField = function (data, target) {
