@@ -111,7 +111,7 @@ export class Service extends BaseService {
 
     if (params.query) {
       // fix id query as _ids
-      if (params.query.id) {
+      if (this.id === '_id' && params.query.id) {
         params.query._id = params.query.id;
         delete params.query.id;
       }
