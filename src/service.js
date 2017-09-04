@@ -56,7 +56,7 @@ const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
 
 const filterSelect = function(params) {
   // select by * and field.*
-  if (params.query && params.query.$select) {
+  if (params && params.query && params.query.$select) {
     if (fp.is(String, params.query.$select)) {
       params.query.$select = fp.map(fp.trim, fp.split(',', params.query.$select));
     }
@@ -104,6 +104,9 @@ export class Service extends BaseService {
   }
 
   find(params) {
+    // filter $select, TODO: immmutate the hook.params
+    params = filterSelect(params);
+    
     params = Object.assign({ query: {} }, params);
 
     if (params.query) {
@@ -129,9 +132,6 @@ export class Service extends BaseService {
       }
     });
 
-    // filter $select
-    params = filterSelect(params);
-
     const action = params.__action;
 
     if (!action || action === 'find') {
@@ -149,10 +149,11 @@ export class Service extends BaseService {
 
   get(id, params) {
     if (id === 'null' || id === '0') id = null;
-    params = Object.assign({ query: {} }, params);
 
-    // filter $select
+    // filter $select, TODO: immmutate the hook.params
     params = filterSelect(params);
+
+    params = Object.assign({ query: {} }, params);
 
     let action = params.__action;
 
