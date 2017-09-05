@@ -40,16 +40,38 @@ export function connectDb(url) {
   };
 }
 
-export function createModel(app, name, config) {
+/**
+ * Get or create the mongoose model if not exists
+ */
+export function getModel(app, name, Model) {
   const mongooseClient = app.get('mongoose');
-  assert(mongooseClient, 'mongoose not set by app');
+  assert(mongooseClient, 'mongoose client not set by app');
+  const modelNames = mongooseClient.modelNames();
+  if (modelNames.includes(name)) {
+    return mongooseClient.model(name);
+  } else {
+    assert(Model && typeof Model === 'function', 'Model function not privided.');
+    return Model(app, name);
+  }
+}
+
+/**
+ * Create a mongoose model with free schema
+ */
+export function createModel(app, name, options) {
+  const mongooseClient = app.get('mongoose');
+  assert(mongooseClient, 'mongoose client not set by app');
   const schema = new mongooseClient.Schema({ any: {} }, {strict: false});
   return mongooseClient.model(name, schema);
 }
 
+/**
+ * Create a service with mogoose model
+ */
 export function createService(app, Service, Model, options) {
   if (!options.Model) {
-    options.Model = new Model(app, options.ModelName);
+    assert(options.ModelName, 'createService but options.ModelName not provided');
+    options.Model = Model(app, options.ModelName);
   }
   const service = new Service(options);
   return service;
