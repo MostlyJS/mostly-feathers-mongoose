@@ -9,6 +9,7 @@ import filter from './filter';
 import filterField from './filter-field';
 import isAction from './is-action';
 import isHeader from './is-header';
+import flatMerge from './flat-merge';
 import populate from './populate';
 import presentEntity from './present-entity';
 import publishEvent from './publish-event';
@@ -26,6 +27,7 @@ export {
   depopulate,
   filter,
   filterField,
+  flatMerge,
   isAction,
   isHeader,
   populate,
