@@ -6,7 +6,7 @@ export default function depopulate (target, opts = { idField: 'id' }) {
     let options = Object.assign({}, opts);
 
     const getDepopulated = function (item, target) {
-      let field = fp.prop(target, item);
+      let field = fp.path(target.split('.'), item);
       if (field === undefined) return undefined;
       if (Array.isArray(field)) {
         field = fp.map((it) => it[options.idField] || it, field);

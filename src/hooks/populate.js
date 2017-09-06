@@ -128,9 +128,9 @@ function populateField (app, item, target, params, options) {
 
     params.paginate = false; // disable paginate
     promise = Promise.all(fp.map((service) => {
-      let groupParams = Object.assign({}, params);
-      groupParams.query = { _id: { $in: services[service] } };
-      return app.service(plural(service)).find(groupParams);
+      let sParams = Object.assign({}, params);
+      sParams.query['_id'] = { $in: services[service] };
+      return app.service(plural(service)).find(sParams);
     }, Object.keys(services)));
   } else {
     let service = options.service;
@@ -162,20 +162,20 @@ function populateField (app, item, target, params, options) {
     }
 
     // try nested populate(s)
-    if (options.populate) {
-      let subPopulates = fp.map((subOpts) => {
-        let subItem = fp.flatten(getField(item, field));
-        let subTarget = subOpts.target || subOpts.field;
-        let subParams = fp.clone(params);
-        //debug('>>> nested populate %s/%s(options=%s) with %s',
-        //  subTarget, subOptions.field, util.inspect(subOptions), util.inspect(subItem));
-        promises.push(populateField(app, subItem, subTarget, subParams, subOpts));
-        return promises;
-      }, [].concat(options.populate));
-      return Promise.all(subPopulates).then(() => item);
-    } else {
-      return item;
-    }
+    // if (options.populate) {
+    //   let subPopulates = fp.map((subOpts) => {
+    //     let subItem = fp.flatten(getField(item, field));
+    //     let subTarget = subOpts.target || subOpts.field;
+    //     let subParams = fp.clone(params);
+    //     //debug('>>> nested populate %s/%s(options=%s) with %s',
+    //     //  subTarget, subOptions.field, util.inspect(subOptions), util.inspect(subItem));
+    //     return populateField(app, subItem, subTarget, subParams, subOpts);
+    //   }, [].concat(options.populate));
+    //   return Promise.all(subPopulates).then(() => item);
+    // } else {
+    //   return item;
+    // }
+    return item;
   }).catch(function(err) {
     console.error(" ERROR: populate %s error %s", options.service, util.inspect(err));
     setField(item, target, {}, field, options);
