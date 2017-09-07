@@ -289,9 +289,18 @@ export class Service extends BaseService {
 
   upsert(data, params) {
     params = Object.assign({}, params);
-
+    if (!params.query) params.query = Object.assign({}, data);  // default find by input data
     params.mongoose = Object.assign({}, params.mongoose, { upsert: true });
-    params.query = params.query || data;  // default find by input data
+
+    // upsert do not set default value in schema
+    const schemas = this.Model.schema && this.Model.schema.obj;
+    if (schemas) {
+      for (const key in schemas) {
+        if (data[key] === undefined && schemas[key].default !== undefined) {
+          data[key] = schemas[key].default;
+        }
+      }
+    }
     return super.patch(null, data, params).then(results => {
       return results && results.length > 0? results[0] : null;
     });
