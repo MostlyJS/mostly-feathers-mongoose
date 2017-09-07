@@ -5,7 +5,7 @@ import fp from 'mostly-func';
 import { plural } from 'pluralize';
 import validator from 'validator';
 import util from 'util';
-import { getField, setField, setFieldByKey } from '../helpers';
+import { getField, setField, setFieldByKey, repeatDoubleStar, splitHead, selectTail } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');
 
@@ -100,8 +100,10 @@ function populateField (app, item, target, params, options) {
   }
 
   // pass infomation of the $select and specified by options.fallThrough
-  const selection = { $select: params.$select };
-  params = options.fallThrough? fp.pick(options.fallThrough, params) : {};
+  const selection = { $select: params.query.$select };
+  params = options.fallThrough
+    ? fp.pick(options.fallThrough, params)
+    : {};
   params.query = selection;
 
   //console.log('populate:', field, entry, params);
@@ -124,11 +126,11 @@ function populateField (app, item, target, params, options) {
         [options.service]: entry
       };
     }
-    debug('populate ', field, services);
+    debug('populate =>', field, services);
 
     params.paginate = false; // disable paginate
     promise = Promise.all(fp.map((service) => {
-      let sParams = Object.assign({}, params);
+      let sParams = fp.assign({}, params);
       sParams.query['_id'] = { $in: services[service] };
       return app.service(plural(service)).find(sParams);
     }, Object.keys(services)));
@@ -227,19 +229,16 @@ export default function populate (target, opts) {
     }
 
     // each target field should have its own params
-    let params = Object.assign({}, hook.params);
-    
-    const splitTail = fp.compose(fp.join('.'), fp.tail, fp.split('.'));
-    const selectTail = fp.pipe(
-      fp.map(splitTail),     // remove the head
-      fp.reject(fp.isEmpty), // remove empty
-      fp.when(fp.complement(fp.isEmpty), fp.append('*')) // add * for non-empty
-    );
+    let params = fp.assign({}, hook.params);
+
     let selected = false;
-    if (params.query) {
-      selected = fp.contains(options.field || target, params.query.$select || []);
-      // $select with * for next populate level
-      params.$select = selectTail(params.$select || []);
+    if (params.query && params.query.$select) {
+      // split $select to current level field
+      let currSelect = fp.map(splitHead, params.query.$select);
+      selected = fp.contains(options.field || target, currSelect);
+      // $select with * for populate
+      const nextSelect = fp.filter(fp.startsWith(options.field || target), params.query.$select);
+      params.query.$select = selectTail(nextSelect);
     }
 
     // target field must be specified by $select to populate

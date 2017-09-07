@@ -153,6 +153,15 @@ export function reorderPosition(Model, item, newPos, options = {}) {
     });
 }
 
+export const splitHead = fp.compose(fp.head, fp.split('.'));
+export const splitTail = fp.compose(fp.join('.'), fp.tail, fp.split('.'));
+export const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
+export const selectTail = fp.pipe(
+  fp.map(splitTail),     // remove the head
+  fp.reject(fp.isEmpty), // remove empty
+  fp.when(fp.complement(fp.isEmpty), fp.append('*')) // add * for non-empty
+);
+
 const populateList = (list, idField, options = {}) => (data) => {
   return fp.map((doc) => {
     let item = data.find((item) => {

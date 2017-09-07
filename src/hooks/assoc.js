@@ -1,5 +1,6 @@
 import makeDebug from 'debug';
 import fp from 'mostly-func';
+import { repeatDoubleStar, splitHead, selectTail } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 
@@ -22,28 +23,25 @@ export default function assoc(target, opts) {
       throw new Error('You need to provide a service and a field');
     }
 
-    // target must be specified by $select to assoc
-    let select = hook.params.query
-      ? [].concat(hook.params.query.$select || [])
-      : [];
-    if (!fp.contains(target, select)) return hook;
-
-    const assocField = function (data, target) {
+    const assocField = function (data, params, target) {
       const service = hook.app.service(options.service);
 
-      // Fall through the hook.params ?
-      let params = options.fallThrough
-        ? Object.assign({}, hook.params, { query: undefined })
-        : {};
+      // whether fall through the params
+      if (options.fallThrough) {
+        params = fp.reduce((acc, path) => {
+          path = path.split('.');
+          return fp.assocPath(path, fp.path(path, params), acc);
+        }, {}, options.fallThrough);
+      }
 
       if (Array.isArray(data)) {
-        params.query = {
+        params.query = fp.merge(params.query, {
           [options.field]: { $in: fp.map(fp.prop(options.idField), data) },
-        };
+        });
       } else {
-        params.query = {
+        params.query = fp.merge(params.query, {
           [options.field]: fp.prop(options.idField, data)
-        };
+        });
       }
       params.populate = false; // prevent recursive populate
       params.paginate = false; // disable paginate
@@ -78,7 +76,22 @@ export default function assoc(target, opts) {
 
     if (Array.isArray(data) && data.length === 0) return hook;
     
-    return assocField(data, target, options).then(result => {
+    // each assoc field should have its own params
+    let params = fp.assign({}, hook.params);
+    
+    // target must be specified by $select to assoc
+    let selected = false;
+    if (params.query && params.query.$select) {
+      // split $select to current level field
+      const currSelect = fp.map(splitHead, params.query.$select);
+      selected = fp.contains(target, currSelect);
+      // $select with * for next populate level
+      const nextSelect = fp.filter(fp.startsWith(target), params.query.$select);
+      params.query.$select = selectTail(nextSelect);
+    }
+    if (selected === false) return hook;
+
+    return assocField(data, params, target, options).then(result => {
       if (isPaginated) {
         hook.result.data = result;
       } else {

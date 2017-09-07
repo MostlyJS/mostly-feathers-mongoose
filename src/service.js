@@ -2,6 +2,7 @@ import assert from 'assert';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
 import { Service as BaseService } from 'feathers-mongoose';
+import { splitHead, repeatDoubleStar } from './helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
@@ -51,27 +52,26 @@ const unsetObj = function(obj) {
   }
 };
 
-const splitHead = fp.compose(fp.head, fp.split('.'));
-const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
-
-const filterSelect = function(params) {
-  // select by * and field.*
-  if (params && params.query && params.query.$select) {
-    if (fp.is(String, params.query.$select)) {
-      params.query.$select = fp.map(fp.trim, fp.split(',', params.query.$select));
+const normalizeSelect = function(select) {
+  if (select) {
+    // convert string $select to array
+    if (fp.is(String, select)) {
+      select = fp.map(fp.trim, fp.split(',', select));
     }
     // repeat ** as recursive fields
-    params.query.$select = repeatDoubleStar(params.query.$select);
+    select = repeatDoubleStar(select);
+  }
+  return select;
+};
 
-    // save original $select for hooks (e.g. populate),
-    // or use existing params.$select if not deleted by hook
-    if (fp.isNil(params.$select) || fp.isEmpty(params.$select)) {
-      params.$select = params.query.$select;
-    }
-    // split $select to current level field
-    params.query.$select = fp.map(splitHead, params.$select);
+const filterSelect = function(params) {
+  // select by * and field.* or field.**
+  if (params && params.query && params.query.$select) {
+    // normalize the $select (mutate on purpose)
+    params.query.$select = normalizeSelect(params.query.$select);
 
-    if (fp.contains('*', params.query.$select)) {
+    const select = fp.map(splitHead, params.query.$select);
+    if (fp.contains('*', select)) {
       return fp.dissocPath(['query', '$select'], params);
     }
   }
@@ -104,10 +104,10 @@ export class Service extends BaseService {
   }
 
   find(params) {
-    // filter $select, TODO: immmutate the hook.params
+    // filter $select
     params = filterSelect(params);
     
-    params = Object.assign({ query: {} }, params);
+    params = fp.assign({ query: {} }, params);
 
     if (params.query) {
       // fix id query as _ids
@@ -150,10 +150,10 @@ export class Service extends BaseService {
   get(id, params) {
     if (id === 'null' || id === '0') id = null;
 
-    // filter $select, TODO: immmutate the hook.params
+    // filter $select
     params = filterSelect(params);
 
-    params = Object.assign({ query: {} }, params);
+    params = fp.assign({ query: {} }, params);
 
     let action = params.__action;
 
@@ -179,7 +179,7 @@ export class Service extends BaseService {
   }
 
   create(data, params) {
-    params = Object.assign({ query: {} }, params);
+    params = fp.assign({ query: {} }, params);
 
     // add support to create multiple objects
     if (Array.isArray(data)) {
@@ -203,7 +203,7 @@ export class Service extends BaseService {
 
   update(id, data, params) {
     if (id === 'null') id = null;
-    params = Object.assign({}, params);
+    params = fp.assign({}, params);
 
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
@@ -224,7 +224,7 @@ export class Service extends BaseService {
 
   patch(id, data, params) {
     if (id === 'null') id = null;
-    params = Object.assign({}, params);
+    params = fp.assign({}, params);
 
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
@@ -245,7 +245,7 @@ export class Service extends BaseService {
 
   remove(id, params) {
     if (id === 'null') id = null;
-    params = Object.assign({}, params);
+    params = fp.assign({}, params);
 
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
@@ -288,9 +288,9 @@ export class Service extends BaseService {
   // some reserved actions
 
   upsert(data, params) {
-    params = Object.assign({}, params);
-    if (!params.query) params.query = Object.assign({}, data);  // default find by input data
-    params.mongoose = Object.assign({}, params.mongoose, { upsert: true });
+    params = fp.assign({}, params);
+    if (!params.query) params.query = fp.assign({}, data);  // default find by input data
+    params.mongoose = fp.assign({}, params.mongoose, { upsert: true });
 
     // upsert do not set default value in schema
     const schemas = this.Model.schema && this.Model.schema.obj;
@@ -307,32 +307,37 @@ export class Service extends BaseService {
   }
 
   count(id, data, params) {
-    params = Object.assign({ query: {} }, params);
+    params = fp.assign({ query: {} }, params || id);
 
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
   first(id, data, params) {
-    params = Object.assign({ query: {} }, params || id);
+    // filter $select
+    params = filterSelect(params || id);
+
+    params = fp.assign({ query: {} }, params);
 
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
-    // use this.find instead of super.find for hooks to work
-    return this.find(params).then(results => {
+    return super.find(params).then(results => {
+      debug('###first', params);
       results = results.data || results;
       return results && results.length > 0? results[0] : null;
     });
   }
 
   last(id, data, params) {
-    params = Object.assign({ query: {} }, params || id);
+    // filter $select
+    params = filterSelect(params || id);
+
+    params = fp.assign({ query: {} }, params);
 
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
-      // use this.find instead of super.find for hooks to work
-      return this.find(params).then(results => {
+      return super.find(params).then(results => {
         results = results.data || results;
         if (Array.isArray(results) && results.length > 0) {
           return results[0];
