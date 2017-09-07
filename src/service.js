@@ -322,7 +322,6 @@ export class Service extends BaseService {
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
     return super.find(params).then(results => {
-      debug('###first', params);
       results = results.data || results;
       return results && results.length > 0? results[0] : null;
     });
