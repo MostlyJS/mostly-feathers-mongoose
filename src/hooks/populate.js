@@ -239,7 +239,7 @@ export default function populate (target, opts) {
     }
 
     // each target field should have its own params
-    let params = fp.assign({}, hook.params);
+    let params = fp.assign({ query: {} }, hook.params);
 
     // target field must be specified by $select to populate
     if (!isSelected(options.field || target, params.query.$select)) return hook;

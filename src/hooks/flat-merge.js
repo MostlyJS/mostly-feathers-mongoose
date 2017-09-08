@@ -36,7 +36,7 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
     };
 
     // each field should have its own params
-    let params = fp.assign({}, hook.params);
+    let params = fp.assign({ query: {} }, hook.params);
 
     // target must be specified by $select to merge
     if (!isSelected(field, params.query.$select)) return hook;
