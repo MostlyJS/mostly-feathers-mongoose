@@ -26,13 +26,12 @@ export default function assoc(target, opts) {
     const assocField = function (data, params, target) {
       const service = hook.app.service(options.service);
 
-      // whether fall through the params
-      if (options.fallThrough) {
-        params = fp.reduce((acc, path) => {
-          path = path.split('.');
-          return fp.assocPath(path, fp.path(path, params), acc);
-        }, {}, options.fallThrough);
-      }
+      // pass infomation of the $select and specified by options.fallThrough
+      const selection = { $select: params.query.$select };
+      params = options.fallThrough
+        ? fp.pick(options.fallThrough, params)
+        : {};
+      params.query = selection;
 
       if (Array.isArray(data)) {
         params.query = fp.merge(params.query, {
