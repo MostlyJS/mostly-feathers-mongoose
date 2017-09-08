@@ -11,6 +11,7 @@ import isAction from './is-action';
 import isHeader from './is-header';
 import flatMerge from './flat-merge';
 import populate from './populate';
+import prefixSelect from './prefix-select';
 import presentEntity from './present-entity';
 import publishEvent from './publish-event';
 import responder from './responder';
@@ -31,6 +32,7 @@ export {
   isAction,
   isHeader,
   populate,
+  prefixSelect,
   presentEntity,
   publishEvent,
   responder,

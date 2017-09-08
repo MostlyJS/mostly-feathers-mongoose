@@ -324,7 +324,7 @@ export class Service extends BaseService {
     return super.find(params).then(results => {
       results = results.data || results;
       return results && results.length > 0? results[0] : null;
-    });
+    }).then(transform);
   }
 
   last(id, data, params) {
@@ -338,12 +338,8 @@ export class Service extends BaseService {
       params.query.$skip = total - 1;
       return super.find(params).then(results => {
         results = results.data || results;
-        if (Array.isArray(results) && results.length > 0) {
-          return results[0];
-        } else {
-          return results;
-        }
-      });
+        return results && results.length > 0? results[0] : null;
+      }).then(transform);
     });
   }
 
