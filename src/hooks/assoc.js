@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { repeatDoubleStar, splitHead, selectTail } from '../helpers';
+import { isSelected, selectNext, selectTail, splitHead } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 
@@ -80,16 +80,12 @@ export default function assoc(target, opts) {
     let params = fp.assign({}, hook.params);
     
     // target must be specified by $select to assoc
-    let selected = false;
-    if (params.query && params.query.$select) {
-      // split $select to current level field
-      const currSelect = fp.map(splitHead, params.query.$select);
-      selected = fp.contains(target, currSelect);
-      // $select with * for next populate level
-      const nextSelect = fp.filter(fp.startsWith(target), params.query.$select);
-      params.query.$select = selectTail(nextSelect);
+    if (!isSelected(target, params.query.$select)) return hook;
+
+    // $select with * for next level
+    if (params.query.$select) {
+      params.query.$select = selectNext(target, params.query.$select);
     }
-    if (selected === false) return hook;
 
     return assocField(data, params, target, options).then(result => {
       if (isPaginated) {

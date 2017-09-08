@@ -1,6 +1,7 @@
 import errors from 'feathers-errors';
 import fp from 'mostly-func';
 import mongose from 'mongoose';
+import { isSelected, splitHead } from '../helpers';
 
 export default function flatMerge(field, opts = { idField: 'id' }) {
 
@@ -33,6 +34,12 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
         return setData(data, getData(data));
       }
     };
+
+    // each field should have its own params
+    let params = fp.assign({}, hook.params);
+
+    // target must be specified by $select to merge
+    if (!isSelected(field, params.query.$select)) return hook;
 
     if (hook.result) {
       if (hook.result.data) {

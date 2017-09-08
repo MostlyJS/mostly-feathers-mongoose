@@ -154,13 +154,34 @@ export function reorderPosition(Model, item, newPos, options = {}) {
 }
 
 export const splitHead = fp.compose(fp.head, fp.split('.'));
+
 export const splitTail = fp.compose(fp.join('.'), fp.tail, fp.split('.'));
+
 export const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
+
 export const selectTail = fp.pipe(
   fp.map(splitTail),     // remove the head
   fp.reject(fp.isEmpty), // remove empty
   fp.when(fp.complement(fp.isEmpty), fp.append('*')) // add * for non-empty
 );
+
+export const isSelected = (target, select) => {
+  if (select) {
+    // split $select to get current level field
+    const currSelect = fp.map(splitHead, select);
+    return fp.contains(target, currSelect);
+  }
+  return false;
+}
+
+export const selectNext = (target, select) => {
+  if (select) {
+    // $select with * for next level
+    const nextSelect = fp.filter(fp.startsWith(target), select);
+    return selectTail(nextSelect);
+  }
+  return select;
+}
 
 const populateList = (list, idField, options = {}) => (data) => {
   return fp.map((doc) => {

@@ -5,7 +5,17 @@ import fp from 'mostly-func';
 import { plural } from 'pluralize';
 import validator from 'validator';
 import util from 'util';
-import { getField, setField, setFieldByKey, repeatDoubleStar, splitHead, selectTail } from '../helpers';
+
+import {
+  getField,
+  isSelected,
+  setField,
+  setFieldByKey,
+  repeatDoubleStar,
+  selectNext,
+  selectTail,
+  splitHead
+} from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');
 
@@ -231,18 +241,13 @@ export default function populate (target, opts) {
     // each target field should have its own params
     let params = fp.assign({}, hook.params);
 
-    let selected = false;
-    if (params.query && params.query.$select) {
-      // split $select to current level field
-      let currSelect = fp.map(splitHead, params.query.$select);
-      selected = fp.contains(options.field || target, currSelect);
-      // $select with * for populate
-      const nextSelect = fp.filter(fp.startsWith(options.field || target), params.query.$select);
-      params.query.$select = selectTail(nextSelect);
-    }
-
     // target field must be specified by $select to populate
-    if (selected === false) return hook;
+    if (!isSelected(options.field || target, params.query.$select)) return hook;
+
+    // $select with * for next level
+    if (params.query.$select) {
+      params.query.$select = selectNext(options.field || target, params.query.$select);
+    }
 
     const isPaginated = hook.method === 'find' && hook.result.data;
     const data = isPaginated ? hook.result.data : hook.result;
