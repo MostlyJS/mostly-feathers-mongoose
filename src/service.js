@@ -140,11 +140,7 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by find
-    if (this[action] && defaultMethods.indexOf(action) < 0) {
-      params = fp.dissoc('__action', params);
-      return this.action('find', action, null, {}, params);
-    }
-    throw new Error("No such **find** action: " + action);
+    return this._action('find', action, null, null, params);
   }
 
   get(id, params) {
@@ -171,11 +167,7 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by get
-    if (this[action] && defaultMethods.indexOf(action) < 0) {
-      params = fp.dissoc('__action', params);
-      return this.action('get', action, id, {}, params);
-    }
-    throw new Error("No such **get** action: " + action);
+    return this._action('get', action, id, null, params);
   }
 
   create(data, params) {
@@ -193,12 +185,7 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by get
-    if (this[action] && defaultMethods.indexOf(action) < 0) {
-      params = fp.dissoc('__action', params);
-      return this.action('create', action, null, data, params);
-    } else {
-      throw new Error("No such **create** action: " + action);
-    }
+    return this._action('create', action, null, data, params);
   }
 
   update(id, data, params) {
@@ -214,12 +201,7 @@ export class Service extends BaseService {
     }
     
     // TODO secure action call by get
-    if (this[action] && defaultMethods.indexOf(action) < 0) {
-      params = fp.dissoc('__action', params);
-      return this.action('update', action, id, data, params);
-    } else {
-      throw new Error("No such **put** action: " + action);
-    }
+    return this._action('update', action, id, data, params);
   }
 
   patch(id, data, params) {
@@ -234,13 +216,7 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by get
-    if (this[action] && defaultMethods.indexOf(action) < 0) {
-      debug('service %s patch %j', this.name, id);
-      params = fp.dissoc('__action', params);
-      return this.action('patch', action, id, data, params);
-    } else {
-      throw new Error("No such **patch** action: " + action);
-    }
+    return this._action('patch', action, id, data, params);
   }
 
   remove(id, params) {
@@ -262,18 +238,15 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by get
-    if (id && action === 'restore') {
-      params = fp.dissoc('__action', params);
-      return this.restore(id, params);
-    } else {
-      throw new Error("No such **remove** action: " + action);
-    }
+    this._action('remove', action, id, null, params);
   }
 
-  action(method, action, id, data, params) {
-    debug(' => %s action %s with %j', this.name, action, id, data);
-    assert(defaultMethods.indexOf(method) > -1 && this[action],
-      'No such action method: ' + method + '->' + action);
+  _action(method, action, id, data, params) {
+    if (this['_' + action] === undefined || defaultMethods.indexOf(action) >= 0) {
+      throw new Error(`No such **${method}** action: ${action}`);
+    }
+    params = fp.dissoc('__action', params);
+    debug('service %s %s action %s id %j => %j', this.name, method, action, id, data);
 
     // get target item with params.query (without provider)
     let query = id? this.get(id, { query: params.query }) : Promise.resolve(null);
@@ -281,13 +254,15 @@ export class Service extends BaseService {
       if (id && !origin) {
         throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
       }
-      return this[action].call(this, id, data, params, origin);
+      return this['_' + action].call(this, id, data, params, origin);
     });
   }
 
-  // some reserved actions
+  /**
+   * private actions, aciton method are pseudo private by underscore
+   */
 
-  upsert(data, params) {
+  _upsert(id, data, params) {
     params = fp.assign({}, params);
     if (!params.query) params.query = fp.assign({}, data);  // default find by input data
     params.mongoose = fp.assign({}, params.mongoose, { upsert: true });
@@ -306,14 +281,14 @@ export class Service extends BaseService {
     });
   }
 
-  count(id, data, params) {
+  _count(id, data, params) {
     params = fp.assign({ query: {} }, params || id);
 
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
-  first(id, data, params) {
+  _first(id, data, params) {
     // filter $select
     params = filterSelect(params || id);
 
@@ -321,13 +296,14 @@ export class Service extends BaseService {
 
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
+    
     return super.find(params).then(results => {
       results = results.data || results;
       return results && results.length > 0? results[0] : null;
     }).then(transform);
   }
 
-  last(id, data, params) {
+  _last(id, data, params) {
     // filter $select
     params = filterSelect(params || id);
 
@@ -336,6 +312,7 @@ export class Service extends BaseService {
     return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
+
       return super.find(params).then(results => {
         results = results.data || results;
         return results && results.length > 0? results[0] : null;
@@ -343,14 +320,56 @@ export class Service extends BaseService {
     });
   }
 
-  restore(id, data, params) {
+  _restore(id, data, params) {
     return super.patch(id, { destroyedAt: null }, params).then(transform);
   }
 }
 
-export default function init (options) {
-  return new Service(options);
+class ProxyService extends Service {
+  constructor(options) {
+    super(options);
+  }
+
+  action(method, action, id, data, params) {
+    if (defaultMethods.indexOf(method) < 0 || !action) {
+      return Promise.reject(new Error(`action and method is not valid`));
+    }
+    params.__action = action;
+    return this[method].call(this, id, data, params);
+  }
+  
+  /**
+   * some reserved proxy actions
+   */ 
+  upsert(data, params = {}) {
+    params.__action = 'upsert';
+    return super.create(data, params);
+  }
+
+  count(params = {}) {
+    params.__action = 'count';
+    return super.get(null, params);
+  }
+
+  first(params = {}) {
+    params.__action = 'first';
+    return super.get(null, params);
+  }
+
+  last(params = {}) {
+    params.__action = 'last';
+    return super.get(null, params);
+  }
+
+  restore(id, params = {}) {
+    params.__action = 'restore';
+    return super.remove(id, params);
+  }
 }
 
-init.Service = Service;
+export default function init (options) {
+  return new ProxyService(options);
+}
+
+init.Service = ProxyService;
 init.transform = transform;
