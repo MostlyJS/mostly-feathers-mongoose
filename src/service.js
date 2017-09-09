@@ -155,7 +155,7 @@ export class Service extends BaseService {
 
     // check if id is action for find
     if (id && !action) {
-      if (this[id] && defaultMethods.indexOf(id) < 0) {
+      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
         params = fp.assoc('__action', id, params);
         return this.find(params);
       }
@@ -264,7 +264,9 @@ export class Service extends BaseService {
 
   _upsert(id, data, params) {
     params = fp.assign({}, params);
-    if (!params.query) params.query = fp.assign({}, data);  // default find by input data
+    if (fp.isNil(params.query) || fp.isEmpty(params.query)) {
+      params.query = fp.assign({}, data);  // default find by input data
+    }
     params.mongoose = fp.assign({}, params.mongoose, { upsert: true });
 
     // upsert do not set default value in schema
@@ -334,36 +336,34 @@ class ProxyService extends Service {
     if (defaultMethods.indexOf(method) < 0 || !action) {
       return Promise.reject(new Error(`action and method is not valid`));
     }
-    params.__action = action;
-    return this[method].call(this, id, data, params);
+    return super._action(method, action, id, data, params);
   }
-  
+
   /**
    * some reserved proxy actions
    */ 
   upsert(data, params = {}) {
-    params.__action = 'upsert';
-    return super.create(data, params);
+    return super._action('create', 'upsert', null, data, params);
   }
 
   count(params = {}) {
     params.__action = 'count';
-    return super.get(null, params);
+    return this.get(null, params);
   }
 
   first(params = {}) {
     params.__action = 'first';
-    return super.get(null, params);
+    return this.get(null, params);
   }
 
   last(params = {}) {
     params.__action = 'last';
-    return super.get(null, params);
+    return this.get(null, params);
   }
 
   restore(id, params = {}) {
     params.__action = 'restore';
-    return super.remove(id, params);
+    return this.remove(id, params);
   }
 }
 
