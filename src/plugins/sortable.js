@@ -9,7 +9,7 @@ export default function(schema, options) {
   options = options || {};
 
   if (!schema.get('position')) {
-    schema.add({ position: 'Number' });
+    schema.add({ position: { type: 'Number' } });
   }
 
   schema.index({ position: 1 });
@@ -48,12 +48,23 @@ export default function(schema, options) {
     }
   };
 
+  // TODO function model like pre('update')
   schema.pre('save', function(next) {
     let item = this;
     const Model = mongoose.model(item.constructor.modelName);
     preUpdate(item, Model, next);
   });
 
+  schema.pre('update', function(next) {
+    const update = this.getUpdate();
+    if (this.model && update && update.$set) {
+      preUpdate(update.$set, this.model, next);
+    } else {
+      next();
+    }
+  });
+
+  // TODO function model like pre('update')
   schema.pre('findOneAndUpdate', function(next) {
     let item = this.getUpdate();
     const Model = mongoose.model(this.model.modelName);

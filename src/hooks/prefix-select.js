@@ -20,7 +20,7 @@ export default function prefixSelect(target, opts = { excepts: [] }) {
       });
     }
 
-    hook.params.query.$select = [target, '*'].concat(select);
+    hook.params.query.$select = fp.uniq([target, '*'].concat(select));
 
     return hook;
   };
