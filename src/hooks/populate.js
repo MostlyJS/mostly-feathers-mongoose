@@ -249,14 +249,13 @@ export default function populate (target, opts) {
       params.query.$select = selectNext(options.field || target, params.query.$select);
     }
 
-    const isPaginated = hook.method === 'find' && hook.result.data;
-    const data = isPaginated ? hook.result.data : hook.result;
+    const data = hook.result && hook.result.data || hook.result;
 
     if (Array.isArray(data) && data.length === 0) return hook;
     
     return populateField(hook.app, data, target, params, options).then(result => {
       //debug('> populate result', util.inspect(result));
-      if (isPaginated) {
+      if (hook.result.data) {
         hook.result.data = result;
       } else {
         hook.result = result;

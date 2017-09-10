@@ -70,8 +70,7 @@ export default function assoc(target, opts) {
       });
     };
 
-    let isPaginated = hook.method === 'find' && hook.result.data;
-    let data = isPaginated ? hook.result.data : hook.result;
+    let data = hook.result && hook.result.data || hook.result;
 
     if (Array.isArray(data) && data.length === 0) return hook;
     
@@ -87,7 +86,7 @@ export default function assoc(target, opts) {
     }
 
     return assocField(data, params, target, options).then(result => {
-      if (isPaginated) {
+      if (hook.result.data) {
         hook.result.data = result;
       } else {
         hook.result = result;
