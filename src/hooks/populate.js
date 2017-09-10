@@ -136,7 +136,7 @@ function populateField (app, item, target, params, options) {
         [options.service]: entry
       };
     }
-    debug('populate =>', field, services);
+    debug('populate =>', field, services, params.query.$select);
 
     params.paginate = false; // disable paginate
     promise = Promise.all(fp.map((service) => {
@@ -155,7 +155,7 @@ function populateField (app, item, target, params, options) {
       }
       id = entry[options.idField];
     }
-    debug('populate', field, { [service]: id });
+    debug('populate =>', field, { [service]: id }, params.query.$select);
 
     promise = app.service(service).get(id, params);
   }
