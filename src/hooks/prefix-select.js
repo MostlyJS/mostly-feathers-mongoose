@@ -3,11 +3,15 @@ import fp from 'mostly-func';
 
 export default function prefixSelect(target, opts = { excepts: [] }) {
   assert(target, 'select target not provided.');
-  const excepts = [target, '*'].concat(opts.excepts || []);
 
   return hook => {
     hook.params.query = hook.params.query || {};
 
+    let excepts = [target, '*'].concat(opts.excepts || []);
+    const schemas = hook.service.Model.schema && hook.service.Model.schema.paths;
+    if (schemas) {
+      excepts = excepts.concat(Object.keys(schemas));
+    }
     let select = hook.params.query.$select || [];
     if (select.length) {
       if (fp.is(String, select)) {
