@@ -172,7 +172,7 @@ export const isSelected = (target, select) => {
     return fp.contains(target, currSelect);
   }
   return false;
-}
+};
 
 export const selectNext = (target, select) => {
   if (select) {
@@ -181,7 +181,7 @@ export const selectNext = (target, select) => {
     return selectTail(nextSelect);
   }
   return select;
-}
+};
 
 const populateList = (list, idField, options = {}) => (data) => {
   return fp.map((doc) => {

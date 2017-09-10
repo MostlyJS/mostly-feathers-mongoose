@@ -35,7 +35,7 @@ export default function defaultAcls(policy, permission, opts) {
           return acc;
         }, {}, ids || []);
         return aces;
-      })
+      });
     };
     
     if (hook.data) {
