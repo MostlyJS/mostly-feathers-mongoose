@@ -17,7 +17,7 @@ const defaultOptions = {
 const defaultMethods = ['find', 'get', 'create', 'update', 'patch', 'remove'];
 
 // prevent accidental multiple operations
-const assertMultiple = function(id, params, message) {
+const assertMultiple = function (id, params, message) {
   if (!id) {
     if (params && params.query && (params.$multi || params.query.$multi)) {
       delete params.query.$multi;
@@ -32,7 +32,7 @@ const unsetOptions = fp.pipe(
   fp.dissoc('ModelName')
 );
 
-const unset_id = function(obj) {
+const unset_id = function (obj) {
   if (obj && obj._id) {
     return fp.pipe(
       fp.assoc('id', String(obj.id || obj._id)),
@@ -44,7 +44,7 @@ const unset_id = function(obj) {
   }
 };
 
-const unsetObj = function(obj) {
+const unsetObj = function (obj) {
   if (Array.isArray(obj)) {
     return fp.map(unset_id, obj);
   } else {
@@ -52,7 +52,7 @@ const unsetObj = function(obj) {
   }
 };
 
-const normalizeSelect = function(select) {
+const normalizeSelect = function (select) {
   if (select) {
     // convert string $select to array
     if (fp.is(String, select)) {
@@ -64,7 +64,7 @@ const normalizeSelect = function(select) {
   return select;
 };
 
-const filterSelect = function(params) {
+const filterSelect = function (params) {
   // select by * and field.* or field.**
   if (params && params.query && params.query.$select) {
     // normalize the $select (mutate on purpose)
@@ -79,7 +79,7 @@ const filterSelect = function(params) {
 };
 
 // transform the results
-const transform = function(results) {
+const transform = function (results) {
   if (results) {
     if (results.data) {
       results.data = unsetObj(results.data);
@@ -91,7 +91,7 @@ const transform = function(results) {
 };
 
 export class Service extends BaseService {
-  constructor(options) {
+  constructor (options) {
     options = Object.assign({}, defaultOptions, options);
     super(options);
 
@@ -103,7 +103,7 @@ export class Service extends BaseService {
     this.app = app;
   }
 
-  find(params) {
+  find (params) {
     // filter $select
     params = filterSelect(params);
     
@@ -143,7 +143,7 @@ export class Service extends BaseService {
     return this._action('find', action, null, null, params);
   }
 
-  get(id, params) {
+  get (id, params) {
     if (id === 'null' || id === '0') id = null;
 
     // filter $select
@@ -170,7 +170,7 @@ export class Service extends BaseService {
     return this._action('get', action, id, null, params);
   }
 
-  create(data, params) {
+  create (data, params) {
     params = fp.assign({ query: {} }, params);
 
     // add support to create multiple objects
@@ -188,7 +188,7 @@ export class Service extends BaseService {
     return this._action('create', action, null, data, params);
   }
 
-  update(id, data, params) {
+  update (id, data, params) {
     if (id === 'null') id = null;
     params = fp.assign({}, params);
 
@@ -204,7 +204,7 @@ export class Service extends BaseService {
     return this._action('update', action, id, data, params);
   }
 
-  patch(id, data, params) {
+  patch (id, data, params) {
     if (id === 'null') id = null;
     params = fp.assign({}, params);
 
@@ -219,7 +219,7 @@ export class Service extends BaseService {
     return this._action('patch', action, id, data, params);
   }
 
-  remove(id, params) {
+  remove (id, params) {
     if (id === 'null') id = null;
     params = fp.assign({}, params);
 
@@ -241,7 +241,7 @@ export class Service extends BaseService {
     this._action('remove', action, id, null, params);
   }
 
-  _action(method, action, id, data, params) {
+  _action (method, action, id, data, params) {
     if (this['_' + action] === undefined || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
@@ -262,7 +262,7 @@ export class Service extends BaseService {
    * private actions, aciton method are pseudo private by underscore
    */
 
-  _upsert(id, data, params) {
+  _upsert (id, data, params) {
     params = fp.assign({}, params);
     if (fp.isNil(params.query) || fp.isEmpty(params.query)) {
       params.query = fp.assign({}, data);  // default find by input data
@@ -270,11 +270,11 @@ export class Service extends BaseService {
     params.mongoose = fp.assign({}, params.mongoose, { upsert: true });
 
     // upsert do not set default value in schema
-    const schemas = this.Model.schema && this.Model.schema.obj;
+    const schemas = this.Model.schema && this.Model.schema.paths;
     if (schemas) {
       for (const key in schemas) {
-        if (data[key] === undefined && schemas[key].default !== undefined) {
-          data[key] = schemas[key].default;
+        if (data[key] === undefined && schemas[key].defaultValue !== undefined) {
+          data[key] = schemas[key].defaultValue;
         }
       }
     }
@@ -283,14 +283,14 @@ export class Service extends BaseService {
     });
   }
 
-  _count(id, data, params) {
+  _count (id, data, params) {
     params = fp.assign({ query: {} }, params || id);
 
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
-  _first(id, data, params) {
+  _first (id, data, params) {
     // filter $select
     params = filterSelect(params || id);
 
@@ -305,7 +305,7 @@ export class Service extends BaseService {
     }).then(transform);
   }
 
-  _last(id, data, params) {
+  _last (id, data, params) {
     // filter $select
     params = filterSelect(params || id);
 
@@ -322,17 +322,17 @@ export class Service extends BaseService {
     });
   }
 
-  _restore(id, data, params) {
+  _restore (id, data, params) {
     return super.patch(id, { destroyedAt: null }, params).then(transform);
   }
 }
 
 class ProxyService extends Service {
-  constructor(options) {
+  constructor (options) {
     super(options);
   }
 
-  action(method, action, id, data, params) {
+  action (method, action, id, data, params) {
     if (defaultMethods.indexOf(method) < 0 || !action) {
       return Promise.reject(new Error(`action and method is not valid`));
     }
@@ -340,28 +340,32 @@ class ProxyService extends Service {
   }
 
   /**
-   * some reserved proxy actions
-   */ 
-  upsert(data, params = {}) {
-    return super._action('create', 'upsert', null, data, params);
+   * proxy to some reserved actions
+   * syntax sugar for calling from other services, do not call them by super
+   * TODO: prevent it to be called by super
+   */
+
+  upsert (data, params = {}) {
+    params.__action = 'upsert';
+    return this.create(data, params);
   }
 
-  count(params = {}) {
+  count (params = {}) {
     params.__action = 'count';
     return this.get(null, params);
   }
 
-  first(params = {}) {
+  first (params = {}) {
     params.__action = 'first';
     return this.get(null, params);
   }
 
-  last(params = {}) {
+  last (params = {}) {
     params.__action = 'last';
     return this.get(null, params);
   }
 
-  restore(id, params = {}) {
+  restore (id, params = {}) {
     params.__action = 'restore';
     return this.remove(id, params);
   }

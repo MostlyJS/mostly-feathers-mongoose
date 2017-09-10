@@ -134,8 +134,8 @@ export function setField(item, target, data, field, options) {
 }
 
 export function reorderPosition(Model, item, newPos, options = {}) {
-  const prevPos = parseInt(item.position);
-  newPos = parseInt(newPos);
+  const prevPos = parseInt(item.position || 0);
+  newPos = parseInt(newPos || 0);
 
   const whichWay = (newPos > prevPos) ? -1 : 1;
   const start = (newPos > prevPos) ? prevPos + 1 : newPos;
