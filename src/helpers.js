@@ -98,11 +98,11 @@ export function setField(item, target, data, field, options) {
     value.forEach(function(v) {
       let entry = get(v, key);
       if(Array.isArray(entry)) {
-        set(v, key, entry.map(it => {
+        set(v, key, compact(entry.map(it => {
           let id = options.path? it[options.idField] : it;
           let clone = cloneById(data, id);
           return options.retained? defaults(it, clone) : clone;
-        }));
+        })));
         if (!get(v, key)) warn(1, entry);
       } else {
         let id = options.path? entry[options.idField] : entry;
@@ -115,11 +115,11 @@ export function setField(item, target, data, field, options) {
     if (value && value[key]) {
       let entry = get(value, key);
       if (Array.isArray(entry)) {
-        set(item, target, entry.map(it => {
+        set(item, target, compact(entry.map(it => {
           let id = options.path? it[options.idField] : it;
           let clone = cloneById(data, id);
           return options.retained? defaults(it, clone) : clone;
-        }));
+        })));
         if (!get(item, target)) warn(3, entry);
       } else {
         let id = options.path? entry[options.idField] : entry;
