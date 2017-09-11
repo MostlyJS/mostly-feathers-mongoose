@@ -44,7 +44,9 @@ export default function assoc(target, opts) {
       }
       params.populate = false; // prevent recursive populate
       params.paginate = false; // disable paginate
-      
+
+      debug('assoc =>', target, options.service, params.query);
+
       return service.find(params).then((results) => {
         const filterById = function (id) {
           return fp.filter(obj => {
