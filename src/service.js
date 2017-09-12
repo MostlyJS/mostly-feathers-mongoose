@@ -259,6 +259,48 @@ export class Service extends BaseService {
     this._action('remove', action, id, null, params);
   }
 
+  /**
+   * proxy to action method
+   * syntax sugar for calling from other services, do not call them by super
+   */
+  action (action) {
+    return {
+      find: (params = {}) => {
+        params.__action = action;
+        return this.find(params);
+      },
+
+      get: (id, params = {}) => {
+        params.__action = action;
+        return this.get(id, params);
+      },
+
+      create: (data, params = {}) => {
+        params.__action = action;
+        return this.create(data, params);
+      },
+
+      update: (id, data, params = {}) => {
+        params.__action = action;
+        return this.update(id, data, params);
+      },
+
+      patch: (id, data, params = {}) => {
+        params.__action = action;
+        return this.patch(id, data, params);
+      },
+
+      remove: (id, params = {}) => {
+        params.__action = action;
+        return this.remove(id, params);
+      }
+    };
+  }
+
+  /**
+   * private actions, aciton method are pseudo private by underscore
+   */
+
   _action (method, action, id, data, params) {
     if (this['_' + action] === undefined || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
@@ -275,10 +317,6 @@ export class Service extends BaseService {
       return this['_' + action].call(this, id, data, params, origin);
     });
   }
-
-  /**
-   * private actions, aciton method are pseudo private by underscore
-   */
 
   _upsert (id, data, params) {
     params = fp.assign({}, params);
@@ -345,53 +383,9 @@ export class Service extends BaseService {
   }
 }
 
-class ProxyService extends Service {
-  constructor (options) {
-    super(options);
-  }
-
-  action (method, action, id, data, params) {
-    if (defaultMethods.indexOf(method) < 0 || !action) {
-      return Promise.reject(new Error(`action and method is not valid`));
-    }
-    return super._action(method, action, id, data, params);
-  }
-
-  /**
-   * proxy to some reserved actions
-   * syntax sugar for calling from other services, do not call them by super
-   * TODO: prevent it to be called by super
-   */
-
-  upsert (data, params = {}) {
-    params.__action = 'upsert';
-    return this.create(data, params);
-  }
-
-  count (params = {}) {
-    params.__action = 'count';
-    return this.get(null, params);
-  }
-
-  first (params = {}) {
-    params.__action = 'first';
-    return this.get(null, params);
-  }
-
-  last (params = {}) {
-    params.__action = 'last';
-    return this.get(null, params);
-  }
-
-  restore (id, params = {}) {
-    params.__action = 'restore';
-    return this.remove(id, params);
-  }
-}
-
 export default function init (options) {
-  return new ProxyService(options);
+  return new Service(options);
 }
 
-init.Service = ProxyService;
+init.Service = Service;
 init.transform = transform;
