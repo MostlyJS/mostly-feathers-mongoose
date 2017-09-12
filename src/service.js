@@ -194,7 +194,16 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
-    const action = params.__action;
+    let action = params.__action;
+    
+    // check if id is action for patch
+    if (id && !action) {
+      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
+        action = id;
+        id = null;
+      }
+    }
+
     if (!action || action === 'update') {
       debug('service %s update %j', this.name, id, data);
       return super.update(id, data, params).then(transform);
@@ -210,7 +219,16 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
-    const action = params.__action;
+    let action = params.__action;
+    
+    // check if id is action for patch
+    if (id && !action) {
+      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
+        action = id;
+        id = null;
+      }
+    }
+
     if (!action || action === 'patch') {
       return super.patch(id, data, params).then(transform);
     }
@@ -280,7 +298,7 @@ export class Service extends BaseService {
     }
     return super.patch(null, data, params).then(results => {
       return results && results.length > 0? results[0] : null;
-    });
+    }).then(transform);
   }
 
   _count (id, data, params) {
