@@ -19,7 +19,7 @@ export default function defaultAcls(policy, permission, opts) {
         if (mongoose.Types.ObjectId.isValid(name)) {
           return Promise.resolve(name);
         } else {
-          return hook.app.service(options.service).first({ query: {
+          return hook.app.service(options.service).action('first').find({ query: {
             [options.field] : name
           }}).then(obj => obj.id);
         }
