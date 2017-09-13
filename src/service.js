@@ -329,7 +329,7 @@ export class Service extends BaseService {
     const schemas = this.Model.schema && this.Model.schema.paths;
     if (schemas) {
       for (const key in schemas) {
-        if (data[key] === undefined && schemas[key].defaultValue !== undefined) {
+        if (!key.startsWith('_') && data[key] === undefined && schemas[key].defaultValue !== undefined) {
           data[key] = schemas[key].defaultValue;
         }
       }
