@@ -73,6 +73,8 @@ const filterSelect = function (params) {
     const select = fp.map(splitHead, params.query.$select);
     if (fp.contains('*', select)) {
       return fp.dissocPath(['query', '$select'], params);
+    } else {
+      return fp.assocPath(['query', '$select'], select, params);
     }
   }
   return params;
