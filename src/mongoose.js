@@ -69,9 +69,12 @@ export function createModel(app, name, options) {
  * Create a service with mogoose model
  */
 export function createService(app, Service, Model, options) {
-  if (!options.Model) {
+  Model = options.Model || Model;
+  if (typeof Model === 'function') {
     assert(options.ModelName, 'createService but options.ModelName not provided');
     options.Model = Model(app, options.ModelName);
+  } else {
+    options.Model = Model;
   }
   const service = new Service(options);
   return service;
