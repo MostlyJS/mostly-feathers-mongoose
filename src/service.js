@@ -359,7 +359,6 @@ export class Service extends BaseService {
     params.paginate = false; // disable paginate
     
     return super.find(params).then(results => {
-      results = results.data || results;
       return results && results.length > 0? results[0] : null;
     }).then(transform);
   }
@@ -370,12 +369,11 @@ export class Service extends BaseService {
 
     params = fp.assign({ query: {} }, params);
 
-    return this.count(id, data, params).then(total => {
+    return this._count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
-
+      params.paginate = false;
       return super.find(params).then(results => {
-        results = results.data || results;
         return results && results.length > 0? results[0] : null;
       }).then(transform);
     });
