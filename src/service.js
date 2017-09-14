@@ -332,7 +332,8 @@ export class Service extends BaseService {
     if (schemas) {
       for (const key in schemas) {
         if (!key.startsWith('_') && data[key] === undefined && schemas[key].defaultValue !== undefined) {
-          data[key] = schemas[key].defaultValue;
+          data[key] = typeof schemas[key].defaultValue === 'function'
+            ? schemas[key].defaultValue() : schemas[key].defaultValue;
         }
       }
     }
