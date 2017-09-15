@@ -7,6 +7,7 @@ import defaultAcls from './default-acls';
 import depopulate from './depopulate';
 import filter from './filter';
 import filterField from './filter-field';
+import idAsCurrentUser from './id-as-current-user';
 import isAction from './is-action';
 import isHeader from './is-header';
 import flatMerge from './flat-merge';
@@ -29,6 +30,7 @@ export {
   filter,
   filterField,
   flatMerge,
+  idAsCurrentUser,
   isAction,
   isHeader,
   populate,
