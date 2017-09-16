@@ -134,7 +134,7 @@ export class Service extends BaseService {
       }
     });
 
-    const action = params.__action;
+    const action = params.__action || params.query && params.query.$action;
 
     if (!action || action === 'find') {
       debug('service %s find %j', this.name, params.query);
@@ -153,7 +153,7 @@ export class Service extends BaseService {
 
     params = fp.assign({ query: {} }, params);
 
-    let action = params.__action;
+    let action = params.__action || params.query && params.query.$action;
 
     // check if id is action for find
     if (id && !action) {
@@ -180,7 +180,7 @@ export class Service extends BaseService {
       return Promise.all(data.map(current => this.create(current, params)));
     }
 
-    const action = params.__action;
+    const action = params.__action || params.query && params.query.$action;
     if (!action || action === 'create') {
       debug('service %s create %j', this.name, data);
       return super.create(data, params).then(transform);
@@ -196,7 +196,7 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
-    let action = params.__action;
+    let action = params.__action || params.query && params.query.$action;
     
     // check if id is action for patch
     if (id && !action) {
@@ -221,7 +221,7 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
-    let action = params.__action;
+    let action = params.__action || params.query && params.query.$action;
     
     // check if id is action for patch
     if (id && !action) {
@@ -245,7 +245,7 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
-    const action = params.__action;
+    const action = params.__action || params.query && params.query.$action;
     if (!action || action === 'remove') {
       if (params.query && params.query.$soft) {
         debug('service %s remove soft %j', this.name, id);
@@ -307,7 +307,10 @@ export class Service extends BaseService {
     if (this['_' + action] === undefined || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
-    params = fp.dissoc('__action', params);
+    if (params.__action)
+      params = fp.dissoc('__action', params);
+    if (params.query && params.query.$action)
+      params.query = fp.dissoc('$action', params.query);
     debug('service %s %s action %s id %j => %j', this.name, method, action, id, data);
 
     // get target item with params.query (without provider)
