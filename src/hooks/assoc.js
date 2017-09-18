@@ -74,11 +74,11 @@ export default function assoc(target, opts) {
 
     let data = hook.result && hook.result.data || hook.result;
 
-    if (Array.isArray(data) && data.length === 0) return hook;
-    
+    if (fp.isNil(data) || fp.isEmpty(data)) return hook;
+
     // each assoc field should have its own params
     let params = fp.assign({ query: {} }, hook.params);
-    
+
     // target must be specified by $select to assoc
     if (!isSelected(target, params.query.$select)) return hook;
 
