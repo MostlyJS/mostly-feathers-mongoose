@@ -162,31 +162,17 @@ function populateField (app, item, target, params, options) {
 
   return promise.then((results) => {
     // debug('populate services found', results);
-    let data = results.data || results;
+    results = results && results.data || results;
     if (Array.isArray(results)) {
-      data = fp.flatten(fp.map(result => result.data || result, results));
+      results = fp.flatten(
+        fp.map(result => result && result.data || result, results));
     }
     // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
     if (Array.isArray(item)) {
-      item.forEach(it => setField(it, target, data, field, options));
+      item.forEach(it => setField(it, target, results, field, options));
     } else {
-      setField(item, target, data, field, options);
+      setField(item, target, results, field, options);
     }
-
-    // try nested populate(s)
-    // if (options.populate) {
-    //   let subPopulates = fp.map((subOpts) => {
-    //     let subItem = fp.flatten(getField(item, field));
-    //     let subTarget = subOpts.target || subOpts.field;
-    //     let subParams = fp.clone(params);
-    //     //debug('>>> nested populate %s/%s(options=%s) with %s',
-    //     //  subTarget, subOptions.field, util.inspect(subOptions), util.inspect(subItem));
-    //     return populateField(app, subItem, subTarget, subParams, subOpts);
-    //   }, [].concat(options.populate));
-    //   return Promise.all(subPopulates).then(() => item);
-    // } else {
-    //   return item;
-    // }
     return item;
   }).catch(function(err) {
     console.error(" ERROR: populate %s error %s", options.service, util.inspect(err));

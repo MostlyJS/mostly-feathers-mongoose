@@ -64,6 +64,7 @@ export default function assoc(target, opts) {
             return item;
           });
         };
+        results = results && results.data || results;
         if (Array.isArray(data)) {
           return assocResult(results)(data);
         } else {
