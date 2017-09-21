@@ -1,7 +1,7 @@
 import assert from 'assert';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { Service as BaseService } from 'feathers-mongoose';
+import { Service as BaseService } from './base';
 import { splitHead, repeatDoubleStar } from './helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
@@ -342,9 +342,7 @@ export class Service extends BaseService {
         }
       }
     }
-    return super.patch(null, data, params).then(results => {
-      return results && results.length > 0? results[0] : null;
-    }).then(transform);
+    return super.patch(null, data, params).then(fp.head).then(transform);
   }
 
   _count (id, data, params) {
