@@ -237,7 +237,7 @@ export default function populate (target, opts) {
 
     const data = hook.result && hook.result.data || hook.result;
 
-    if (Array.isArray(data) && data.length === 0) return hook;
+    if (fp.isNil(data) || fp.isEmpty(data)) return hook;
     
     return populateField(hook.app, data, target, params, options).then(result => {
       //debug('> populate result', util.inspect(result));
