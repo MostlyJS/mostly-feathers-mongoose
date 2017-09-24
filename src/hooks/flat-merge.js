@@ -21,10 +21,20 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
     };
 
     const setData = function (data, value) {
+      const mergeData = (data, value) => {
+        const path = field.split('.');
+        const merged = fp.merge(data, value);
+        if (!fp.path(path, value)) {
+          return fp.dissocPath(path, merged);
+        } else {
+          return merged;
+        }
+      };
       if (value !== undefined && !mongose.Types.ObjectId.isValid(value)) {
-        return fp.dissocPath(field.split('.'), fp.merge(data, value));
+        return mergeData(data, value);
+      } else {
+        return mergeData(data, { [options.idField]: value });
       }
-      return fp.dissocPath(field.split('.'), fp.merge(data, { [options.idField]: value }));
     };
 
     const mergeData = function(data) {
