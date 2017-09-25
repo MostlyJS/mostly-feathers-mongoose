@@ -45,6 +45,25 @@ export default function assoc(target, opts) {
       params.populate = false; // prevent recursive populate
       params.paginate = false; // disable paginate
 
+      // filter
+      if (options.filters && options.filters.length > 0) {
+        for (const filter of options.filters) {
+          if (filter.field && filter.value) {
+            const value = typeof filter.value === 'function'
+              ? filter.value.call(null, hook) : filter.value;
+            params.query[filter.field] = Array.isArray(value)? { $in: value } : value;
+          }
+        }
+      }
+      // sort
+      if (options.sort) {
+        params.query.$sort = options.sort;
+      }
+      // limit
+      if (options.limit) {
+        params.query.$limit = options.limit;
+      }
+
       debug('assoc =>', target, options.service, params.query);
 
       return service.find(params).then((results) => {
