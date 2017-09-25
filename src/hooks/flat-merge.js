@@ -23,7 +23,10 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
     const setData = function (data, value) {
       const mergeData = (data, value) => {
         const path = field.split('.');
-        const merged = fp.merge(data, value);
+        // merge deep left except the id
+        let merged = fp.mergeDeepWithKey((k, l, r) => {
+          return (k === 'id')? r : l;
+        }, data, value);
         if (!fp.path(path, value)) {
           return fp.dissocPath(path, merged);
         } else {
