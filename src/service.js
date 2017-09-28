@@ -112,10 +112,14 @@ export class Service extends BaseService {
     params = fp.assign({ query: {} }, params);
 
     if (params.query) {
-      // fix id query as _ids
+      // fix id query inconsist with service.id
       if (this.id === '_id' && params.query.id) {
         params.query._id = params.query.id;
         delete params.query.id;
+      }
+      if (this.id === 'id' && params.query._id) {
+        params.query.id = params.query._id;
+        delete params.query._id;
       }
       // filter destroyed item by default
       if (!params.query.destroyedAt) {
