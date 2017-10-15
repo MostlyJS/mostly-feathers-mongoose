@@ -336,11 +336,12 @@ export class Service extends BaseService {
     }
     params.mongoose = fp.assign({}, params.mongoose, { upsert: true });
 
-    // upsert do not set default value in schema
+    // upsert do not set default value in schema, so ...
     const schemas = this.Model.schema && this.Model.schema.paths;
     if (schemas) {
       for (const key in schemas) {
-        if (!key.startsWith('_') && data[key] === undefined && schemas[key].defaultValue !== undefined) {
+        const val = fp.path(key.split('.'), data);
+        if (!key.startsWith('_') && val === undefined && schemas[key].defaultValue !== undefined) {
           data[key] = typeof schemas[key].defaultValue === 'function'
             ? schemas[key].defaultValue() : schemas[key].defaultValue;
         }
