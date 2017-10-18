@@ -138,7 +138,7 @@ export class Service extends BaseService {
       }
     });
 
-    const action = params.__action || params.query && params.query.$action;
+    const action = params.__action || (params.query && params.query.$action);
 
     if (!action || action === 'find') {
       debug('service %s find %j', this.name, params.query);
@@ -157,7 +157,7 @@ export class Service extends BaseService {
 
     params = fp.assign({ query: {} }, params);
 
-    let action = params.__action || params.query && params.query.$action;
+    let action = params.__action || (params.query && params.query.$action);
 
     // check if id is action for find
     if (id && !action) {
@@ -184,7 +184,7 @@ export class Service extends BaseService {
       return Promise.all(data.map(current => this.create(current, params)));
     }
 
-    const action = params.__action || params.query && params.query.$action;
+    const action = params.__action || (params.query && params.query.$action);
     if (!action || action === 'create') {
       debug('service %s create %j', this.name, data);
       return super.create(data, params).then(transform);
@@ -200,7 +200,7 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
-    let action = params.__action || params.query && params.query.$action;
+    let action = params.__action || (params.query && params.query.$action);
     
     // check if id is action for patch
     if (id && !action) {
@@ -225,7 +225,7 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
-    let action = params.__action || params.query && params.query.$action;
+    let action = params.__action || (params.query && params.query.$action);
     
     // check if id is action for patch
     if (id && !action) {
@@ -249,7 +249,7 @@ export class Service extends BaseService {
 
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
-    const action = params.__action || params.query && params.query.$action;
+    const action = params.__action || (params.query && params.query.$action);
     if (!action || action === 'remove') {
       if (params.query && params.query.$soft) {
         debug('service %s remove soft %j', this.name, id);
