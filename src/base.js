@@ -5,7 +5,7 @@ import { select } from 'feathers-commons';
 import errors from 'feathers-errors';
 import errorHandler from './error-handler';
 
-// Base service copy from feathers-mongoose for bug fix
+// Base service copy from feathers-mongoose for bug fix and optimize
 // http://github.com/feathersjs/feathers-mongoose
 class Service {
   constructor (options) {
@@ -248,6 +248,7 @@ class Service {
     // If we are updating multiple records
     let options = Object.assign({
       multi: id === null,
+      new: true,
       runValidators: true,
       context: 'query'
     }, params.mongoose);
@@ -285,11 +286,25 @@ class Service {
           // from the query sent to mongoose.
           const discriminator = (params.query || {})[this.discriminatorKey] || this.discriminatorKey;
           const model = this.discriminators[discriminator] || this.Model;
-          return model
-            .update(omit(query, '$populate'), data, options)
-            .lean(this.lean)
-            .exec()
-            .then(() => this._getOrFind(id, findParams));
+          if (options.multi) {
+            return model
+              .update(omit(query, ['$populate', '$select']), data, options)
+              .lean(this.lean)
+              .exec()
+              .then((result) => this._getOrFind(id, findParams));
+          } else {
+            return model
+              .findAndModify({
+                query: omit(query, ['$populate', '$select']),
+                update: data,
+                sort: options.sort,
+                new: options.new,
+                upsert: options.upsert,
+                fields: query.$select
+              })
+              .lean(this.lean)
+              .exec();
+          }
         })
         .then(select(params, this.id))
         .catch(errorHandler);
