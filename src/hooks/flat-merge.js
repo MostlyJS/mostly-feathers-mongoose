@@ -21,6 +21,7 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
     };
 
     const setData = function (data, value) {
+      if (value === undefined) return data;
       const mergeData = (data, value) => {
         const path = field.split('.');
         // merge deep left except the id
@@ -33,7 +34,7 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
           return merged;
         }
       };
-      if (value !== undefined && !mongose.Types.ObjectId.isValid(value)) {
+      if (!mongose.Types.ObjectId.isValid(value)) {
         return mergeData(data, value);
       } else {
         return mergeData(data, { [options.idField]: value });
