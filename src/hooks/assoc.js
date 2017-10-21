@@ -8,6 +8,12 @@ const defaultOptions = {
   idField: 'id'
 };
 
+function isPresent (obj, target) {
+  return fp.reduce((result, val) => {
+    return result && fp.has(target, val);
+  }, true, [].concat(obj));
+}
+
 // associcate current data as a foreign key to another service
 export default function assoc(target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
@@ -101,6 +107,9 @@ export default function assoc(target, opts) {
 
     // target must be specified by $select to assoc
     if (!isSelected(target, params.query.$select)) return hook;
+
+    // already associcated
+    if (isPresent(data, target)) return hook;
 
     // $select with * for next level
     if (params.query.$select) {
