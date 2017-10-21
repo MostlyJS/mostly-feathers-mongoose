@@ -149,23 +149,26 @@ export class Service extends BaseService {
     return this._action('find', action, null, null, params);
   }
 
+  _idOrAction (id, params) {
+    if (id === 'null') id = null;
+    let action = params.__action || (params.query && params.query.$action);
+    // check if id is action for find
+    if (id && !action) {
+      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
+        return [null, id];
+      }
+    }
+    return [id, action];
+  }
+  
   get (id, params) {
-    if (id === 'null' || id === '0') id = null;
-
     // filter $select
     params = filterSelect(params);
 
     params = fp.assign({ query: {} }, params);
 
-    let action = params.__action || (params.query && params.query.$action);
-
-    // check if id is action for find
-    if (id && !action) {
-      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
-        params = fp.assoc('__action', id, params);
-        return this.find(params);
-      }
-    }
+    let action = null;
+    [id, action] = this._idOrAction(id, params);
 
     if (!action || action === 'get') {
       debug('service %s get %j', this.name, id, params);
@@ -195,20 +198,11 @@ export class Service extends BaseService {
   }
 
   update (id, data, params) {
-    if (id === 'null') id = null;
     params = fp.assign({}, params);
-
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
-    let action = params.__action || (params.query && params.query.$action);
-    
-    // check if id is action for patch
-    if (id && !action) {
-      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
-        action = id;
-        id = null;
-      }
-    }
+    let action = null;
+    [id, action] = this._idOrAction(id, params);
 
     if (!action || action === 'update') {
       debug('service %s update %j', this.name, id, data);
@@ -220,20 +214,11 @@ export class Service extends BaseService {
   }
 
   patch (id, data, params) {
-    if (id === 'null') id = null;
     params = fp.assign({}, params);
-
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
-    let action = params.__action || (params.query && params.query.$action);
-    
-    // check if id is action for patch
-    if (id && !action) {
-      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
-        action = id;
-        id = null;
-      }
-    }
+    let action = null;
+    [id, action] = this._idOrAction(id, params);
 
     if (!action || action === 'patch') {
       return super.patch(id, data, params).then(transform);
@@ -244,12 +229,12 @@ export class Service extends BaseService {
   }
 
   remove (id, params) {
-    if (id === 'null') id = null;
     params = fp.assign({}, params);
-
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
-    const action = params.__action || (params.query && params.query.$action);
+    let action;
+    [id, action] = this._idOrAction(id, params);
+
     if (!action || action === 'remove') {
       if (params.query && params.query.$soft) {
         debug('service %s remove soft %j', this.name, id);
@@ -311,10 +296,12 @@ export class Service extends BaseService {
     if (this['_' + action] === undefined || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
-    if (params.__action)
+    if (params.__action) {
       params = fp.dissoc('__action', params);
-    if (params.query && params.query.$action)
+    }
+    if (params.query && params.query.$action) {
       params.query = fp.dissoc('$action', params.query);
+    }
     debug('service %s %s action %s id %j => %j', this.name, method, action, id, data);
 
     // get target item with params.query (without provider)
