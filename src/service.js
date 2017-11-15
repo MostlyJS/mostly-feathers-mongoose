@@ -8,6 +8,9 @@ const debug = makeDebug('mostly:feathers-mongoose:service');
 
 const defaultOptions = {
   lean: true,
+  sort: {
+    createdAt: -1
+  },
   paginate: {
     default: 10,
     max: 50
@@ -127,7 +130,7 @@ export class Service extends BaseService {
       }
       // default sort
       if (!params.query.$sort) {
-        params.query.$sort = { createdAt: -1 };
+        params.query.$sort = this.options.sort;
       }
     }
 
