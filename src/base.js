@@ -294,9 +294,7 @@ class Service {
               .then((result) => this._getOrFind(id, findParams));
           } else {
             return model
-              .findAndModify({
-                query: omit(query, ['$populate', '$select']),
-                update: data,
+              .findOneAndUpdate(omit(query, ['$populate', '$select']), data, {
                 sort: options.sort,
                 new: options.new,
                 upsert: options.upsert,
