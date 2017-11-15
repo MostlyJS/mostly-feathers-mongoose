@@ -43,7 +43,11 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
 
     const mergeData = function(data) {
       if (Array.isArray(data)) {
-        return fp.map(item => setData(item, getData(item)), data);
+        let results = fp.map(item => setData(item, getData(item)), data);
+        if (results && options.sort) {
+          results = fp.sortBy(fp.prop(options.sort), results);
+        }
+        return results;
       } else {
         return setData(data, getData(data));
       }
