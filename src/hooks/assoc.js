@@ -84,6 +84,9 @@ export default function assoc(target, opts) {
           return fp.map((item) => {
             let values = filterById(item[options.idField])(results);
             if (values) {
+              if (options.sort) {
+                values = fp.sortBy(fp.prop(options.sort), values);
+              }
               return fp.assoc(target, values, item);
             }
             return item;
