@@ -21,7 +21,7 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
     };
 
     const setData = function (data, value) {
-      if (value === undefined) return data;
+      if (fp.isNil(value)) return data;
       const mergeData = (data, value) => {
         const path = field.split('.');
         // merge deep left except the id
