@@ -18,6 +18,7 @@ const defaultOptions = {
 };
 
 const defaultMethods = ['find', 'get', 'create', 'update', 'patch', 'remove'];
+const descSorts = ['desc', 'descending', '-1', -1];
 
 // prevent accidental multiple operations
 const assertMultiple = function (id, params, message) {
@@ -123,6 +124,11 @@ export class Service extends BaseService {
       if (this.id === 'id' && params.query._id) {
         params.query.id = params.query._id;
         delete params.query._id;
+      }
+      if (params.query.$sort) {
+        params.query.$sort = fp.map(dir => {
+          return descSorts.indexOf(dir) === -1 ? 1 : -1;
+        }, params.query.$sort);
       }
       // filter destroyed item by default
       if (!params.query.destroyedAt) {
