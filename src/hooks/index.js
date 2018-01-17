@@ -11,6 +11,7 @@ import idAsCurrentUser from './id-as-current-user';
 import isAction from './is-action';
 import isHeader from './is-header';
 import flatMerge from './flat-merge';
+import mapItems from './map-items';
 import populate from './populate';
 import prefixSelect from './prefix-select';
 import presentEntity from './present-entity';
@@ -33,6 +34,7 @@ export {
   idAsCurrentUser,
   isAction,
   isHeader,
+  mapItems,
   populate,
   prefixSelect,
   presentEntity,
