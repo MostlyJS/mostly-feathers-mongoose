@@ -17,4 +17,4 @@ export default function discardPath (...fieldNames) {
     }
     return context;
   };
-};
+}
