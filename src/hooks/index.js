@@ -5,6 +5,7 @@ import cascadeUpdate from './cascade-update';
 import convertId from './convert-id';
 import defaultAcls from './default-acls';
 import depopulate from './depopulate';
+import discardPath from './discard-path';
 import filter from './filter';
 import filterField from './filter-field';
 import idAsCurrentUser from './id-as-current-user';
@@ -28,6 +29,7 @@ export {
   convertId,
   defaultAcls,
   depopulate,
+  discardPath,
   filter,
   filterField,
   flatMerge,
