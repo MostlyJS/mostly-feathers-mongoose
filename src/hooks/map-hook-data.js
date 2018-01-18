@@ -12,7 +12,7 @@ export default function mapHookData (func) {
     let items = getHookData(context);
     if (items) {
       if (Array.isArray(items)) {
-        items = fp.mapIndexed((item, index) => func(item, context));
+        items = fp.mapIndexed((item, index) => func(item, context), items);
       } else {
         items = func(items, context);
       }
