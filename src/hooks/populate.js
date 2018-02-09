@@ -10,11 +10,7 @@ import {
   getField,
   isSelected,
   setField,
-  setFieldByKey,
-  repeatDoubleStar,
-  selectNext,
-  selectTail,
-  splitHead
+  selectNext
 } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');

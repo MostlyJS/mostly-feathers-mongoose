@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { isSelected, selectNext, selectTail, splitHead } from '../helpers';
+import { isSelected, selectNext } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 

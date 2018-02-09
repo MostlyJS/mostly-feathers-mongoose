@@ -2,7 +2,7 @@ import assert from 'assert';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
 import { Service as BaseService } from './base';
-import { splitHead, repeatDoubleStar } from './helpers';
+import { repeatDoubleStar } from './helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
@@ -74,7 +74,7 @@ const filterSelect = function (params) {
     // normalize the $select (mutate on purpose)
     params.query.$select = normalizeSelect(params.query.$select);
 
-    const select = fp.map(splitHead, params.query.$select);
+    const select = fp.map(fp.splitHead, params.query.$select);
     if (fp.contains('*', select)) {
       return fp.dissocPath(['query', '$select'], params);
     } else {

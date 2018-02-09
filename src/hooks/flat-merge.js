@@ -1,7 +1,6 @@
 import errors from 'feathers-errors';
 import fp from 'mostly-func';
 import mongose from 'mongoose';
-import { isSelected, splitHead } from '../helpers';
 
 export default function flatMerge(field, opts = { idField: 'id' }) {
 
