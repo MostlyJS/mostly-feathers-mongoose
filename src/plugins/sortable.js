@@ -9,7 +9,7 @@ export default function(schema, options) {
   options = options || {};
 
   if (!schema.get('position')) {
-    schema.add({ position: { type: 'Number' } });
+    schema.add({ position: { type: Number } });
   }
 
   schema.index({ position: 1 });
