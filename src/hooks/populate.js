@@ -5,13 +5,7 @@ import fp from 'mostly-func';
 import { plural } from 'pluralize';
 import validator from 'validator';
 import util from 'util';
-
-import {
-  getField,
-  isSelected,
-  setField,
-  selectNext
-} from '../helpers';
+import { getField, setField, isSelected, selectNext } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');
 
