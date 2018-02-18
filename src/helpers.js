@@ -157,6 +157,10 @@ export const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
 
 export const isSelected = (target, select) => {
   if (select) {
+    // convert string $select to array
+    if (fp.is(String, select)) {
+      select = fp.map(fp.trim, fp.split(',', select));
+    }
     // check whether target is in the $select
     return fp.any(fp.startsWith(target), select);
   }
@@ -165,6 +169,10 @@ export const isSelected = (target, select) => {
 
 export const selectNext = (target, select) => {
   if (select) {
+    // convert string $select to array
+    if (fp.is(String, select)) {
+      select = fp.map(fp.trim, fp.split(',', select));
+    }
     // replace current target from the $select
     return fp.pipe(
       fp.map(fp.replace(new RegExp('^' + target + '\.?'), '')),
