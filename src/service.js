@@ -110,10 +110,8 @@ export class Service extends BaseService {
   }
 
   find (params) {
-    // filter $select
-    params = filterSelect(params);
-    
     params = fp.assign({ query: {} }, params);
+    params = filterSelect(params); // filter $select
 
     if (params.query) {
       // fix id query inconsistent with service.id
@@ -171,10 +169,8 @@ export class Service extends BaseService {
   }
   
   get (id, params) {
-    // filter $select
-    params = filterSelect(params);
-
     params = fp.assign({ query: {} }, params);
+    params = filterSelect(params); // filter $select
 
     let action = null;
     [id, action] = this._idOrAction(id, params);
@@ -198,6 +194,7 @@ export class Service extends BaseService {
 
     const action = params.__action || (params.query && params.query.$action);
     if (!action || action === 'create') {
+      params = filterSelect(params); // filter $select
       debug('service %s create %j', this.name, data);
       return super.create(data, params).then(transform);
     }
@@ -208,12 +205,14 @@ export class Service extends BaseService {
 
   update (id, data, params) {
     params = fp.assign({}, params);
+
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
     let action = null;
     [id, action] = this._idOrAction(id, params);
 
     if (!action || action === 'update') {
+      params = filterSelect(params); // filter $select
       debug('service %s update %j', this.name, id, data);
       return super.update(id, data, params).then(transform);
     }
@@ -230,6 +229,8 @@ export class Service extends BaseService {
     [id, action] = this._idOrAction(id, params);
 
     if (!action || action === 'patch') {
+      params = filterSelect(params); // filter $select
+      debug('service %s patch %j', this.name, id, data);
       return super.patch(id, data, params).then(transform);
     }
 
@@ -246,8 +247,9 @@ export class Service extends BaseService {
 
     if (!action || action === 'remove') {
       if (params.query && params.query.$soft) {
+        params = filterSelect(params); // filter $select
+        params = fp.dissocPath(['query', '$soft'], params); // remove soft
         debug('service %s remove soft %j', this.name, id);
-        params = fp.dissocPath(['query', '$soft'], params);
         return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
       } else {
         debug('service %s remove %j', this.name, id);
