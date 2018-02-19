@@ -155,7 +155,7 @@ function populateField (app, item, target, params, options) {
     results = results && results.data || results;
     if (Array.isArray(results)) {
       results = fp.flatten(
-        fp.map(result => result && result.data || result, results));
+        fp.map(result => (result && result.data) || result, results));
     }
     // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
     if (Array.isArray(item)) {
