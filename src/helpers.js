@@ -2,6 +2,7 @@ import makeDebug from 'debug';
 import { cloneDeep, compact, defaults, find, flatten, get, set, map } from 'lodash';
 import fp from 'mostly-func';
 import { plural } from 'pluralize';
+import validator from 'validator';
 
 const debug = makeDebug('mostly:feathers-mongoose:helpers');
 
@@ -153,14 +154,34 @@ export function reorderPosition(Model, item, newPos, options = {}) {
     });
 }
 
+// get mongo obj.id or id as string
+export const getId = fp.curry((idField, obj) => {
+  if (obj) {
+    if (fp.is(String, obj)) return obj;
+    if (validator.isMongoId(obj.toString())) return obj.toString();
+    if (obj[idField]) return getId(idField, obj[idField]);
+  }
+  return null;
+});
+
 export const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
 
-export const isSelected = (target, select) => {
+export const normalizeSelect = function (select) {
   if (select) {
     // convert string $select to array
     if (fp.is(String, select)) {
       select = fp.map(fp.trim, fp.split(',', select));
     }
+    // repeat ** as recursive fields
+    select = repeatDoubleStar(select);
+  }
+  return select;
+};
+
+export const isSelected = (target, select) => {
+  if (select) {
+    // normalize the $select
+    select = normalizeSelect(select);
     // check whether target is in the $select
     return fp.any(fp.startsWith(target), select);
   }
@@ -169,14 +190,14 @@ export const isSelected = (target, select) => {
 
 export const selectNext = (target, select) => {
   if (select) {
-    // convert string $select to array
-    if (fp.is(String, select)) {
-      select = fp.map(fp.trim, fp.split(',', select));
-    }
-    // replace current target from the $select
+    // normalize the $select
+    select = normalizeSelect(select);
+    // filter and replace current target from the $select
     return fp.pipe(
+      fp.filter(fp.startsWith(target)),
       fp.map(fp.replace(new RegExp('^' + target + '\.?'), '')),
-      fp.reject(fp.isEmpty)
+      fp.reject(fp.isEmpty),
+      fp.when(fp.complement(fp.isEmpty), fp.append('*')) // add * for non-empty
     )(select);
   }
   return select;

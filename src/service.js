@@ -2,7 +2,7 @@ import assert from 'assert';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
 import { Service as BaseService } from './base';
-import { repeatDoubleStar } from './helpers';
+import { normalizeSelect } from './helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
@@ -56,25 +56,12 @@ const unsetObj = function (obj) {
   }
 };
 
-const normalizeSelect = function (select) {
-  if (select) {
-    // convert string $select to array
-    if (fp.is(String, select)) {
-      select = fp.map(fp.trim, fp.split(',', select));
-    }
-    // repeat ** as recursive fields
-    select = repeatDoubleStar(select);
-  }
-  return select;
-};
-
 const filterSelect = function (params) {
   // select by * and field.* or field.**
   if (params && params.query && params.query.$select) {
-    // normalize the $select (mutate on purpose)
-    params.query.$select = normalizeSelect(params.query.$select);
-
-    const select = fp.map(fp.splitHead, params.query.$select);
+    // normalize the $select
+    let select = normalizeSelect(params.query.$select);
+    select = fp.map(fp.splitHead, select);
     if (fp.contains('*', select)) {
       return fp.dissocPath(['query', '$select'], params);
     } else {
