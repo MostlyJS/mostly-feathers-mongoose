@@ -203,6 +203,19 @@ export const selectNext = (target, select) => {
   return select;
 };
 
+export const sortWith = fp.curry((sort, data) => {
+  const descSorts = ['desc', 'descending', '-1', -1];
+  var propSort = fp.mapObjIndexed((dir, field) => {
+    console.log(descSorts.indexOf(dir));
+    if (descSorts.indexOf(dir) === -1) {
+      return fp.ascend(fp.prop(field));
+    } else {
+      return fp.descend(fp.prop(field));
+    }
+  }, sort);
+  return fp.sortWith(fp.values(propSort), data);
+});
+
 const populateList = (list, idField, options = {}) => (data) => {
   return fp.map((doc) => {
     let item = data.find((item) => {
