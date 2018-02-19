@@ -203,7 +203,7 @@ export const selectNext = (target, select) => {
   return select;
 };
 
-export const sortWith = fp.curry((sort, data) => {
+export const sortWith = (sort, data) => {
   const descSorts = ['desc', 'descending', '-1', -1];
   var propSort = fp.mapObjIndexed((dir, field) => {
     console.log(descSorts.indexOf(dir));
@@ -214,7 +214,40 @@ export const sortWith = fp.curry((sort, data) => {
     }
   }, sort);
   return fp.sortWith(fp.values(propSort), data);
-});
+};
+
+export const discriminatedFind = (app, keyType, result, params, options) => {
+  if (result && result.data && result.data.length > 0) {
+    const entriesByType = fp.groupBy(fp.prop('type'), result.data);
+    const findByType = fp.mapObjIndexed((entries, type) => {
+      if (type === keyType) {
+        return Promise.resolve(entries);
+      } else {
+        const paramsIds = fp.assocDotPath('query.id', {
+          $in: fp.map(fp.prop('id'), entries)
+        }, params);
+        return app.service(plural(type)).find(paramsIds);
+      }
+    });
+    const promises = fp.values(findByType(entriesByType));
+    return Promise.all(promises).then(entries => {
+      const data = fp.flatten(fp.map(entry => (entry && entry.data) || entry, entries));
+      const sort = params && fp.dotPath('query.$sort', params) || options.sort;
+      result.data = sort? sortWith(sort, data) : data;
+      return result;
+    });
+  } else {
+    return result;
+  }
+};
+
+export const discriminatedGet = (app, keyType, result, params) => {
+  if (result && result.type && result.type !== keyType) {
+    return app.service(plural(result.type)).get(result.id, params);
+  } else {
+    return result;
+  }
+};
 
 const populateList = (list, idField, options = {}) => (data) => {
   return fp.map((doc) => {
