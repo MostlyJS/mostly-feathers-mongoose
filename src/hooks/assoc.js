@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { isSelected, selectNext } from '../helpers';
+import { getId, isSelected, selectNext } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 
@@ -76,7 +76,7 @@ export default function assoc(target, opts) {
         const filterById = function (id) {
           return fp.filter(obj => {
             let prop = Array.concat([], obj[options.field] || []);
-            prop = fp.map(fp.toString, prop); // convert ObjectId
+            prop = fp.map(getId(options.idField), prop); // convert ObjectId
             return prop.indexOf(id) >= 0;
           });
         };
