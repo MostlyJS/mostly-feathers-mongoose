@@ -13,13 +13,17 @@ export function getField(item, field) {
   while (parts.length) {
     part = parts.shift();
     if (Array.isArray(value)) {
-      value = map(value, part);
+      value = fp.pipe(
+        fp.map(fp.prop(part)),
+        fp.reject(fp.isNil),
+        fp.flatten
+      )(value);
     } else {
       value = value? value[part] : null;
     }
   }
 
-  return Array.isArray(value) ? compact(flatten(value)) : value;
+  return Array.isArray(value) ? fp.filter(fp.identity, value) : value;
 }
 
 export function setFieldByKey(item, field, data) {
