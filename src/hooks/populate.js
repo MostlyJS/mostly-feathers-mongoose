@@ -27,10 +27,10 @@ function populateField (app, item, target, params, options) {
   // Find by the field value by default or a custom query
   let entry = null;
   if (Array.isArray(item)) {
-    entry = fp.compose(
-      fp.reject(fp.isNil),
+    entry = fp.pipe(
+      fp.map(it => getField(it, field)),
       fp.flatten,
-      fp.map(it => getField(it, field))
+      fp.reject(fp.isNil)
     )(item);
   } else {
     entry = getField(item, field);

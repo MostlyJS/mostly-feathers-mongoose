@@ -71,11 +71,16 @@ export function setField(item, target, data, field, options) {
   let value = item, part;
   while (parts.length) {
     part = parts.shift();
-    value = value[part];
-    if (Array.isArray(value) && parts.length > 0) {
-      key = [...parts, key].join('.');
-      debug('setField with upper array', value, key);
-      break;
+    if (value[part] !== undefined) value = value[part];
+    if (fp.is(Array, value) && parts.length > 0) {
+      let subValue = fp.map(fp.prop(parts[0]), value);
+      if (fp.any(fp.is(Array), subValue)) {
+        value = [].concat.apply([], subValue); // flatten the array of array
+        continue;
+      } else {
+        key = [...parts, key].join('.');
+        break;
+      }
     }
   }
 
@@ -99,7 +104,7 @@ export function setField(item, target, data, field, options) {
     }
   }
 
-  if (Array.isArray(value) && !value[key]) {
+  if (Array.isArray(value)) {
     value.forEach(function(v) {
       let entry = get(v, key);
       if(Array.isArray(entry)) {
@@ -136,6 +141,7 @@ export function setField(item, target, data, field, options) {
       warn(4, '<no-such-field>');
     }
   }
+  return item;
 }
 
 export function reorderPosition(Model, item, newPos, options = {}) {
@@ -167,6 +173,14 @@ export const getId = fp.curry((idField, obj) => {
   }
   return null;
 });
+
+export const convertMongoId = (id) => {
+  if (id && validator.isMongoId(id.toString())) {
+    return id.toString();
+  } else {
+    return Array.isArray(id)? fp.map(convertMongoId, id) : id;
+  }
+};
 
 export const repeatDoubleStar = fp.map(fp.replace(/(\w*).\*\*/, '$1.$1.**'));
 
