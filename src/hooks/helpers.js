@@ -1,6 +1,6 @@
 export function getHookData(context) {
   const items = context.type === 'before'? context.data : context.result;
-  return (items && items.data) || items;
+  return items && items.data || items;
 }
 
 export function setHookData(context, items) {

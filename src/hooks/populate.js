@@ -154,8 +154,7 @@ function populateField (app, item, target, params, options) {
     // debug('populate services found', results);
     results = results && results.data || results;
     if (Array.isArray(results)) {
-      results = fp.flatten(
-        fp.map(result => (result && result.data) || result, results));
+      results = fp.flatten(fp.map(result => result && result.data || result, results));
     }
     // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
     if (Array.isArray(item)) {
@@ -225,7 +224,7 @@ export default function populate (target, opts) {
       params.query.$select = selectNext(options.field || target, params.query.$select);
     }
 
-    const data = hook.result && hook.result.data || hook.result;
+    const data = (hook.result && hook.result.data) || hook.result;
 
     if (fp.isNil(data) || fp.isEmpty(data)) return hook;
     

@@ -249,7 +249,7 @@ export const discriminatedFind = (app, keyType, result, params, options) => {
     });
     const promises = fp.values(findByType(entriesByType));
     return Promise.all(promises).then(entries => {
-      const data = fp.flatten(fp.map(entry => (entry && entry.data) || entry, entries));
+      const data = fp.flatten(fp.map(entry => entry && entry.data || entry, entries));
       const sort = params && fp.dotPath('query.$sort', params) || options.sort;
       result.data = sort? sortWith(sort, data) : data;
       return result;

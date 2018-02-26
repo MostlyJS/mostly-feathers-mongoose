@@ -17,7 +17,7 @@ export default function cascadeUpdate(target, opts) {
       throw new Error(`The 'cascadeUpdate' hook should only be used as a 'after' hook.`);
     }
 
-    let data = hook.result.data || hook.result;
+    let data = hook.result && hook.result.data || hook.result;
     if (field && data) {
       let foreignField = get(data, target);
       if (data.id && foreignField) {
