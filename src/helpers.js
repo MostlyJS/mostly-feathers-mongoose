@@ -268,16 +268,21 @@ export const discriminatedGet = (app, keyType, result, params) => {
 };
 
 const populateList = (list, idField, options = {}) => (data) => {
-  return fp.map((doc) => {
+  return fp.map((obj) => {
     let item = data.find((item) => {
-      return String(doc[idField]) === String(item.id);
+      return String(obj[idField]) === String(item.id);
     });
-    // retain _id for orignal id
-    const retained = fp.reduce((acc, field) => {
-      acc['_' + field] = doc[field];
-      return acc;
-    }, {});
-    return item && fp.mergeAll([retained(options.retained || []), doc, item]);
+    if (options.merge) {
+      // retain _id for orignal id
+      const retained = fp.reduce((acc, field) => {
+        acc['_' + field] = obj[field];
+        return acc;
+      }, {});
+      return item && fp.mergeAll([retained(options.retained || []), obj, item]);
+    } else {
+      obj[idField] = item;
+      return obj;
+    }
   })(list);
 };
 
@@ -290,16 +295,14 @@ export function populateByService(app, idField, typeField, options = {}) {
         return app.service(plural(type)).find(Object.assign({
           query: {
             _id: { $in: fp.map(fp.prop(idField), entries) },
-          }
+          },
+          paginate: false
         }, options));
       }, Object.keys(types))
     ).then((results) => {
-      return fp.pipe(
-        fp.map(fp.prop('data')),
-        fp.flatten,
-        populateList(list, idField, options),
-        fp.reject(fp.isNil)
-      )(results);
+      const data = fp.flatten(results);
+      const populated = populateList(list, idField, options)(data);
+      return fp.reject(fp.isNil, populated);
     });
   };
 }
