@@ -138,7 +138,7 @@ export function setField(item, target, data, field, options) {
         if (!get(item, target)) warn(4, entry);
       }
     } else {
-      warn(4, '<no-such-field>');
+      //warn(4, 'skip <no-such-field>');
     }
   }
   return item;
