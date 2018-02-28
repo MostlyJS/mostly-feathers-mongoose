@@ -6,8 +6,6 @@ const debug = makeDebug('mostly:feathers-mongoose:hooks:cache');
 
 const defaultOptions = {
   idField: 'id',
-  max: 100,
-  maxAge: 1000 * 60 * 60
 };
 
 
@@ -16,7 +14,7 @@ export default function (cacheMap, opts) {
   
   return context => {
     const idName = opts.idField || (context.service || {}).id;
-
+    const svcName = (context.service || {}).name;
     let items = getItems(context);
     items = Array.isArray(items) ? items : [items];
 
@@ -24,7 +22,7 @@ export default function (cacheMap, opts) {
       if (context.method === 'remove') return;
 
       items.forEach(item => {
-        debug('>>> set cache', item[idName]);
+        debug(`>> ${svcName} service set cache`, context.id);
         cacheMap.set(item[idName], fp.clone(item));
       });
 
@@ -37,8 +35,8 @@ export default function (cacheMap, opts) {
         return;
       case 'get':
         const value = cacheMap.get(context.id);
-        debug('<< get cache', context.id, value);
         if (value) {
+          debug(`<< ${svcName} service get cache`, context.id);
           context.result = value;
         }
         return context;
