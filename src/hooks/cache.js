@@ -1,5 +1,4 @@
 import makeDebug from 'debug';
-import LRU from 'lru-cache';
 import fp from 'mostly-func';
 import { getItems } from 'feathers-hooks-common';
 
@@ -8,15 +7,13 @@ const debug = makeDebug('mostly:feathers-mongoose:hooks:cache');
 const defaultOptions = {
   idField: 'id',
   max: 100,
-  maxAge: 1000 * 10//60 * 60
+  maxAge: 1000 * 60 * 60
 };
 
 
-export default function (opts) {
+export default function (cacheMap, opts) {
   opts = Object.assign({}, defaultOptions, opts);
   
-  const cacheMap = new LRU(opts);
-
   return context => {
     const idName = opts.idField || (context.service || {}).id;
 
@@ -27,6 +24,7 @@ export default function (opts) {
       if (context.method === 'remove') return;
 
       items.forEach(item => {
+        debug('>>> set cache', item[idName]);
         cacheMap.set(item[idName], fp.clone(item));
       });
 
@@ -39,6 +37,7 @@ export default function (opts) {
         return;
       case 'get':
         const value = cacheMap.get(context.id);
+        debug('<< get cache', context.id, value);
         if (value) {
           context.result = value;
         }
