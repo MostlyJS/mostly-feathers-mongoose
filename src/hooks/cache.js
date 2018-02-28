@@ -22,7 +22,7 @@ export default function (cacheMap, opts) {
       if (context.method === 'remove') return;
 
       items.forEach(item => {
-        debug(`>> ${svcName} service set cache`, context.id);
+        debug(`>> ${svcName} service set cache`, item[idName]);
         cacheMap.set(item[idName], fp.clone(item));
       });
 
@@ -47,6 +47,7 @@ export default function (cacheMap, opts) {
         }
 
         items.forEach(item => {
+          debug(`>> ${svcName} service delete cache`, item[idName]);
           cacheMap.delete(item[idName]);
         });
     }
