@@ -2,6 +2,7 @@ import addDelay from './add-delay';
 import addParams from './add-params';
 import asUpsert from './as-upsert';
 import assoc from './assoc';
+import cache from './cache';
 import cascadeUpdate from './cascade-update';
 import convertId from './convert-id';
 import defaultAcls from './default-acls';
@@ -27,6 +28,7 @@ export {
   addParams,
   asUpsert,
   assoc,
+  cache,
   cascadeUpdate,
   convertId,
   defaultAcls,
