@@ -8,7 +8,6 @@ const defaultOptions = {
   idField: 'id',
 };
 
-
 export default function (cacheMap, opts) {
   opts = Object.assign({}, defaultOptions, opts);
   
