@@ -40,13 +40,29 @@ export default function assoc(target, opts) {
       params.query = selection;
 
       if (Array.isArray(data)) {
-        params.query = fp.merge(params.query, {
-          [options.field]: { $in: fp.map(fp.prop(options.idField), data) },
-        });
-      } else {
+        // assoc with array field
         if (options.elemMatch) {
           params.query = fp.merge(params.query, {
-            [options.field]: { $elemMatch: { [options.elemMatch]: fp.prop(options.idField, data) } }
+            [options.field]: {
+              $elemMatch: {
+                [options.elemMatch]: { $in: fp.map(fp.prop(options.idField), data) }
+              }
+            }
+          });
+        } else {
+          params.query = fp.merge(params.query, {
+            [options.field]: { $in: fp.map(fp.prop(options.idField), data) },
+          });
+        }
+      } else {
+        // assoc with array field
+        if (options.elemMatch) {
+          params.query = fp.merge(params.query, {
+            [options.field]: {
+              $elemMatch: {
+                [options.elemMatch]: fp.prop(options.idField, data)
+              }
+            }
           });
         } else {
           params.query = fp.merge(params.query, {
@@ -82,8 +98,12 @@ export default function assoc(target, opts) {
         const filterById = function (id) {
           return fp.filter(obj => {
             let prop = Array.concat([], obj[options.field] || []);
-            prop = fp.map(getId(options.idField), prop); // convert ObjectId
-            return prop.indexOf(id) >= 0;
+            // assoc with array field
+            if (options.elemMatch) {
+              return fp.find(elem => getId(options.elemMatch, elem) === id, prop);
+            } else {
+              return fp.find(elem => getId(options.idField, elem) === id, prop);
+            }
           });
         };
         const assocResult = function (results) {
