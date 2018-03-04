@@ -44,9 +44,15 @@ export default function assoc(target, opts) {
           [options.field]: { $in: fp.map(fp.prop(options.idField), data) },
         });
       } else {
-        params.query = fp.merge(params.query, {
-          [options.field]: fp.prop(options.idField, data)
-        });
+        if (options.elemMatch) {
+          params.query = fp.merge(params.query, {
+            [options.field]: { $elemMatch: { [options.elemMatch]: fp.prop(options.idField, data) } }
+          });
+        } else {
+          params.query = fp.merge(params.query, {
+            [options.field]: fp.prop(options.idField, data)
+          });
+        }
       }
       params.populate = false; // prevent recursive populate
       params.paginate = false; // disable paginate
