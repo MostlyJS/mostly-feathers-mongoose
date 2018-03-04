@@ -1,6 +1,10 @@
 import assert from 'assert';
 import fp from 'mostly-func';
 
+/**
+ * prefix the $select with target excepts provided fields,
+ * used for populating with absolute type path
+ */
 export default function prefixSelect(target, opts = { excepts: [] }) {
   assert(target, 'select target not provided.');
 
