@@ -32,13 +32,14 @@ export default function (cacheMap, opts) {
       case 'find': // fall through
       case 'create':
         return;
-      case 'get':
-        const value = cacheMap.get(context.id);
+      case 'get': {
+        let value = cacheMap.get(context.id);
         if (value) {
           debug(`<< ${svcName} service get cache`, context.id);
           context.result = value;
         }
         return context;
+      }
       default: // update, patch, remove
         if (context.id) {
           cacheMap.delete(context.id);
