@@ -1,36 +1,39 @@
+import assert from 'assert';
 import fp from 'mostly-func';
+import { get, set, map } from 'lodash';
+import { getField, setField } from '../helpers';
 
 export default function depopulate (target, opts = { idField: 'id' }) {
+  assert(target, 'target is empty');
 
   return function(hook) {
     let options = Object.assign({}, opts);
 
-    const getDepopulated = function (item, target) {
-      let field = fp.path(target.split('.'), item);
-      if (field === undefined) return undefined;
-      if (Array.isArray(field)) {
-        field = fp.map((it) => it[options.idField] || it, field);
-      } else if (field) {
-        field = field[options.idField] || field;
-      }
-      return field? field : null;
-    };
-
-    const setTarget = function (data, target, value) {
-      if (value !== undefined) {
-        return fp.assocPath(target.split('.'), value, data);
+    const depopulated = function (data, target) {
+      const fields = target.split('.');
+      const init = fp.init(fields).join('.'), last = fp.last(fields);
+      let value = init? get(data, init) : data;
+      if (Array.isArray(value)) {
+        value = fp.map(it => {
+          if (it[last]) {
+            it[last] = it[last][options.idField] || it[last];
+          }
+          return it;
+        }, value);
+      } else if (value[last]) {
+        value[last] = value[last][options.idField] || value[last];
       }
       return data;
     };
 
     if (hook.type === 'before') {
-      hook.data = setTarget(hook.data, target, getDepopulated(hook.data, target));
+      hook.data = depopulated(hook.data, target);
     } else {
       if (hook.result) {
         if (hook.result.data) {
-          hook.result.data = setTarget(hook.result.data, target, getDepopulated(hook.result.data, target));
+          hook.result.data = depopulated(hook.result.data, target);
         } else {
-          hook.result = setTarget(hook.result, target, getDepopulated(hook.result, target));
+          hook.result = depopulated(hook.result, target);
         }
       }
     }
