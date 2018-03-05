@@ -2,7 +2,7 @@ import fp from 'mostly-func';
 import { checkContextIf } from 'feathers-hooks-common';
 import { getHookData, setHookData } from './helpers';
 
-export default function discardPath (...fieldNames) {
+export default function discardFields (...fieldNames) {
   return context => {
     checkContextIf(context, 'before', ['create', 'update', 'patch'], 'discard');
 
