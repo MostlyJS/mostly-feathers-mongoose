@@ -72,10 +72,18 @@ function populateField (app, item, target, params, options) {
 
     if (Array.isArray(entry)) {
       entry = fp.map(getPath, entry);
-      item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
+      if (Array.isArray(item)) {
+        item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
+      } else {
+        setField(item, field, entry, field, { idField: '_id' });
+      }
     } else {
       entry = getPath(entry);
-      setField(item, field, entry, field, { idField: '_id' });
+      if (Array.isArray(item)) {
+        item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
+      } else {
+        setField(item, field, entry, field, { idField: '_id' });
+      }
     }
     options.path = '_type';
   }
