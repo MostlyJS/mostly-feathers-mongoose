@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { getId, isSelected, selectNext } from '../helpers';
+import { pathId, isSelected, selectNext } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 
@@ -100,9 +100,9 @@ export default function assoc(target, opts) {
             let prop = Array.concat([], obj[options.field] || []);
             // assoc with array field
             if (options.elemMatch) {
-              return fp.find(elem => getId(options.elemMatch, elem) === id, prop);
+              return fp.find(elem => pathId(options.elemMatch, elem) === id, prop);
             } else {
-              return fp.find(elem => getId(options.idField, elem) === id, prop);
+              return fp.find(elem => pathId(options.idField, elem) === id, prop);
             }
           });
         };

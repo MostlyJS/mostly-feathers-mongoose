@@ -165,14 +165,15 @@ export function reorderPosition(Model, item, newPos, options = {}) {
 }
 
 // get mongo obj.id or id as string
-export const getId = fp.curry((idField, obj) => {
+export const pathId = fp.curry((idField, obj) => {
   if (obj) {
     if (fp.is(String, obj)) return obj;
     if (validator.isMongoId(obj.toString())) return obj.toString();
-    if (obj[idField]) return getId(idField, obj[idField]);
+    if (obj[idField]) return pathId(idField, obj[idField]);
   }
   return null;
 });
+export const getId = pathId('id');
 
 export const convertMongoId = (id) => {
   if (id && validator.isMongoId(id.toString())) {
