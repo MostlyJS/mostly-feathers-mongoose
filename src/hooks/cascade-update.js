@@ -1,5 +1,6 @@
 import { get } from 'lodash';
 import makeDebug from 'debug';
+import { getId } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cascade-update');
 
@@ -25,9 +26,9 @@ export default function cascadeUpdate(target, opts) {
         if (!service) {
           throw new Error("No such service: " + options.service);
         }
-        
-        let foreignId = foreignField.id || foreignField;
-        return service.patch(foreignId.toString(), {
+
+        let foreignId = getId(foreignField);
+        return service.patch(foreignId, {
           [field]: options.value !== undefined? options.value : data.id.toString()
         }).then(() => {
           return hook;

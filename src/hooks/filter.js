@@ -1,4 +1,5 @@
 import _ from 'lodash';
+import { getId } from '../helpers';
 
 export default function filter(target, opts) {
 
@@ -53,7 +54,7 @@ export default function filter(target, opts) {
             if (_.isObject(result)) {
               return {
                 $in: _.flatMap(result.data || result, (it) => {
-                  return it.id || it;
+                  return getId(it);
                 })
               };
             } else {
