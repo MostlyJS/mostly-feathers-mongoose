@@ -1,6 +1,6 @@
 import fp from 'mostly-func';
 import { checkContextIf } from 'feathers-hooks-common';
-import { getHookData, setHookData } from './helpers';
+import { getHookData, setHookData } from '../helpers';
 
 export default function discardFields (...fieldNames) {
   return context => {

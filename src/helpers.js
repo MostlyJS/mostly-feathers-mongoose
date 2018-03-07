@@ -234,6 +234,26 @@ export const sortWith = (sort, data) => {
   return fp.sortWith(fp.values(propSort), data);
 };
 
+export const getHookData = (context) => {
+  const items = context.type === 'before'? context.data : context.result;
+  return items && items.data || items;
+};
+
+export const getHookDataAsArray = (context) => {
+  const items = getHookData(context);
+  return fp.is(Array, items)? items : [].concat(items || []);
+};
+
+export const setHookData = (context, items) => {
+  if (context.type === 'before') {
+    context.data = items;
+  } else if (context.result && context.result.data) {
+    context.result.data = items;
+  } else {
+    context.result = items;
+  }
+};
+
 export const discriminatedFind = (app, keyType, result, params, options) => {
   if (result && result.data && result.data.length > 0) {
     const entriesByType = fp.groupBy(fp.prop('type'), result.data);

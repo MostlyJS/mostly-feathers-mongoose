@@ -1,7 +1,7 @@
 import assert from 'assert';
 import errors from 'feathers-errors';
 import fp from 'mostly-func';
-import { getHookData, setHookData } from './helpers';
+import { getHookData, setHookData } from '../helpers';
 
 export default function mapHookData (func) {
   if (!func || typeof func !== 'function') {
