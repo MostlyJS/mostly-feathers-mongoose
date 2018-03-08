@@ -1,5 +1,6 @@
 import addDelay from './add-delay';
 import addParams from './add-params';
+import addQuery from './add-query';
 import asUpsert from './as-upsert';
 import assoc from './assoc';
 import cache from './cache';
@@ -26,6 +27,7 @@ import validation from './validation';
 export {
   addDelay,
   addParams,
+  addQuery,
   asUpsert,
   assoc,
   cache,
