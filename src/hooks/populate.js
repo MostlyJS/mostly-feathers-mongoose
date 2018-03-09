@@ -60,16 +60,20 @@ function populateField (app, item, target, params, options) {
     options.path = '_type';
   }
 
-  // id with service `document:1`, convert as options.path
+  // typed id with service like `document:1`, convert as options.path
   if (!options.path && !options.service) {
+    // convert typed id to to { _id, _type } structure
     const getPath =  function (value) {
       if (value.indexOf(':') > 0) {
         let [path, id] = value.split(':');
         return { _id: value, _type: path, [options.idField]: id };
+      } else {
+        // keep original value in _value
+        return { _id: value, _type: value, [options.idField]: null, _value: value };
       }
-      return value;
     };
 
+    // transform the data with _type path
     if (Array.isArray(entry)) {
       entry = fp.map(getPath, entry);
       if (Array.isArray(item)) {
@@ -139,8 +143,10 @@ function populateField (app, item, target, params, options) {
     params.paginate = false; // disable paginate
     promise = Promise.all(fp.map((service) => {
       let sParams = fp.assign({}, params);
-      sParams.query['_id'] = { $in: services[service] };
-      return app.service(plural(service)).find(sParams);
+      if (services[service]) {
+        sParams.query['_id'] = { $in: services[service] };
+        return app.service(plural(service)).find(sParams);
+      }
     }, Object.keys(services)));
   } else {
     let service = options.service;

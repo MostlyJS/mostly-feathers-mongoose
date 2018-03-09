@@ -98,9 +98,9 @@ export function setField(item, target, data, field, options) {
   function cloneById(v, k) {
     if (Array.isArray(v)) {
       let match = find(v, it => String(it[options.idField]) === String(k));
-      return match ? cloneDeep(match) : (options.preserveOrigin ? k : null);
+      return match ? cloneDeep(match) : (options.keepOrig ? k : null);
     } else {
-      return String(v[options.idField]) === String(k)? cloneDeep(v) : (options.preserveOrigin ? k : null);
+      return String(v[options.idField]) === String(k)? cloneDeep(v) : (options.keepOrig ? k : null);
     }
   }
 
@@ -110,13 +110,13 @@ export function setField(item, target, data, field, options) {
       if(Array.isArray(entry)) {
         set(v, key, compact(entry.map(it => {
           let id = options.path? it[options.idField] : it;
-          let clone = cloneById(data, id);
+          let clone = id? cloneById(data, id) : (options.keepOrig? entry._value : null);
           return options.retained? defaults(it, clone) : clone;
         })));
         if (!get(v, key)) warn(1, entry);
       } else {
         let id = options.path? entry[options.idField] : entry;
-        let clone = cloneById(data, id);
+        let clone = id? cloneById(data, id) : (options.keepOrig? entry._value : null);
         set(v, key, options.retained? defaults(entry, clone) : clone);
         if (!get(v, key)) warn(2, entry);
       }
@@ -127,13 +127,13 @@ export function setField(item, target, data, field, options) {
       if (Array.isArray(entry)) {
         set(item, target, compact(entry.map(it => {
           let id = options.path? it[options.idField] : it;
-          let clone = cloneById(data, id);
+          let clone = id? cloneById(data, id) : (options.keepOrig? entry._value : null);
           return options.retained? defaults(it, clone) : clone;
         })));
         if (!get(item, target)) warn(3, entry);
       } else {
         let id = options.path? entry[options.idField] : entry;
-        let clone = cloneById(data, id);
+        let clone = id? cloneById(data, id) : (options.keepOrig? entry._value : null);
         set(item, target, options.retained? defaults(entry, clone) : clone);
         if (!get(item, target)) warn(4, entry);
       }
