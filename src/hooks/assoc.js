@@ -39,19 +39,27 @@ export default function assoc(target, opts) {
         : {};
       params.query = selection;
 
+      const assocProp = (item) => {
+        if (options.typeField) {
+          return item[options.typeField] + ':' + item[options.idField];
+        } else {
+          return item[options.idField];
+        }
+      };
+
       if (Array.isArray(data)) {
         // assoc with array field
         if (options.elemMatch) {
           params.query = fp.merge(params.query, {
             [options.field]: {
               $elemMatch: {
-                [options.elemMatch]: { $in: fp.map(fp.prop(options.idField), data) }
+                [options.elemMatch]: { $in: fp.map(assocProp, data) }
               }
             }
           });
         } else {
           params.query = fp.merge(params.query, {
-            [options.field]: { $in: fp.map(fp.prop(options.idField), data) },
+            [options.field]: { $in: fp.map(assocProp, data) },
           });
         }
       } else {
@@ -60,13 +68,13 @@ export default function assoc(target, opts) {
           params.query = fp.merge(params.query, {
             [options.field]: {
               $elemMatch: {
-                [options.elemMatch]: fp.prop(options.idField, data)
+                [options.elemMatch]: assocProp(data)
               }
             }
           });
         } else {
           params.query = fp.merge(params.query, {
-            [options.field]: fp.prop(options.idField, data)
+            [options.field]: assocProp(data)
           });
         }
       }
