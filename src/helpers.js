@@ -255,9 +255,11 @@ export const setHookData = (context, items) => {
   }
 };
 
+// find and merge the results from various descriminated services
 export const discriminatedFind = (app, keyType, result, params, options) => {
   if (result && result.data && result.data.length > 0) {
     const entriesByType = fp.groupBy(fp.prop('type'), result.data);
+    // find by descriminated service
     const findByType = fp.mapObjIndexed((entries, type) => {
       if (type === keyType) {
         return Promise.resolve(entries);
@@ -270,16 +272,19 @@ export const discriminatedFind = (app, keyType, result, params, options) => {
     });
     const promises = fp.values(findByType(entriesByType));
     return Promise.all(promises).then(entries => {
+      // merge the results
       const data = fp.flatten(fp.map(entry => entry && entry.data || entry, entries));
+      // sort again
       const sort = params && fp.dotPath('query.$sort', params) || options.sort;
       result.data = sort? sortWith(sort, data) : data;
       return result;
     });
   } else {
-    return result;
+    return result; // empty result
   }
 };
 
+// get the result from descriminated service
 export const discriminatedGet = (app, keyType, result, params) => {
   if (result && result.type && result.type !== keyType) {
     return app.service(plural(result.type)).get(result.id, params);
