@@ -39,6 +39,7 @@ export default function assoc(target, opts) {
         : {};
       params.query = selection;
 
+      // if options.typeField specified, assoc as typed id like `document:1`
       const assocProp = (item) => {
         if (options.typeField) {
           return item[options.typeField] + ':' + item[options.idField];

@@ -163,7 +163,7 @@ export class Service extends BaseService {
     [id, action] = this._idOrAction(id, params);
 
     if (!action || action === 'get') {
-      debug('service %s get %j', this.name, id, params);
+      debug('service %s get %j', this.name, id, params.query);
       return super.get(id, params).then(transform);
     }
 
