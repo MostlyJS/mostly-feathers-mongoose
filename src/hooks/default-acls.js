@@ -1,7 +1,6 @@
 import assert from 'assert';
 import mongoose from 'mongoose';
 import fp from 'mostly-func';
-import { plural } from 'pluralize';
 
 export default function defaultAcls(policy, permission, opts) {
   assert(policy !== undefined, 'defaultAcls policy not provided');
