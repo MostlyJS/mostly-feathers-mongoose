@@ -164,16 +164,27 @@ export function reorderPosition(Model, item, newPos, options = {}) {
     });
 }
 
-// get mongo obj.id or id as string
+// get mongo id as string (object, mongo id, typed id)
 export const pathId = fp.curry((idField, obj) => {
   if (obj) {
-    if (fp.is(String, obj)) return obj;
+    if (fp.is(String, obj)) {
+      // whether a typed id
+      if (obj.indexOf(':') > 0) {
+        return fp.last(fp.split(':', obj));
+      } else {
+        return obj;
+      }
+    }
     if (validator.isMongoId(obj.toString())) return obj.toString();
     if (obj[idField]) return pathId(idField, obj[idField]);
   }
   return null;
 });
 export const getId = pathId('id');
+
+export const typedId = (obj) => {
+  return obj.type? obj.type + ':' + obj.id : obj;
+};
 
 export const convertMongoId = (id) => {
   if (id && validator.isMongoId(id.toString())) {
