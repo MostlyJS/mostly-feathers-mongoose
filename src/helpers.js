@@ -266,10 +266,53 @@ export const setHookData = (context, items) => {
   }
 };
 
+// find with a groupby entries like { 'type1': [{ id: 1 }, { id: 2 }] }
+export const findEntriesByType = (app, entriesByType, params = {}, options = {}) => {
+  // find by descriminated service
+  const findByType = fp.mapObjIndexed((entries, type) => {
+    if (options.skipType && type === options.skipType) {
+      return Promise.resolve(entries);
+    } else {
+      params.query = params.query || {};
+      params.query.id = {
+        $in: fp.map(fp.prop('id'), entries)
+      };
+      params.paginate = false;
+      return app.service(plural(type)).find(params);
+    }
+  });
+
+  const promises = fp.values(findByType(entriesByType));
+  return Promise.all(promises).then(entries => {
+    // merge the results
+    const data = fp.flatten(fp.map(entry => entry && entry.data || entry, entries));
+    // sort again
+    const sort = fp.dotPath('query.$sort', params) || options.sort;
+    return sort? sortWith(sort, data) : data;
+  });
+};
+
+// find with typed ids from various descriminated services
+export const findWithTypedIds = (app, list, params, options) => {
+  if (list.length > 0) {
+    const typeAndIds = fp.map(typed => {
+      const field = fp.split(':', typed);
+      return { type: fp.head(field), id: fp.last(field) };
+    }, list);
+    const entriesByType = fp.groupBy(fp.prop('type'), typeAndIds);
+
+    // find the grouped entries by descriminated service
+    return findEntriesByType(app, entriesByType, params, options);
+  } else {
+    return Promise.resolve(list);
+  }
+};
+
 // find and merge the results from various descriminated services
 export const discriminatedFind = (app, keyType, result, params, options) => {
   if (result && result.data && result.data.length > 0) {
     const entriesByType = fp.groupBy(fp.prop('type'), result.data);
+
     // find by descriminated service
     const findByType = fp.mapObjIndexed((entries, type) => {
       if (type === keyType) {
@@ -281,6 +324,7 @@ export const discriminatedFind = (app, keyType, result, params, options) => {
         return app.service(plural(type)).find(paramsIds);
       }
     });
+
     const promises = fp.values(findByType(entriesByType));
     return Promise.all(promises).then(entries => {
       // merge the results
@@ -291,7 +335,7 @@ export const discriminatedFind = (app, keyType, result, params, options) => {
       return result;
     });
   } else {
-    return result; // empty result
+    return Promise.resolve(result); // empty result
   }
 };
 
@@ -300,7 +344,7 @@ export const discriminatedGet = (app, keyType, result, params) => {
   if (result && result.type && result.type !== keyType) {
     return app.service(plural(result.type)).get(result.id, params);
   } else {
-    return result;
+    return Promise.resolve(result);
   }
 };
 
