@@ -236,7 +236,6 @@ export const selectNext = (target, select) => {
 export const sortWith = (sort, data) => {
   const descSorts = ['desc', 'descending', '-1', -1];
   var propSort = fp.mapObjIndexed((dir, field) => {
-    console.log(descSorts.indexOf(dir));
     if (descSorts.indexOf(dir) === -1) {
       return fp.ascend(fp.prop(field));
     } else {
@@ -300,7 +299,7 @@ export const findWithTypedIds = (app, list, params, options) => {
       return { type: fp.head(field), id: fp.last(field) };
     }, list);
     const entriesByType = fp.groupBy(fp.prop('type'), typeAndIds);
-    console.log("findWithTypedIds", entriesByType);
+
     // find the grouped entries by descriminated service
     return findEntriesByType(app, entriesByType, params, options);
   } else {
