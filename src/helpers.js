@@ -273,12 +273,12 @@ export const findEntriesByType = (app, entriesByType, params = {}, options = {})
     if (options.skipType && type === options.skipType) {
       return Promise.resolve(entries);
     } else {
-      params.query = params.query || {};
-      params.query.id = {
+      let typeParams = fp.assign(params, { query: {} }); // copy for change
+      typeParams.query.id = {
         $in: fp.map(fp.prop('id'), entries)
       };
-      params.paginate = false;
-      return app.service(plural(type)).find(params);
+      typeParams.paginate = false;
+      return app.service(plural(type)).find(typeParams);
     }
   });
 
@@ -300,7 +300,7 @@ export const findWithTypedIds = (app, list, params, options) => {
       return { type: fp.head(field), id: fp.last(field) };
     }, list);
     const entriesByType = fp.groupBy(fp.prop('type'), typeAndIds);
-
+    console.log("findWithTypedIds", entriesByType);
     // find the grouped entries by descriminated service
     return findEntriesByType(app, entriesByType, params, options);
   } else {
