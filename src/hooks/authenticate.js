@@ -6,8 +6,7 @@ import fp from 'mostly-func';
 const verifyIdentity = auth.authenticate('jwt');
 
 const defaultOptions = {
-  anonymous: 'anonymous',
-  retained: false // retain existing field when populate as path
+  anonymous: true,
 };
 
 function getAccessToken(hook) {
@@ -21,15 +20,17 @@ export default function authenticate(strategies, opts = {}) {
 
   return async function(context) {
     const accessToken = getAccessToken(context);
-    if (accessToken && accessToken.startsWith(opts.anonymous)) {
+    const anonymousToken = fp.path(['auth', 'local', 'anonymousToken'], opts);
+    if (accessToken && anonymousToken && opts.anonymous && accessToken.startsWith(anonymousToken)) {
       // create an anonymous user with provided fake accessToken like 'anonymous:uuid'
       return context;
     } else {
       // verify and fetch user with $select fields
-      if (opts.$select) {
+      const permissionField = opts.permissionField || fp.path(['auth', 'local', 'permissionField'], opts);
+      if (permissionField) {
         context.params = fp.assign(context.params, {
           $auth: {
-            query: { $select: opts.$select }
+            query: { $select: permissionField }
           }
         });
       }
