@@ -31,15 +31,22 @@ export default function authorize(name = null, opts = {}) {
 
     const userPermissions = params.user && params.user.permissions || [];
     const userAces = defineAcesFor(userPermissions , { TypeKey });
-    const throwDisallowed = (action, data) => {
-      const resource = fp.assoc(TypeKey, data[TypeKey] || serviceName, data);
-      if (userAces.disallow(action, resource)) {
-        throw new Forbidden(`You are not allowed to ${action} ${resource.id || context.id || context.path}`);
+
+    const throwDisallowed = (action, resources) => {
+      let disallow = true;
+      // reverse loop to check inheritance
+      for (let i = resources.length - 1; i >= 0; i--) {
+        const resource = fp.assoc(TypeKey, resources[i][TypeKey] || serviceName, resources[i]);
+        disallow = disallow && userAces.disallow(action, resource);
+        if (!resource.inherited) break;
+      }
+      if (disallow) {
+        throw new Forbidden(`You are not allowed to ${action} ${resources[0].id || context.id || context.path}`);
       }
     };
 
     if (context.method === 'create') {
-      throwDisallowed('create', context.data);
+      throwDisallowed('create', [context.data]);
     }
 
      // find, multi update/patch/remove
@@ -60,15 +67,9 @@ export default function authorize(name = null, opts = {}) {
     else { 
       // get the resource by id for checking permissions
       const resource = await context.service.get(context.id, {
-        query: { $enrichers: 'acls,*' }
+        query: { $select: 'ancestors,*' }
       });
-      if (resource && resource.metadata && resource.metadata.acls) {
-        const resourcePermissions = fp.flatMap(fp.prop('aces'), resource.metadata.acls);
-        const resourceAces = defineAcesFor(resourcePermissions, { TypeKey });
-        throwDisallowed(action, resourceAces);
-      } else {
-        throwDisallowed(action, resource);
-      }
+      throwDisallowed(action, fp.concat(resource.ancestors || [], [resource]));
 
       return context;
     }
