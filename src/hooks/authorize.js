@@ -3,17 +3,17 @@ import fp from 'mostly-func';
 import { AceBuilder, Aces, toMongoQuery } from 'playing-permissions';
 import { getHookDataAsArray } from '../helpers';
 
-function defineAcesFor(user, { TypeKey = 'type' }) {
+function defineAcesFor(permissions, { TypeKey = 'type' }) {
   const builder = new AceBuilder();
 
-  for (const permission of user.permissions || []) {
+  for (const permission of permissions) {
     builder.allow(permission);
   }
 
   return new Aces(builder.rules, { TypeKey });
 }
 
-export default function authorize(name = null, opts) {
+export default function authorize(name = null, opts = {}) {
   const TypeKey = opts.TypeKey || 'type';
 
   return async function(context) {
@@ -29,11 +29,12 @@ export default function authorize(name = null, opts) {
     const action = params.__action || context.method;
     const serviceName = name || context.path;
 
-    const aces = defineAcesFor(params.user, { TypeKey });
+    const userPermissions = params.user && params.user.permissions || [];
+    const userAces = defineAcesFor(userPermissions , { TypeKey });
     const throwDisallowed = (action, data) => {
       const resource = fp.assoc(TypeKey, data[TypeKey] || serviceName, data);
-      if (aces.disallow(action, resource)) {
-        throw new Forbidden(`You are not allowed to ${action} ${resource.id || context.id || context.path}`)
+      if (userAces.disallow(action, resource)) {
+        throw new Forbidden(`You are not allowed to ${action} ${resource.id || context.id || context.path}`);
       }
     };
 
@@ -43,7 +44,7 @@ export default function authorize(name = null, opts) {
 
      // find, multi update/patch/remove
     if (!context.id) {
-      const rules = aces.rulesFor(action, serviceName);
+      const rules = userAces.rulesFor(action, serviceName);
       const query = toMongoQuery(rules);
 
       if (query) {
@@ -58,9 +59,16 @@ export default function authorize(name = null, opts) {
     // get, update, patch, remove, action
     else { 
       // get the resource by id for checking permissions
-      const resource = await context.service.get(context.id);
-
-      throwDisallowed(action, resource);
+      const resource = await context.service.get(context.id, {
+        query: { $enrichers: 'acls,*' }
+      });
+      if (resource && resource.metadata && resource.metadata.acls) {
+        const resourcePermissions = fp.flatMap(fp.prop('aces'), resource.metadata.acls);
+        const resourceAces = defineAcesFor(resourcePermissions, { TypeKey });
+        throwDisallowed(action, resourceAces);
+      } else {
+        throwDisallowed(action, resource);
+      }
 
       return context;
     }
