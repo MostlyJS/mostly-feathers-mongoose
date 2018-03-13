@@ -3,6 +3,14 @@ import fp from 'mostly-func';
 import { AceBuilder, Aces, toMongoQuery } from 'playing-permissions';
 import { getHookDataAsArray } from '../helpers';
 
+function getPermissions(user) {
+  if (user) {
+    const groupPermissions = fp.flatMap(fp.path(['group', 'permissions']), user.groups || []);
+    return fp.concat(groupPermissions, user.permissions || []);
+  }
+  return [];
+}
+
 function defineAcesFor(permissions, { TypeKey = 'type' }) {
   const builder = new AceBuilder();
 
@@ -29,7 +37,7 @@ export default function authorize(name = null, opts = {}) {
     const action = params.__action || context.method;
     const serviceName = name || context.path;
 
-    const userPermissions = params.user && params.user.permissions || [];
+    const userPermissions = getPermissions(params.user);
     const userAces = defineAcesFor(userPermissions , { TypeKey });
 
     const throwDisallowed = (action, resources) => {
