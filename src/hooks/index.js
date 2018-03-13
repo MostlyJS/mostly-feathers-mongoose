@@ -3,6 +3,7 @@ import addParams from './add-params';
 import addQuery from './add-query';
 import asUpsert from './as-upsert';
 import assoc from './assoc';
+import authenticate from './authenticate';
 import authorize from './authorize';
 import cache from './cache';
 import cascadeUpdate from './cascade-update';
@@ -31,6 +32,7 @@ export {
   addQuery,
   asUpsert,
   assoc,
+  authenticate,
   authorize,
   cache,
   cascadeUpdate,
