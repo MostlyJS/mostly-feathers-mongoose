@@ -183,7 +183,7 @@ export const pathId = fp.curry((idField, obj) => {
 export const getId = pathId('id');
 
 export const typedId = (obj) => {
-  return obj.type? obj.type + ':' + obj.id : obj;
+  return obj && obj.type? obj.type + ':' + obj.id : obj;
 };
 
 export const convertMongoId = (id) => {
