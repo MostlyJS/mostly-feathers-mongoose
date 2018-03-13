@@ -25,6 +25,7 @@
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "debug": "^2.6.6",
+    "feathers-authentication": "^1.2.3",
     "feathers-commons": "^0.8.7",
     "feathers-errors": "^2.8.0",
     "feathers-hooks-common": "^3.10.0",
