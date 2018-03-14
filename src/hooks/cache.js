@@ -13,9 +13,9 @@ export default function (cacheMap, opts) {
   opts = fp.assign(defaultOptions, opts);
   
   return context => {
-    const idName = opts.idField || (context.service || {}).id;
+    const idField = opts.idField || (context.service || {}).id;
     const svcName = (context.service || {}).name;
-    const keyPrefix = genHookKey(context, opts.perUser) + ':';
+    const altKey = genHookKey(context, opts.perUser);
 
     const items = getHookDataAsArray(context);
 
@@ -23,10 +23,11 @@ export default function (cacheMap, opts) {
       if (context.method === 'remove') return;
 
       items.forEach(item => {
-        const key = keyPrefix + item[idName];
-        if (!fp.contains(key, context.cacheHits || [])) {
-          debug(`>> ${svcName} service set cache`, key);
-          cacheMap.set(key, fp.clone(item));
+        const key = item[idField], path = altKey + '.' + item[idField];
+        if (!fp.contains(path, context.cacheHits || [])) {
+          debug(`>> ${svcName} service set cache`, path);
+          const value = cacheMap.get(item[idField]) || {};
+          cacheMap.set(key, fp.merge(value, { [altKey]: item }));
         }
       });
 
@@ -38,27 +39,24 @@ export default function (cacheMap, opts) {
       case 'create':
         break;
       case 'get': {
-        const key = keyPrefix + context.id;
-        const value = cacheMap.get(key);
-        if (value) {
-          debug(`<< ${svcName} service hit cache`, key);
-          context.cacheHits = fp.concat(context.cached || [], [key]);
-          context.result = value;
+        const value = cacheMap.get(context.id), path = altKey + '.' + context.id;
+        if (value && value[altKey]) {
+          debug(`<< ${svcName} service hit cache`, path);
+          context.cacheHits = fp.concat(context.cached || [], [path]);
+          context.result = value[altKey];
         } else {
-          debug(`<< ${svcName} service miss cache`, key);
+          debug(`<< ${svcName} service miss cache`, path);
         }
         break;
       }
       default: { // update, patch, remove
         if (context.id) {
-          const key = keyPrefix + context.id;
-          debug(`>> ${svcName} service delete cache`, key);
-          cacheMap.delete(key);
+          debug(`>> ${svcName} service delete cache`, context.id);
+          cacheMap.delete(context.id);
         } else {
           items.forEach(item => {
-            const key = keyPrefix + context.id;
-            debug(`>> ${svcName} service delete cache`, key);
-            cacheMap.delete(key);
+            debug(`>> ${svcName} service delete cache`, context.id);
+            cacheMap.delete(context.id);
           });
         }
       }
