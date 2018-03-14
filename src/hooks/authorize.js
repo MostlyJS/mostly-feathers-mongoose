@@ -44,12 +44,13 @@ export default function authorize(name = null, opts = {}) {
       let disallow = true;
       // reverse loop to check inheritance
       for (let i = resources.length - 1; i >= 0; i--) {
+        if (!resources[i]) break;
         const resource = fp.assoc(TypeKey, resources[i][TypeKey] || serviceName, resources[i]);
         disallow = disallow && userAces.disallow(action, resource);
         if (!resource.inherited) break;
       }
       if (disallow) {
-        throw new Forbidden(`You are not allowed to ${action} ${resources[0].id || context.id || context.path}`);
+        throw new Forbidden(`You are not allowed to ${action} ${resources[0] && resources[0].id}, with ${context.path}/${context.id}`);
       }
     };
 
@@ -77,7 +78,7 @@ export default function authorize(name = null, opts = {}) {
       const resource = await context.service.get(context.id, {
         query: { $select: 'ancestors,*' }
       });
-      throwDisallowed(action, fp.concat(resource.ancestors || [], [resource]));
+      throwDisallowed(action, fp.concat(resource && resource.ancestors || [], [resource]));
 
       return context;
     }
