@@ -96,7 +96,8 @@ function populateField (app, item, target, params, options) {
   //debug(' \n\twith: %j', item);
 
   if (!options.path && isPopulated(entry)) {
-    debug('==> %s already populate %s/%s, \n\tid: %j', options, target, field, entry);
+    //debug('==> %s target %s is already populated (service %s)',
+    //  (item[0] || item).id, target, options.service || options.path);
     return Promise.resolve(item);
   }
 
