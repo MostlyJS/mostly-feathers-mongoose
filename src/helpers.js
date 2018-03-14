@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import makeDebug from 'debug';
 import { cloneDeep, compact, defaults, find, flatten, get, set, map } from 'lodash';
 import fp from 'mostly-func';
@@ -263,6 +264,18 @@ export const setHookData = (context, items) => {
   } else {
     context.result = items;
   }
+};
+
+export const genHookKey = (context, perUser = false) => {
+  return crypto.createHash('md5')
+    .update(context.path)
+    .update(context.method)
+    .update(JSON.stringify(context.params.query || {}))
+    .update(context.params.provider || '')
+    .update(fp.dotPath('headers.enrichers-document', context.params) || '')
+    .update(fp.dotPath('headers.enrichers-document', context.params) || '')
+    .update(perUser && context.params.user && context.params.user.id || '')
+    .digest('hex');
 };
 
 // find with a groupby entries like { 'type1': [{ id: 1 }, { id: 2 }] }
