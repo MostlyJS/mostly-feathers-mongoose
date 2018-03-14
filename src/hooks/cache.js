@@ -23,7 +23,7 @@ export default function (cacheMap, opts) {
       if (context.method === 'remove') return;
 
       items.forEach(item => {
-        const key = item[idField], path = altKey + '.' + item[idField];
+        const key = item[idField], path = item[idField] + '.' + altKey;
         if (!fp.contains(path, context.cacheHits || [])) {
           debug(`>> ${svcName} service set cache`, path);
           const value = cacheMap.get(item[idField]) || {};
@@ -39,7 +39,7 @@ export default function (cacheMap, opts) {
       case 'create':
         break;
       case 'get': {
-        const value = cacheMap.get(context.id), path = altKey + '.' + context.id;
+        const value = cacheMap.get(context.id), path = context.id + '.' + altKey;
         if (value && value[altKey]) {
           debug(`<< ${svcName} service hit cache`, path);
           context.cacheHits = fp.concat(context.cached || [], [path]);
