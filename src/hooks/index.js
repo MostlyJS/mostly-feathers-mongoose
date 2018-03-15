@@ -5,7 +5,6 @@ import asUpsert from './as-upsert';
 import assoc from './assoc';
 import authenticate from './authenticate';
 import authorize from './authorize';
-import cache from './cache';
 import cascadeUpdate from './cascade-update';
 import convertId from './convert-id';
 import defaultAcls from './default-acls';
@@ -34,7 +33,6 @@ export {
   assoc,
   authenticate,
   authorize,
-  cache,
   cascadeUpdate,
   convertId,
   defaultAcls,
