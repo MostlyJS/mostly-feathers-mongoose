@@ -23,10 +23,10 @@ const defaultOptions = {
  * 
  * Cache structure
  * - service
- *   - metadata: lastWrite
+ *   - lastWrite: time
  *   - queryKey: value
  * - id
- *   - metadata: lastWrite
+ *   - lastWrite: time
  *   - queryKey: value
  */
 export default function (cacheMap, opts) {
@@ -53,32 +53,33 @@ export default function (cacheMap, opts) {
     const cacheValue = results[2] && JSON.parse(results[2]);
 
     // special cache miss where it is out of date
-    if (cacheValue && cacheValue.metadata) {
+    if (cacheValue) {
       let outdated = false;
-      if (svcMeta && svcMeta.lastWrite) {
-        outdated = cacheValue.metadata.lastWrite < svcMeta.lastWrite;
-        if (idMeta && idMeta.lastWrite) {
-          outdated = outdated
-            || idMeta.lastWrite < svcMeta.lastWrite
-            || cacheValue.metadata.lastWrite < idMeta.lastWrite;
-        }
+      if (svcMeta) {
+        outdated = outdated || cacheValue.lastWrite < svcMeta.lastWrite;
+      }
+      if (idMeta) {
+        outdated = outdated || cacheValue.lastWrite < idMeta.lastWrite;
+      }
+      if (svcMeta && idMeta) {
+        outdated = outdated || idMeta.lastWrite < svcMeta.lastWrite;
       }
       if (outdated) {
-        debug(`<< ${svcKey} out of date:`, svcKey, idKey, queryKey);
+        debug(`<< ${svcKey} out of date: ${queryKey}`);
         return null;
       } else {
-        debug(`<< ${svcKey} hit cache:`, svcKey, idKey, queryKey);
+        debug(`<< ${svcKey} hit cache: ${queryKey}`);
         return cacheValue.data;
       }
     } else {
-      debug(`<< ${svcKey} miss cache`, svcKey, idKey, queryKey);
+      debug(`<< ${svcKey} miss cache: ${queryKey}`);
       return null;
     }
   };
 
   const setCacheValue = async function (queryKey, value, ttl) {
     return cacheMap.set(queryKey, JSON.stringify({
-      metadata: { lastWrite: Date.now() },
+      lastWrite: Date.now(),
       data: value
     }));
   };
@@ -123,7 +124,7 @@ export default function (cacheMap, opts) {
             const idKey = opts.keyPrefix + item[idField];
             const queryKey = genKey(context, item[idField]);
             if (!fp.contains(queryKey, context.cacheHits || [])) {
-              debug(`>> ${svcKey} set cache`, queryKey);
+              debug(`>> ${svcKey} set cache: ${queryKey}`);
               await setCacheValue(queryKey, item, opts.ttl);
             }
           }
@@ -153,11 +154,11 @@ export default function (cacheMap, opts) {
               }
             } else if (id.$in && id.$in.length > 0) {
               const ids = fp.uniq(id.$in);
-              const values = await Promise.all(id => {
+              const values = await Promise.all(fp.map(async (id) => {
                 const idKey = opts.keyPrefix + id;
                 const queryKey = genKey(context, id);
                 return getCacheValue(svcKey, idKey, queryKey);
-              }, ids).then(fp.reject(fp.isNil));
+              }, ids)).then(fp.reject(fp.isNil));
               if (values.length === ids.length) { // hit all
                 for (const id of ids) {
                   const queryKey = genKey(context, id);
