@@ -5,7 +5,7 @@ import { getHookDataAsArray } from '../helpers';
 
 function getPermissions(user) {
   if (user) {
-    const groupPermissions = fp.flatMap(fp.path(['group', 'permissions']), user.groups || []);
+    const groupPermissions = fp.flatMap(fp.pathOr([], ['group', 'permissions']), user.groups || []);
     return fp.concat(groupPermissions, user.permissions || []);
   }
   return [];
@@ -66,7 +66,15 @@ export default function authorize(name = null, opts = {}) {
       if (query) {
         params.query = fp.assign(params.query, query);
       } else {
-        params.query.$limit = 0; // TODO skip the mongoose query
+        context.result = {
+          message: 'No data found for your account permissions',
+          metadata: {
+            total: 0,
+            limit: context.params.query.$limit || 10,
+            skip: context.params.query.$skip || 0,
+          },
+          data: []
+        };
       }
 
       context.params = params;
