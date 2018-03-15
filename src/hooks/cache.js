@@ -103,17 +103,6 @@ export default function (cacheMap, opts) {
    
     const svcKey = opts.keyPrefix + svcName;
 
-    const resultFor = (data) => {
-      return {
-        metadata: {
-          total: data.length,
-          limit: context.params.query.$limit || 10,
-          skip: context.params.query.$skip || 0
-        },
-        data: data
-      };
-    };
-
     const saveHits = (queryKey) => {
       context.cacheHits = (context.cacheHits || []).concat(queryKey);
     };
