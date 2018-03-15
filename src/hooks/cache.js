@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
 import util from 'util';
-import { getHookDataAsArray } from '../helpers';
+import { getHookData, getHookDataAsArray } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cache');
 
@@ -114,23 +114,41 @@ export default function (cacheMap, opts) {
 
     if (context.type === 'after') {
 
-      const items = getHookDataAsArray(context);
+      const saveForCache = async function (items) {
+        for (const item of items) {
+          const idKey = opts.keyPrefix + item[idField];
+          const queryKey = genKey(context, item[idField]);
+          if (!fp.contains(queryKey, context.cacheHits || [])) {
+            debug(`>> ${svcKey} set cache: ${queryKey}`);
+            await setCacheValue(queryKey, item, opts.ttl);
+          }
+        }
+      };
 
       switch (context.method) {
-        case 'find': // fall through
+        case 'find':
+          if (context.params && context.params.query) {
+            const id = context.params.query.id || context.params.query._id;
+            if (id) {
+              const items = getHookDataAsArray(context);
+              await saveForCache(items);
+            } else {
+              const queryKey = genKey(context);
+              const items = getHookData(context);
+              await setCacheValue(queryKey, items, opts.ttl);
+            }
+          }
+          break;
         case 'get': {
           // save for cache
-          for (const item of items) {
-            const idKey = opts.keyPrefix + item[idField];
-            const queryKey = genKey(context, item[idField]);
-            if (!fp.contains(queryKey, context.cacheHits || [])) {
-              debug(`>> ${svcKey} set cache: ${queryKey}`);
-              await setCacheValue(queryKey, item, opts.ttl);
-            }
+          if (context.id) {
+            const item = getHookData(context);
+            await saveForCache([item]);
           }
           break;
         }
         default: { // update, patch, remove
+          const items = getHookDataAsArray(context);
           for (const item of items) {
             const idKey = opts.keyPrefix + item[idField];
             await touchService(idKey);
@@ -143,7 +161,7 @@ export default function (cacheMap, opts) {
       switch (context.method) {
         case 'find':
           if (context.params && context.params.query) {
-            const id = context.params.query.id || context.params.query._id || {};
+            const id = context.params.query.id || context.params.query._id;
             if (fp.is(String, id)) {
               const idKey = opts.keyPrefix + id;
               const queryKey = genKey(context, id);
@@ -152,7 +170,7 @@ export default function (cacheMap, opts) {
                 saveHits(queryKey);
                 context.result = resultFor([value]);
               }
-            } else if (id.$in && id.$in.length > 0) {
+            } else if (id && id.$in && id.$in.length > 0) {
               const ids = fp.uniq(id.$in);
               const values = await Promise.all(fp.map(async (id) => {
                 const idKey = opts.keyPrefix + id;
@@ -167,26 +185,35 @@ export default function (cacheMap, opts) {
                 context.result = resultFor(values);
               }
             } else {
-              // cache on service level
+              const queryKey = genKey(context);
+              const values = await getCacheValue(svcKey, null, queryKey);
+              if (values) {
+                context.result = values;
+              }
             }
           }
           break;
         case 'create':
           break;
         case 'get': {
-          const idKey = opts.keyPrefix + context.id;
-          const queryKey = genKey(context, context.id);
-          const value = await getCacheValue(svcKey, idKey, queryKey);
-          if (value) {
-            saveHits(queryKey);
-            context.result = value;
+          if (context.id) {
+            const idKey = opts.keyPrefix + context.id;
+            const queryKey = genKey(context, context.id);
+            const value = await getCacheValue(svcKey, idKey, queryKey);
+            if (value) {
+              saveHits(queryKey);
+              context.result = value;
+            }
           }
           break;
         }
         default: { // update, patch, remove
           if (context.id) {
             const idKey = opts.keyPrefix + context.id;
-            await touchService(idKey);
+            await Promise.all([
+              touchService(svcKey),
+              touchService(idKey)
+            ]);
           } else {
             await touchService(svcKey);
           }
