@@ -32,11 +32,13 @@ const defaultOptions = {
 export default function (cacheMap, opts) {
   opts = fp.assign(defaultOptions, opts);
 
-  const genKey = (context, id) => {
+  // generate a unique key for query with same params
+  // you can fake a query also to hit the cache
+  const genQueryKey = (context, id, fakeQuery) => {
     const hash = crypto.createHash('md5')
       .update(context.path)
       .update(context.method)
-      .update(JSON.stringify(context.params.query || {}))
+      .update(JSON.stringify(fakeQuery || context.params.query || {}))
       .update(context.params.provider || '')
       .update(fp.dotPath('headers.enrichers-document', context.params) || '')
       .update(fp.dotPath('headers.enrichers-document', context.params) || '')
@@ -56,10 +58,10 @@ export default function (cacheMap, opts) {
     if (cacheValue) {
       let outdated = false;
       if (svcMeta) {
-        outdated = outdated || cacheValue.lastWrite < svcMeta.lastWrite;
+        outdated = outdated || cacheValue.metadata.lastWrite < svcMeta.lastWrite;
       }
       if (idMeta) {
-        outdated = outdated || cacheValue.lastWrite < idMeta.lastWrite;
+        outdated = outdated || cacheValue.metadata.lastWrite < idMeta.lastWrite;
       }
       if (svcMeta && idMeta) {
         outdated = outdated || idMeta.lastWrite < svcMeta.lastWrite;
@@ -69,7 +71,7 @@ export default function (cacheMap, opts) {
         return null;
       } else {
         debug(`<< ${svcKey} hit cache: ${queryKey}`);
-        return cacheValue.data;
+        return fp.dissocPath(['metadata', 'lastWrite'], cacheValue);
       }
     } else {
       debug(`<< ${svcKey} miss cache: ${queryKey}`);
@@ -78,10 +80,14 @@ export default function (cacheMap, opts) {
   };
 
   const setCacheValue = async function (queryKey, value, ttl) {
-    return cacheMap.set(queryKey, JSON.stringify({
-      lastWrite: Date.now(),
-      data: value
-    }));
+    let metadata = { lastWrite: Date.now() };
+    let data = value;
+
+    if (value && value.data) {
+      metadata = fp.assign(metadata, value.metadata || fp.omit(['data'], value));
+      data = value.data;
+    }
+    return cacheMap.set(queryKey, JSON.stringify({ metadata, data }));
   };
 
   const touchService = async function (nameKey) {
@@ -117,7 +123,7 @@ export default function (cacheMap, opts) {
       const saveForCache = async function (items) {
         for (const item of items) {
           const idKey = opts.keyPrefix + item[idField];
-          const queryKey = genKey(context, item[idField]);
+          const queryKey = genQueryKey(context, item[idField]);
           if (!fp.contains(queryKey, context.cacheHits || [])) {
             debug(`>> ${svcKey} set cache: ${queryKey}`);
             await setCacheValue(queryKey, item, opts.ttl);
@@ -133,9 +139,8 @@ export default function (cacheMap, opts) {
               const items = getHookDataAsArray(context);
               await saveForCache(items);
             } else {
-              const queryKey = genKey(context);
-              const items = getHookData(context);
-              await setCacheValue(queryKey, items, opts.ttl);
+              const queryKey = genQueryKey(context);
+              await setCacheValue(queryKey, context.result, opts.ttl);
             }
           }
           break;
@@ -164,28 +169,28 @@ export default function (cacheMap, opts) {
             const id = context.params.query.id || context.params.query._id;
             if (fp.is(String, id)) {
               const idKey = opts.keyPrefix + id;
-              const queryKey = genKey(context, id);
+              const queryKey = genQueryKey(context, id);
               const value = await getCacheValue(svcKey, idKey, queryKey);
               if (value) {
                 saveHits(queryKey);
-                context.result = resultFor([value]);
+                context.result = value;
               }
             } else if (id && id.$in && id.$in.length > 0) {
               const ids = fp.uniq(id.$in);
               const values = await Promise.all(fp.map(async (id) => {
                 const idKey = opts.keyPrefix + id;
-                const queryKey = genKey(context, id);
+                const queryKey = genQueryKey(context, id);
                 return getCacheValue(svcKey, idKey, queryKey);
               }, ids)).then(fp.reject(fp.isNil));
               if (values.length === ids.length) { // hit all
                 for (const id of ids) {
-                  const queryKey = genKey(context, id);
+                  const queryKey = genQueryKey(context, id);
                   saveHits(queryKey);
                 }
                 context.result = resultFor(values);
               }
             } else {
-              const queryKey = genKey(context);
+              const queryKey = genQueryKey(context);
               const values = await getCacheValue(svcKey, null, queryKey);
               if (values) {
                 context.result = values;
@@ -198,7 +203,7 @@ export default function (cacheMap, opts) {
         case 'get': {
           if (context.id) {
             const idKey = opts.keyPrefix + context.id;
-            const queryKey = genKey(context, context.id);
+            const queryKey = genQueryKey(context, context.id);
             const value = await getCacheValue(svcKey, idKey, queryKey);
             if (value) {
               saveHits(queryKey);
