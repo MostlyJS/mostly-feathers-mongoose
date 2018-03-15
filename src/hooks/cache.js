@@ -132,18 +132,11 @@ export default function (cacheMap, opts) {
       };
 
       switch (context.method) {
-        case 'find':
-          if (context.params && context.params.query) {
-            const id = context.params.query.id || context.params.query._id;
-            if (id) {
-              const items = getHookDataAsArray(context);
-              await saveForCache(items);
-            } else {
-              const queryKey = genQueryKey(context);
-              await setCacheValue(queryKey, context.result, opts.ttl);
-            }
-          }
+        case 'find': {
+          const queryKey = genQueryKey(context);
+          await setCacheValue(queryKey, context.result, opts.ttl);
           break;
+        }
         case 'get': {
           // save for cache
           if (context.id) {
@@ -164,40 +157,14 @@ export default function (cacheMap, opts) {
     } else {
 
       switch (context.method) {
-        case 'find':
-          if (context.params && context.params.query) {
-            const id = context.params.query.id || context.params.query._id;
-            if (fp.is(String, id)) {
-              const idKey = opts.keyPrefix + id;
-              const queryKey = genQueryKey(context, id);
-              const value = await getCacheValue(svcKey, idKey, queryKey);
-              if (value) {
-                saveHits(queryKey);
-                context.result = value;
-              }
-            } else if (id && id.$in && id.$in.length > 0) {
-              const ids = fp.uniq(id.$in);
-              const values = await Promise.all(fp.map(async (id) => {
-                const idKey = opts.keyPrefix + id;
-                const queryKey = genQueryKey(context, id);
-                return getCacheValue(svcKey, idKey, queryKey);
-              }, ids)).then(fp.reject(fp.isNil));
-              if (values.length === ids.length) { // hit all
-                for (const id of ids) {
-                  const queryKey = genQueryKey(context, id);
-                  saveHits(queryKey);
-                }
-                context.result = resultFor(values);
-              }
-            } else {
-              const queryKey = genQueryKey(context);
-              const values = await getCacheValue(svcKey, null, queryKey);
-              if (values) {
-                context.result = values;
-              }
-            }
+        case 'find': {
+          const queryKey = genQueryKey(context);
+          const values = await getCacheValue(svcKey, null, queryKey);
+          if (values) {
+            context.result = values;
           }
           break;
+        }
         case 'create':
           break;
         case 'get': {
@@ -207,7 +174,7 @@ export default function (cacheMap, opts) {
             const value = await getCacheValue(svcKey, idKey, queryKey);
             if (value) {
               saveHits(queryKey);
-              context.result = value;
+              context.result = value.data;
             }
           }
           break;
