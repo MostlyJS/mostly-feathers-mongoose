@@ -11,15 +11,17 @@ export default function responder() {
 
     let metadata = {};
     let data = hook.result;
+    let message = '';
 
     if (hook.result && hook.result.data) {
       metadata = hook.result.metadata || fp.omit(['data'], hook.result);
       data = hook.result.data;
+      message = hook.result.message || '';
     }
 
     hook.result = {
       status: 0,
-      message: '',
+      message: message,
       metadata: metadata,
       errors: [],
       data: data
