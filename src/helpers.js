@@ -293,49 +293,33 @@ export const findEntriesByType = (app, entriesByType, params = {}, options = {})
 
 // find with typed ids from various descriminated services
 export const findWithTypedIds = (app, list, params, options) => {
-  if (list.length > 0) {
-    const typeAndIds = fp.map(typed => {
-      const field = fp.split(':', typed);
-      return { type: fp.head(field), id: fp.last(field) };
-    }, list);
-    const entriesByType = fp.groupBy(fp.prop('type'), typeAndIds);
+  if (!fp.isValid(list)) return Promise.resolve(list);
 
-    // find the grouped entries by descriminated service
-    return findEntriesByType(app, entriesByType, params, options);
-  } else {
-    return Promise.resolve(list);
-  }
+  const typeAndIds = fp.map(typed => {
+    const field = fp.split(':', typed);
+    return { type: fp.head(field), id: fp.last(field) };
+  }, list);
+  const entriesByType = fp.groupBy(fp.prop('type'), typeAndIds);
+
+  // find the grouped entries by descriminated service
+  return findEntriesByType(app, entriesByType, params, options);
 };
 
 // find and merge the results from various descriminated services
 export const discriminatedFind = (app, keyType, result, params, options) => {
-  if (result && result.data && result.data.length > 0) {
-    const entriesByType = fp.groupBy(fp.prop('type'), result.data);
+  if (!result || !fp.isValid(result.data || result)) return Promise.resolve(result);
 
-    // find by descriminated service
-    const findByType = fp.mapObjIndexed((entries, type) => {
-      if (type === keyType) {
-        return Promise.resolve(entries);
-      } else {
-        const paramsIds = fp.assocDotPath('query.id', {
-          $in: fp.map(fp.prop('id'), entries)
-        }, params);
-        return app.service(plural(type)).find(paramsIds);
-      }
-    });
+  const entriesByType = fp.groupBy(fp.prop('type'), result.data || result);
 
-    const promises = fp.values(findByType(entriesByType));
-    return Promise.all(promises).then(entries => {
-      // merge the results
-      const data = fp.flatten(fp.map(entry => entry && entry.data || entry, entries));
-      // sort again
-      const sort = params && fp.dotPath('query.$sort', params) || options.sort;
-      result.data = sort? sortWith(sort, data) : data;
-      return result;
-    });
-  } else {
-    return Promise.resolve(result); // empty result
-  }
+  // find the grouped entries by descriminated service
+  return findEntriesByType(app, entriesByType, params, options).then(data => {
+    if (result.data) {
+      result.data = data;
+    } else {
+      result = data;
+    }
+    return result;
+  });
 };
 
 // get the result from descriminated service
