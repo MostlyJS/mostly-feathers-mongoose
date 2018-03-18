@@ -218,6 +218,11 @@ export const isSelected = (target, select) => {
   return false;
 };
 
+export const addToSelect = (select, ...args) => {
+  select = select? normalizeSelect(select) : [];
+  return fp.uniq(select.concat(args));
+};
+
 export const selectNext = (target, select) => {
   if (select) {
     // normalize the $select
