@@ -277,7 +277,7 @@ export const findEntriesByType = (app, entriesByType, params = {}, options = {})
     if (options.skipType && type === options.skipType) {
       return Promise.resolve(entries);
     } else {
-      let typeParams = fp.assign(params, { query: {} }); // copy for change
+      let typeParams = fp.assign({ query: {} }, params); // copy for change
       typeParams.query.id = {
         $in: fp.map(fp.prop('id'), entries)
       };
