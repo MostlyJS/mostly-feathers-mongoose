@@ -289,7 +289,7 @@ export const findEntriesByType = (app, entriesByType, params = {}, options = {})
   const promises = fp.values(findByType(entriesByType));
   return Promise.all(promises).then(entries => {
     // merge the results
-    const data = fp.flatten(fp.map(entry => entry && entry.data || entry, entries));
+    const data = fp.flatMap(entry => entry && entry.data || entry, entries);
     // sort again
     const sort = fp.dotPath('query.$sort', params) || options.sort;
     return sort? sortWith(sort, data) : data;
@@ -363,7 +363,7 @@ export function populateByService(app, idField, typeField, options = {}) {
         let entries = types[type];
         return app.service(plural(type)).find(Object.assign({
           query: {
-            _id: { $in: fp.map(fp.prop(idField), entries) },
+            _id: { $in: fp.uniq(fp.map(fp.prop(idField), entries)) },
           },
           paginate: false
         }, options));
