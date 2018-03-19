@@ -303,10 +303,10 @@ export class Service extends BaseService {
     debug('service %s %s action %s id %j => %j', this.name, method, action, id, data);
 
     // get target item with params.query (without provider)
-    let query = id
+    let query = (id) => id
       ? this.get(id, { query: params.query || {} })
       : Promise.resolve(null);
-    return query.then(origin => {
+    return query(id).then(origin => {
       if (id && !origin) {
         throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
       }
