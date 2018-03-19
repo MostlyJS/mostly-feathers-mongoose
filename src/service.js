@@ -304,7 +304,7 @@ export class Service extends BaseService {
 
     // get target item with params.query (without provider)
     let query = (id) => id
-      ? this.get(id, { query: params.query || {} })
+      ? this.get(id, { query: params.query || {}, user: params.user })
       : Promise.resolve(null);
     return query(id).then(origin => {
       if (id && !origin) {
