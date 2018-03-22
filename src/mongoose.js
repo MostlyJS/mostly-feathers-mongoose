@@ -6,24 +6,24 @@ const debug = makeDebug('mostly:feathers-mongoose:connect');
 
 mongoose.Promise = global.Promise;
 
-export function connectDb(url) {
-  return function(app) {
-    mongoose.connection.once('open', function() {
+export function connectDb (url) {
+  return function (app) {
+    mongoose.connection.once('open', function () {
       debug('MongoDB connected [%s]', url);
 
-      mongoose.connection.on('connected', function() {
+      mongoose.connection.on('connected', function () {
         debug('MongoDB event connected', url);
       });
 
-      mongoose.connection.on('disconnected', function() {
+      mongoose.connection.on('disconnected', function () {
         debug('MongoDB event disconnected', url);
       });
 
-      mongoose.connection.on('reconnected', function() {
+      mongoose.connection.on('reconnected', function () {
         debug('MongoDB event reconnected', url);
       });
 
-      mongoose.connection.on('error', function(err) {
+      mongoose.connection.on('error', function (err) {
         console.error('MongoDB event error: ' + err);
       });
     });
@@ -43,7 +43,7 @@ export function connectDb(url) {
 /**
  * Get or create the mongoose model if not exists
  */
-export function getModel(app, name, Model) {
+export function getModel (app, name, Model) {
   const mongooseClient = app.get('mongoose');
   assert(mongooseClient, 'mongoose client not set by app');
   const modelNames = mongooseClient.modelNames();
@@ -58,7 +58,7 @@ export function getModel(app, name, Model) {
 /**
  * Create a mongoose model with free schema
  */
-export function createModel(app, name, options) {
+export function createModel (app, name, options) {
   const mongooseClient = app.get('mongoose');
   assert(mongooseClient, 'mongoose client not set by app');
   const schema = new mongooseClient.Schema({ any: {} }, {strict: false});
@@ -68,7 +68,7 @@ export function createModel(app, name, options) {
 /**
  * Create a service with mogoose model
  */
-export function createService(app, Service, Model, options) {
+export function createService (app, Service, Model, options) {
   Model = options.Model || Model;
   if (typeof Model === 'function') {
     assert(options.ModelName, 'createService but options.ModelName not provided');

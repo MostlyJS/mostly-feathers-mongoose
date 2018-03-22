@@ -3,7 +3,7 @@ import fp from 'mostly-func';
 import mongose from 'mongoose';
 import { isSelected } from '../helpers';
 
-export default function flatMerge(field, opts = { idField: 'id' }) {
+export default function flatMerge (field, opts = { idField: 'id' }) {
 
   return hook => {
     let options = Object.assign({}, opts);
@@ -41,7 +41,7 @@ export default function flatMerge(field, opts = { idField: 'id' }) {
       }
     };
 
-    const mergeData = function(data) {
+    const mergeData = function (data) {
       if (Array.isArray(data)) {
         let results = fp.map(item => setData(item, getData(item)), data);
         if (results && options.sort) {

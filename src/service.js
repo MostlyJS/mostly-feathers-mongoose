@@ -92,7 +92,7 @@ export class Service extends BaseService {
     this.name = options.name || 'mongoose-service';
   }
 
-  setup(app) {
+  setup (app) {
     this.app = app;
   }
 

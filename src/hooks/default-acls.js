@@ -2,18 +2,18 @@ import assert from 'assert';
 import mongoose from 'mongoose';
 import fp from 'mostly-func';
 
-export default function defaultAcls(policy, permission, opts) {
+export default function defaultAcls (policy, permission, opts) {
   assert(policy !== undefined, 'defaultAcls policy not provided');
   assert(permission !== undefined, 'defaultAcls permission not provided');
 
-  return function(hook) {
+  return function (hook) {
     let options = Object.assign({}, opts);
 
     if (hook.type !== 'before') {
       throw new Error(`The 'defaultAcls' hook should only be used as a 'before' hook.`);
     }
 
-    const getACLs = function(names) {
+    const getACLs = function (names) {
       const nameToIds = names.map(name => {
         if (mongoose.Types.ObjectId.isValid(name)) {
           return Promise.resolve(name);

@@ -9,14 +9,14 @@ const defaults = {
   limit: 10 // 每页条数
 };
 
-export default function mongoosePaginator(mongoose, options) {
+export default function mongoosePaginator (mongoose, options) {
 
   /**
    * paginate
    *
    * @param {Object} options
    */
-  Query.prototype.paginate = function(options) {
+  Query.prototype.paginate = function (options) {
     let opts = util._extend({}, defaults);
     opts = util._extend(opts, options);
 
@@ -27,7 +27,7 @@ export default function mongoosePaginator(mongoose, options) {
       query.options.sort = { _id: -1 };
     }
 
-    return new Promise(function(resolve, reject) {
+    return new Promise(function (resolve, reject) {
       let sortKeys = Object.keys(query.options.sort);
       let sortKey = sortKeys[0] || '_id';
 

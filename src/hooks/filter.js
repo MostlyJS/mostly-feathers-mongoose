@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import { getId } from '../helpers';
 
-export default function filter(target, opts) {
+export default function filter (target, opts) {
 
   if (!opts.service) {
     throw new Error('You need to provide a service');
@@ -9,7 +9,7 @@ export default function filter(target, opts) {
 
   var field = opts.field || target;
 
-  return function(hook) {
+  return function (hook) {
     let options = Object.assign({}, opts);
     
     if (hook.type !== 'before') {

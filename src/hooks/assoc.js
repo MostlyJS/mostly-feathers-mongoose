@@ -15,10 +15,10 @@ function isPresent (obj, target) {
 }
 
 // associcate current data as a foreign key to another service
-export default function assoc(target, opts) {
+export default function assoc (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  return function(hook) {
+  return function (hook) {
     let options = Object.assign({}, opts);
 
     if (hook.type !== 'after') {

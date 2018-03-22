@@ -1,9 +1,9 @@
 import assert from 'assert';
 
-export default function presentEntity(entity, options = {}) {
+export default function presentEntity (entity, options = {}) {
   assert(entity && entity.parse, 'Must be a valid Entity: ' + entity);
 
-  return function(hook) {
+  return function (hook) {
     options.provider = hook.params.provider;
     
     if (hook.result) {

@@ -2,8 +2,8 @@ import Entity from 'mostly-entity';
 import fp from 'mostly-func';
 
 // 返回值定制
-export default function responder() {
-  return function(hook) {
+export default function responder () {
+  return function (hook) {
     // If it was an internal call then skip this hook
     if (!hook.params.provider) {
       return hook;

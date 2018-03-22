@@ -4,7 +4,7 @@ import _ from 'lodash';
 import mongoose from 'mongoose';
 
 
-export default function(schema, options) {
+export default function (schema, options) {
   options = options || {};
 
   const RandomModel = mongoose.model(options.model || 'random');
@@ -13,11 +13,11 @@ export default function(schema, options) {
   const randField = options.randomId || '_rand';
 
 
-  function randCoords() {
+  function randCoords () {
     return [Math.random(), Math.random()];
   }
 
-  function upsertRandom(id, modelName) {
+  function upsertRandom (id, modelName) {
     let randItem = {};
     randItem[idField] = id;
     randItem[idModel] = modelName;
@@ -30,7 +30,7 @@ export default function(schema, options) {
     );
   }
 
-  schema.post('save', function(item, next) {
+  schema.post('save', function (item, next) {
     upsertRandom(item._id, item.constructor.modelName).exec(next);
   });
 

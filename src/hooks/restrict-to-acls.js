@@ -13,12 +13,12 @@ const defaults = {
   owner: false
 };
 
-export default function restrictToAcls(options = {}){
+export default function restrictToAcls (options = {}){
   if (!options.acls || !options.acls.length) {
     throw new Error(`You need to provide an array of 'acls' to check against.`);
   }
 
-  return function(hook) {
+  return function (hook) {
     if (hook.type !== 'before') {
       throw new Error(`The 'restrictToRoles' hook should only be used as a 'before' hook.`);
     }

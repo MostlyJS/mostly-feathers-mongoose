@@ -9,7 +9,7 @@ var util = require('util');
 var helpers = require('../helpers');
 var debug = require('debug')('mostly:feathers-mongoose:hooks:validation');
 
-export default function validation(accepts) {
+export default function validation (accepts) {
   return (hook) => {
     const action = hook.params.__action || hook.method;
     debug("validation action %s with %j", action, accepts[action]);
@@ -47,7 +47,7 @@ export default function validation(accepts) {
  * A collection of validators
  *
  */
-function Validator() {}
+function Validator () {}
 
 // Validators from `__validator__`
 [
@@ -91,9 +91,9 @@ function Validator() {}
   'isUppercase',
   'isVariableWidth',
   'matches'
-].forEach(function(name) {
+].forEach(function (name) {
   if (typeof __validator__[name] === 'function') {
-    Validator[name] = function() {
+    Validator[name] = function () {
       return __validator__[name].apply(__validator__, arguments);
     };
   }
@@ -103,7 +103,7 @@ function Validator() {}
  * A wrapper to collect validation errors
  * @class
  */
-function ValidationError() {
+function ValidationError () {
   this._errors = {};
 }
 
@@ -113,7 +113,7 @@ function ValidationError() {
  *   email: { isEmail: 'not a valid email' }
  * }
  */
-ValidationError.prototype.add = function(name, validatorName, msg) {
+ValidationError.prototype.add = function (name, validatorName, msg) {
   msg = msg || this.defaultMessage(name, validatorName);
   var obj = this._errors[name] || {};
   obj[validatorName] = msg;
@@ -125,7 +125,7 @@ ValidationError.prototype.add = function(name, validatorName, msg) {
  * To human readable format
  *   example:  email is not a valid; name is required
  */
-ValidationError.prototype.toHuman = function() {
+ValidationError.prototype.toHuman = function () {
   return this.flatten().join('; ');
 };
 
@@ -134,11 +134,11 @@ ValidationError.prototype.toHuman = function() {
  *   example:  ['email is not a valid', 'name is required']
  */
 
-ValidationError.prototype.flatten = function() {
+ValidationError.prototype.flatten = function () {
   var self = this;
   var messages;
-  messages = _.map(self._errors, function(obj, name) {
-    return _.map(obj, function(msg, validatorName) {
+  messages = _.map(self._errors, function (obj, name) {
+    return _.map(obj, function (msg, validatorName) {
       return msg.toString() || self.defaultMessage(name, validatorName);
     });
   });
@@ -148,21 +148,21 @@ ValidationError.prototype.flatten = function() {
 /**
  * To JSON  format
  */
-ValidationError.prototype.asJSON = function() {
+ValidationError.prototype.asJSON = function () {
   return this._errors;
 };
 
 /**
  * Default message format
  */
-ValidationError.prototype.defaultMessage = function(name, validatorName) {
+ValidationError.prototype.defaultMessage = function (name, validatorName) {
   return util.format('%s: \'%s\' validation failed', name, validatorName);
 };
 
 /**
  * Check if there exists any error
  */
-ValidationError.prototype.any = function() {
+ValidationError.prototype.any = function () {
   return !_.isEmpty(this._errors);
 };
 
@@ -243,13 +243,13 @@ ValidationError.prototype.any = function() {
  * ]
  * ```
  */
-export function Validate(params, accepts) {
+export function Validate (params, accepts) {
 
   var validationError = new ValidationError();
   params = params || {};
   accepts = accepts || [];
 
-  var performValidator = function(name, val, validatorOpts, validatorName) {
+  var performValidator = function (name, val, validatorOpts, validatorName) {
     validatorOpts = validatorOpts || {};
 
     // if validator is a custom function, then execute it
@@ -290,7 +290,7 @@ export function Validate(params, accepts) {
     }
   };
 
-  _.each(accepts, function(accept) {
+  _.each(accepts, function (accept) {
     var name = accept.arg;
     var val = params[name];
 
@@ -313,7 +313,7 @@ export function Validate(params, accepts) {
         // delete `required` validator for latter iteration
         debug(' => each', name, validators, val);
         delete validators.required;
-        _.each(validators, function(validatorOpts, validatorName) {
+        _.each(validators, function (validatorOpts, validatorName) {
           performValidator(name, val, validatorOpts, validatorName);
         });
       }
@@ -344,7 +344,7 @@ export function Validate(params, accepts) {
  * ```
  */
 Validate.extend = function (name, fn) {
-  Validator[name] = function() {
+  Validator[name] = function () {
     var args = Array.prototype.slice.call(arguments);
     args[0] = __validator__.toString(args[0]);
     return fn.apply(Validator, args);
@@ -360,7 +360,7 @@ Validate.extend = function (name, fn) {
  * Validate.method('contains');
  * ```
  */
-Validate.method = function(name) {
+Validate.method = function (name) {
   return Validator[name];
 };
 
@@ -368,6 +368,6 @@ Validate.method = function(name) {
 /*!
  * Add default validator `required`
  */
-Validate.extend('required', function(val) {
+Validate.extend('required', function (val) {
   return !_.isNil(val);
 });

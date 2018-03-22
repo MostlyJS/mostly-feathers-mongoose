@@ -19,7 +19,7 @@ let redisClient = null;
 
 // get query result from redis cache and check lastWrite
 let getCacheQuery = function (collectionKey, queryKey) {
-  return new Promise(function(ok) {
+  return new Promise(function (ok) {
     redisClient.multi().get(collectionKey).get(queryKey).exec(function (err, results) {
       if (err) {
         err.message = util.format('mongoose cache error %s', queryKey);
@@ -49,7 +49,7 @@ let touchCollection = function (name) {
   }));
 };
 
-let genKey = function(query, populate) {
+let genKey = function (query, populate) {
   if (query._pipeline) {
     return genKeyAggregate(query, populate);
   }
@@ -61,14 +61,14 @@ let genKey = function(query, populate) {
     .digest('hex');
 };
 
-let genDebugKey = function(query, populate) {
+let genDebugKey = function (query, populate) {
   return 'condition = ' + JSON.stringify(query._conditions || {})  + 
     ', options = ' + JSON.stringify(query._optionsForExec(query.model) || {}) + 
     ', fields = ' + JSON.stringify(query._fields || {}) + 
     ', populate = ' + JSON.stringify(populate);
 };
 
-let genKeyAggregate = function(aggregate, populate) {
+let genKeyAggregate = function (aggregate, populate) {
   return crypto.createHash('md5')
     .update(JSON.stringify(aggregate._conditions || {}))
     .update(JSON.stringify(aggregate._pipeline || {}))
@@ -81,7 +81,7 @@ let genKeyAggregate = function(aggregate, populate) {
 // This make regexp serialize properly in queries with regular expressions
 if(!RegExp.prototype.hasOwnProperty('toJSON')) {
   Object.assign(RegExp.prototype, {
-    toJSON: function() {
+    toJSON: function () {
       let str = this.toString();
       let obj = { $regexp: this.source };
       let opts = str.substring(str.lastIndexOf('/') + 1);
@@ -95,7 +95,7 @@ if(!RegExp.prototype.hasOwnProperty('toJSON')) {
 }
 
 
-export default function mongooseCache(mongoose, redis, options) {
+export default function mongooseCache (mongoose, redis, options) {
   // 'options' is an optional param
   // if (typeof options === 'function') {
   //   cb = options;
@@ -171,8 +171,8 @@ export default function mongooseCache(mongoose, redis, options) {
       queryKey  = collectionKey + ':' + hash;
 
     console.time('mongoose-cache-plugin');
-    return new Promise(function(ok, error) {
-      getCacheQuery(collectionKey, queryKey).spread(function(collectionData, queryData) {
+    return new Promise(function (ok, error) {
+      getCacheQuery(collectionKey, queryKey).spread(function (collectionData, queryData) {
         // CACHE HIT CASE
         // if the key was found in cache, and the date check was also good
         // then just return this cache key directly to the user.
@@ -202,7 +202,7 @@ export default function mongooseCache(mongoose, redis, options) {
             // store the docs in the cache to get a hit next time
             var cacheData = JSON.stringify(self._createQueryCacheData(docs, collectionData && collectionData.lastWrite));
             debug('mongoose store cache: ', ttl, queryKey);
-            redisClient.setex(queryKey, ttl, cacheData, function(err) {
+            redisClient.setex(queryKey, ttl, cacheData, function (err) {
               if (err) {
                 err.message = 'mongoose redis error';
                 debug(err);
@@ -213,7 +213,7 @@ export default function mongooseCache(mongoose, redis, options) {
             ok(docs);
           });
         }
-      }).catch(function(err) {
+      }).catch(function (err) {
         //TODO: Should we treat a cache error as just a cache miss??
         error(err);
       });

@@ -3,7 +3,7 @@ import fp from 'mostly-func';
 import { AceBuilder, Aces, toMongoQuery } from 'playing-permissions';
 import { getHookDataAsArray } from '../helpers';
 
-function getPermissions(user) {
+function getPermissions (user) {
   if (user) {
     const groupPermissions = fp.flatMap(fp.pathOr([], ['group', 'permissions']), user.groups || []);
     return fp.concat(groupPermissions, user.permissions || []);
@@ -11,7 +11,7 @@ function getPermissions(user) {
   return [];
 }
 
-function defineAcesFor(permissions, { TypeKey = 'type' }) {
+function defineAcesFor (permissions, { TypeKey = 'type' }) {
   const builder = new AceBuilder();
 
   for (const permission of permissions) {
@@ -21,10 +21,10 @@ function defineAcesFor(permissions, { TypeKey = 'type' }) {
   return new Aces(builder.rules, { TypeKey });
 }
 
-export default function authorize(name = null, opts = {}) {
+export default function authorize (name = null, opts = {}) {
   const TypeKey = opts.TypeKey || 'type';
 
-  return async function(context) {
+  return async function (context) {
     if (context.type !== 'before') {
       throw new Error(`The 'authorize' hook should only be used as a 'before' hook.`);
     }

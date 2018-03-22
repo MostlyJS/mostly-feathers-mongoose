@@ -6,7 +6,7 @@ import { getField, setField } from '../helpers';
 export default function depopulate (target, opts = { idField: 'id' }) {
   assert(target, 'target is empty');
 
-  return function(hook) {
+  return function (hook) {
     let options = Object.assign({}, opts);
 
     const depopulated = function (data, target) {

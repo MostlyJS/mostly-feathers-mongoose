@@ -7,7 +7,7 @@ import validator from 'validator';
 const debug = makeDebug('mostly:feathers-mongoose:helpers');
 
 // get field by path, supporting `array.field`
-export function getField(item, field) {
+export function getField (item, field) {
   let parts = field.split('.');
   let value = item, part;
   while (parts.length) {
@@ -26,7 +26,7 @@ export function getField(item, field) {
   return Array.isArray(value) ? fp.filter(fp.identity, value) : value;
 }
 
-export function setFieldByKey(item, field, data) {
+export function setFieldByKey (item, field, data) {
   let parts = field.split('.');
   let key = parts.pop();
   let value = item, part;
@@ -37,7 +37,7 @@ export function setFieldByKey(item, field, data) {
   if (!value) return; // nothing to setField
 
   if (Array.isArray(value) && !value[key]) {
-    value.forEach(function(v) {
+    value.forEach(function (v) {
       let id = v[key];
       if (Array.isArray(id)) {
         set(v, key, map(id, it => data[it] || it));
@@ -60,7 +60,7 @@ export function setFieldByKey(item, field, data) {
 }
 
 // get field by path
-export function setField(item, target, data, field, options) {
+export function setField (item, target, data, field, options) {
   //debug('setField ==== %s, \n  >>>> %s / %s, \n  >>>> %s ',
   //  util.inspect(item), target, field, util.inspect(data));
   options = options || {};
@@ -89,13 +89,13 @@ export function setField(item, target, data, field, options) {
     return; // nothing to setField
   }
 
-  function warn(which, id) {
+  function warn (which, id) {
     debug(' >>> WARN %d: setField %s/%s(id=%j) not found with item %s',
       which, target, field, id, item[options.idField]);
   }
 
   // avoid duplicate setField
-  function cloneById(v, k) {
+  function cloneById (v, k) {
     if (Array.isArray(v)) {
       let match = find(v, it => String(it[options.idField]) === String(k));
       return match ? cloneDeep(match) : (options.keepOrig ? k : null);
@@ -105,7 +105,7 @@ export function setField(item, target, data, field, options) {
   }
 
   if (Array.isArray(value)) {
-    value.forEach(function(v) {
+    value.forEach(function (v) {
       let entry = get(v, key);
       if(Array.isArray(entry)) {
         set(v, key, compact(entry.map(it => {
@@ -144,7 +144,7 @@ export function setField(item, target, data, field, options) {
   return item;
 }
 
-export function reorderPosition(Model, item, newPos, options = {}) {
+export function reorderPosition (Model, item, newPos, options = {}) {
   const prevPos = parseInt(item.position || 0);
   newPos = parseInt(newPos || 0);
 
@@ -355,7 +355,7 @@ const populateList = (list, idField, options = {}) => (data) => {
   })(list);
 };
 
-export function populateByService(app, idField, typeField, options = {}) {
+export function populateByService (app, idField, typeField, options = {}) {
   return (list) => {
     let types = fp.groupBy(fp.prop(typeField), list);
     return Promise.all(

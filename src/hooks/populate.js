@@ -178,7 +178,7 @@ function populateField (app, item, target, params, options) {
       setField(item, target, results, field, options);
     }
     return item;
-  }).catch(function(err) {
+  }).catch(function (err) {
     console.error(" ERROR: populate %s error %s", options.service, util.inspect(err));
     setField(item, target, {}, field, options);
     return item;
@@ -221,7 +221,7 @@ function populateField (app, item, target, params, options) {
 export default function populate (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  return function(hook) {
+  return function (hook) {
     const options = Object.assign({}, opts);  // clone for change
 
     if (hook.type !== 'after') {

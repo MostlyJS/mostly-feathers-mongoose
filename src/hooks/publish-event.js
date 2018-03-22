@@ -5,11 +5,11 @@ const defaultOptions = {
   prefix: 'feathers'
 };
 
-export default function publishEvent(name, opts) {
+export default function publishEvent (name, opts) {
   opts = Object.assign({}, defaultOptions, opts);
   const topic = `${opts.prefix}.events`;
 
-  return function(hook) {
+  return function (hook) {
     let options = Object.assign({}, opts);
 
     if (hook.type !== 'after') {
@@ -17,7 +17,7 @@ export default function publishEvent(name, opts) {
     }
     
     const trans = hook.app.trans;
-    const publish = function(event) {
+    const publish = function (event) {
       trans.act({
         pubsub$: true,
         topic,

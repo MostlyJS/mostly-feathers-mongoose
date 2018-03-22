@@ -7,18 +7,18 @@ const defaultOptions = {
   anonymous: true,
 };
 
-function getAccessToken(hook) {
+function getAccessToken (hook) {
   return fp.path(['headers', 'authorization'], hook.params) ||
          fp.path(['accessToken'], hook.data);
 }
 
-export default function authenticate(strategies, opts = {}, fields) {
+export default function authenticate (strategies, opts = {}, fields) {
   opts = fp.assign(defaultOptions, opts);
   assert(strategies, "The 'authenticate' hook requires one of your registered passport strategies.");
 
   const verifyIdentity = auth.authenticate(strategies);
 
-  return async function(context) {
+  return async function (context) {
     const accessToken = getAccessToken(context);
     // verify and fetch user with $select fields
     const select = fp.reject(fp.isNil, [fields, opts.local && opts.local.fields]).join(',');

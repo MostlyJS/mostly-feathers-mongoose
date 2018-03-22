@@ -1,14 +1,14 @@
 import { flatten, keyBy, mapValues } from 'lodash';
 import { getField, setFieldByKey } from '../helpers';
 
-export default function convertId(target, opts) {
+export default function convertId (target, opts) {
   if (!opts.service) {
     throw new Error('You need to provide a service');
   }
 
   var field = opts.field;
 
-  return function(hook) {
+  return function (hook) {
     let options = Object.assign({}, opts);
 
     if (hook.type !== 'before') {
