@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
  * classify: classify position by a specified field
  * unshift: insert at first
  */
-export default function(schema, options) {
+export default function (schema, options) {
   options = options || {};
 
   if (!schema.get('position')) {
@@ -14,12 +14,12 @@ export default function(schema, options) {
 
   schema.index({ position: 1 });
 
-  const preUpdate = function(item, Model, next) {
+  const preUpdate = function (item, Model, next) {
     if (item.position && !isNaN(item.position)) {
       return next();
     }
 
-    const addLast = function(done) {
+    const addLast = function (done) {
       let query = Model.findOne();
       if (options.classify) {
         query.where(options.classify).eq(item[options.classify]);
@@ -49,13 +49,13 @@ export default function(schema, options) {
   };
 
   // TODO function model like pre('update')
-  schema.pre('save', function(next) {
+  schema.pre('save', function (next) {
     let item = this;
     const Model = mongoose.model(item.constructor.modelName);
     preUpdate(item, Model, next);
   });
 
-  schema.pre('update', function(next) {
+  schema.pre('update', function (next) {
     const update = this.getUpdate();
     if (this.model && update && update.$set) {
       preUpdate(update.$set, this.model, next);
@@ -65,7 +65,7 @@ export default function(schema, options) {
   });
 
   // TODO function model like pre('update')
-  schema.pre('findOneAndUpdate', function(next) {
+  schema.pre('findOneAndUpdate', function (next) {
     let item = this.getUpdate();
     const Model = mongoose.model(this.model.modelName);
     preUpdate(item, Model, next);
