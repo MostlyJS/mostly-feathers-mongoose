@@ -174,11 +174,6 @@ export class Service extends BaseService {
   create (data, params) {
     params = fp.assign({ query: {} }, params);
 
-    // add support to create multiple objects
-    if (Array.isArray(data)) {
-      return Promise.all(data.map(current => this.create(current, params)));
-    }
-
     const action = params.__action || (params.query && params.query.$action);
     if (!action || action === 'create') {
       params = filterSelect(params); // filter $select
