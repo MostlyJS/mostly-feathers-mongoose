@@ -144,6 +144,38 @@ export function setField (item, target, data, field, options) {
   return item;
 }
 
+const unset_id = function (obj) {
+  if (obj && obj._id) {
+    return fp.pipe(
+      fp.assoc('id', String(obj.id || obj._id)),
+      fp.dissoc('_id'),
+      fp.dissoc('__v')
+    )(obj);
+  } else {
+    return obj;
+  }
+};
+
+const unsetObj = function (obj) {
+  if (Array.isArray(obj)) {
+    return fp.map(unset_id, obj);
+  } else {
+    return unset_id(obj);
+  }
+};
+
+// transform the results
+export const transform = function (results) {
+  if (results) {
+    if (results.data) {
+      results.data = unsetObj(results.data);
+    } else {
+      results = unsetObj(results);
+    }
+  }
+  return results;
+};
+
 export function reorderPosition (Model, item, newPos, options = {}) {
   const prevPos = parseInt(item.position || 0);
   newPos = parseInt(newPos || 0);

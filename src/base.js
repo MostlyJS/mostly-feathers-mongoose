@@ -7,7 +7,7 @@ import errorHandler from './error-handler';
 
 // Base service copy from feathers-mongoose for bug fix and optimize
 // http://github.com/feathersjs/feathers-mongoose
-class Service {
+export class Service {
   constructor (options) {
     if (!options) {
       throw new Error('Mongoose options have to be provided');
@@ -509,5 +509,3 @@ class Service {
 export default function init (options) {
   return new Service(options);
 }
-
-init.Service = Service;

@@ -3,7 +3,6 @@
  */
 import { findIndex, isEmpty } from 'lodash';
 import util from 'util';
-import { Query } from 'mongoose';
 
 const defaults = {
   limit: 10 // 每页条数
@@ -16,7 +15,7 @@ export default function mongoosePaginator (mongoose, options) {
    *
    * @param {Object} options
    */
-  Query.prototype.paginate = function (options) {
+  mongoose.Query.prototype.paginate = function (options) {
     let opts = util._extend({}, defaults);
     opts = util._extend(opts, options);
 

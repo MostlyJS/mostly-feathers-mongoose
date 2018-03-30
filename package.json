@@ -25,6 +25,7 @@
   "dependencies": {
     "babel-polyfill": "^6.23.0",
     "debug": "^2.6.6",
+    "esm": "^3.0.14",
     "feathers-authentication": "^1.2.3",
     "feathers-commons": "^0.8.7",
     "feathers-errors": "^2.8.0",
@@ -34,7 +35,6 @@
     "micromatch": "^3.0.4",
     "minimatch": "^3.0.4",
     "mongoose": "^4.11.1",
-    "mostly-entity": "^1.0.6",
     "pluralize": "^7.0.0",
     "rubberduck": "^1.1.1",
     "uberproto": "^1.2.0",

@@ -2,7 +2,7 @@ import assert from 'assert';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
 import { Service as BaseService } from './base';
-import { normalizeSelect } from './helpers';
+import { normalizeSelect, transform } from './helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
@@ -36,26 +36,6 @@ const unsetOptions = fp.pipe(
   fp.dissoc('ModelName')
 );
 
-const unset_id = function (obj) {
-  if (obj && obj._id) {
-    return fp.pipe(
-      fp.assoc('id', String(obj.id || obj._id)),
-      fp.dissoc('_id'),
-      fp.dissoc('__v')
-    )(obj);
-  } else {
-    return obj;
-  }
-};
-
-const unsetObj = function (obj) {
-  if (Array.isArray(obj)) {
-    return fp.map(unset_id, obj);
-  } else {
-    return unset_id(obj);
-  }
-};
-
 const filterSelect = function (params) {
   // select by * and field.* or field.**
   if (params && params.query && params.query.$select) {
@@ -69,18 +49,6 @@ const filterSelect = function (params) {
     }
   }
   return params;
-};
-
-// transform the results
-const transform = function (results) {
-  if (results) {
-    if (results.data) {
-      results.data = unsetObj(results.data);
-    } else {
-      results = unsetObj(results);
-    }
-  }
-  return results;
 };
 
 export class Service extends BaseService {
@@ -375,6 +343,3 @@ export class Service extends BaseService {
 export default function init (options) {
   return new Service(options);
 }
-
-init.Service = Service;
-init.transform = transform;
