@@ -42,7 +42,7 @@ export default function authorize (name = null, opts = {}) {
 
     const throwDisallowed = (action, resources) => {
       let disallow = true;
-      // reverse loop to check inheritance
+      // reverse loop to check by inheritance
       for (let i = resources.length - 1; i >= 0; i--) {
         if (!resources[i]) break;
         const resource = fp.assoc(TypeKey, resources[i][TypeKey] || serviceName, resources[i]);
@@ -55,11 +55,19 @@ export default function authorize (name = null, opts = {}) {
     };
 
     if (context.method === 'create') {
-      throwDisallowed('create', [context.data]);
+      // get the parent for checking permissions
+      if (context.data.parent) {
+        const parent = await context.service.get(context.data.parent, {
+          query: { $select: 'ancestors,*' }
+        });
+        context.data.inherited = true;
+        throwDisallowed('create', fp.concat(parent && parent.ancestors || [], [context.data]));
+      } else {
+        throwDisallowed('create', [context.data]);
+      }
     }
-
-     // find, multi update/patch/remove
-    if (!context.id) {
+    // find, multi update/patch/remove
+    else if (!context.id) {
       const rules = userAces.rulesFor(action, serviceName);
       const query = toMongoQuery(rules);
 
