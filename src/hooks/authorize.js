@@ -3,6 +3,14 @@ import fp from 'mostly-func';
 import { AceBuilder, Aces, toMongoQuery } from 'playing-permissions';
 import { getHookDataAsArray } from '../helpers';
 
+const defaultOptions = {
+  idField: 'id',
+  TypeKey: 'type',
+  parent: { field: 'parent' },
+  ancestors: { field: 'parent', service: null },
+  inherited: { field: 'inherited' }
+};
+
 function getPermissions (user) {
   if (user) {
     const groupPermissions = fp.flatMap(fp.pathOr([], ['group', 'permissions']), user.groups || []);
@@ -22,7 +30,8 @@ function defineAcesFor (permissions, { TypeKey = 'type' }) {
 }
 
 export default function authorize (name = null, opts = {}) {
-  const TypeKey = opts.TypeKey || 'type';
+  opts = fp.assign({}, defaultOptions, opts);
+  const TypeKey = opts.TypeKey;
 
   return async function (context) {
     if (context.type !== 'before') {
@@ -40,6 +49,19 @@ export default function authorize (name = null, opts = {}) {
     const userPermissions = getPermissions(params.user);
     const userAces = defineAcesFor(userPermissions , { TypeKey });
 
+    const getAncestors = async (id) => {
+      const svcResource = opts.ancestors.service?
+        context.app.service(opts.ancestors.service) : context.service;
+      const resource = await svcResource.get(id, {
+        query: { $select: `${opts.ancestors.field},*` }
+      });
+      if (resource[opts.ancestors.field]) {
+        return fp.concat(resource.ancestors, [fp.dissoc(opts.ancestors.field, resource)]);
+      } else {
+        return [resource];
+      }
+    };
+
     const throwDisallowed = (action, resources) => {
       let disallow = true;
       // reverse loop to check by inheritance
@@ -56,12 +78,10 @@ export default function authorize (name = null, opts = {}) {
 
     if (context.method === 'create') {
       // get the parent for checking permissions
-      if (context.data.parent) {
-        const parent = await context.service.get(context.data.parent, {
-          query: { $select: 'ancestors,*' }
-        });
-        context.data.inherited = true;
-        throwDisallowed('create', fp.concat(parent && parent.ancestors || [], [context.data]));
+      if (context.data[opts.parent.field]) {
+        const ancestors = await getAncestors(context.data[opts.parent.field], opts.ancestors);
+        context.data[opts.inherited.field] = true;
+        throwDisallowed('create', fp.concat(ancestors, [context.data]));
       } else {
         throwDisallowed('create', [context.data]);
       }
@@ -90,11 +110,9 @@ export default function authorize (name = null, opts = {}) {
     }
     // get, update, patch, remove, action
     else { 
-      // get the resource by id for checking permissions
-      const resource = await context.service.get(context.id, {
-        query: { $select: 'ancestors,*' }
-      });
-      throwDisallowed(action, fp.concat(resource && resource.ancestors || [], [resource]));
+      // get the resource with ancestors for checking permissions
+      const resources = await getAncestors(context.id, opts.ancestors);
+      throwDisallowed(action, resources);
 
       return context;
     }
