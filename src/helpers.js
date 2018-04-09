@@ -2,7 +2,6 @@ import makeDebug from 'debug';
 import { cloneDeep, compact, defaults, find, flatten, get, set, map } from 'lodash';
 import fp from 'mostly-func';
 import { plural } from 'pluralize';
-import validator from 'validator';
 
 const debug = makeDebug('mostly:feathers-mongoose:helpers');
 
@@ -207,7 +206,7 @@ export const pathId = fp.curry((idField, obj) => {
         return obj;
       }
     }
-    if (validator.isMongoId(obj.toString())) return obj.toString();
+    if (fp.isObjectId(obj.toString())) return obj.toString();
     if (obj[idField]) return pathId(idField, obj[idField]);
   }
   return null;
@@ -219,7 +218,7 @@ export const typedId = (obj) => {
 };
 
 export const convertMongoId = (id) => {
-  if (id && validator.isMongoId(id.toString())) {
+  if (id && fp.isObjectId(id.toString())) {
     return id.toString();
   } else {
     return Array.isArray(id)? fp.map(convertMongoId, id) : id;

@@ -3,7 +3,6 @@ import makeDebug from 'debug';
 import errors from 'feathers-errors';
 import fp from 'mostly-func';
 import { plural } from 'pluralize';
-import validator from 'validator';
 import util from 'util';
 import { getField, setField, isSelected, selectNext } from '../helpers';
 
@@ -15,7 +14,7 @@ const defaultOptions = {
 };
 
 function isPopulated (obj) {
-  const isPlain = (val) => val && !(fp.is(String, val) || validator.isMongoId(val.toString()));
+  const isPlain = (val) => val && !(fp.is(String, val) || fp.isObjectId(val.toString()));
   return fp.reduce((result, val) => {
     return result && isPlain(val);
   }, true, [].concat(obj));
