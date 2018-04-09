@@ -249,12 +249,8 @@ export class Service extends BaseService {
     };
   }
 
-  /**
-   * private actions, aciton method are pseudo private by underscore
-   */
-
   _action (method, action, id, data, params) {
-    if (this['_' + action] === undefined || defaultMethods.indexOf(action) >= 0) {
+    if (this[action] === undefined || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
     if (params.__action) {
@@ -273,11 +269,11 @@ export class Service extends BaseService {
       if (id && !origin) {
         throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
       }
-      return this['_' + action].call(this, id, data, params, origin);
+      return this[action].call(this, id, data, params, origin);
     });
   }
 
-  _upsert (id, data, params) {
+  upsert (id, data, params) {
     params = fp.assign({}, params);
     if (fp.isNil(params.query) || fp.isEmpty(params.query)) {
       params.query = fp.assign({}, data);  // default find by input data
@@ -298,14 +294,14 @@ export class Service extends BaseService {
     return super.patch(null, data, params).then(fp.head).then(transform);
   }
 
-  _count (id, data, params) {
+  count (id, data, params) {
     params = fp.assign({ query: {} }, params || id);
 
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
-  _first (id, data, params) {
+  first (id, data, params) {
     // filter $select
     params = filterSelect(params || id);
 
@@ -319,13 +315,13 @@ export class Service extends BaseService {
     }).then(transform);
   }
 
-  _last (id, data, params) {
+  last (id, data, params) {
     // filter $select
     params = filterSelect(params || id);
 
     params = fp.assign({ query: {} }, params);
 
-    return this._count(id, data, params).then(total => {
+    return this.count(id, data, params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
       params.paginate = false;
@@ -335,7 +331,7 @@ export class Service extends BaseService {
     });
   }
 
-  _restore (id, data, params) {
+  restore (id, data, params) {
     return super.patch(id, { destroyedAt: null }, params).then(transform);
   }
 }
