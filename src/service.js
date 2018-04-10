@@ -1,6 +1,8 @@
 import assert from 'assert';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
+import { idAction } from 'mostly-feathers';
+
 import { Service as BaseService } from './base';
 import { normalizeSelect, transform } from './helpers';
 
@@ -110,25 +112,13 @@ export class Service extends BaseService {
     // TODO secure action call by find
     return this._action('find', action, null, null, params);
   }
-
-  _idOrAction (id, params) {
-    if (id === 'null') id = null;
-    let action = params.__action || (params.query && params.query.$action);
-    // check if id is action for find
-    if (id && !action) {
-      if (this['_' + id] && defaultMethods.indexOf(id) < 0) {
-        return [null, id];
-      }
-    }
-    return [id, action];
-  }
   
   get (id, params) {
     params = fp.assign({ query: {} }, params);
     params = filterSelect(params); // filter $select
 
     let action = null;
-    [id, action] = this._idOrAction(id, params);
+    [id, action] = idAction(id, params);
 
     if (!action || action === 'get') {
       debug('service %s get %j', this.name, id, params.query);
@@ -142,7 +132,8 @@ export class Service extends BaseService {
   create (data, params) {
     params = fp.assign({ query: {} }, params);
 
-    const action = params.__action || (params.query && params.query.$action);
+    const [, action] = idAction(null, params);
+
     if (!action || action === 'create') {
       params = filterSelect(params); // filter $select
       debug('service %s create %j', this.name, data);
@@ -159,7 +150,7 @@ export class Service extends BaseService {
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
     let action = null;
-    [id, action] = this._idOrAction(id, params);
+    [id, action] = idAction(id, params);
 
     if (!action || action === 'update') {
       params = filterSelect(params); // filter $select
@@ -176,7 +167,7 @@ export class Service extends BaseService {
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
     let action = null;
-    [id, action] = this._idOrAction(id, params);
+    [id, action] = idAction(id, params);
 
     if (!action || action === 'patch') {
       params = filterSelect(params); // filter $select
@@ -193,7 +184,7 @@ export class Service extends BaseService {
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
     let action;
-    [id, action] = this._idOrAction(id, params);
+    [id, action] = idAction(id, params);
 
     if (!action || action === 'remove') {
       if (params.query && params.query.$soft) {
@@ -250,7 +241,7 @@ export class Service extends BaseService {
   }
 
   _action (method, action, id, data, params) {
-    if (this[action] === undefined || defaultMethods.indexOf(action) >= 0) {
+    if (!fp.isFunction(this[action]) || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
     if (params.__action) {
