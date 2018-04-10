@@ -269,19 +269,22 @@ export class Service extends BaseService {
     if (fp.isNil(params.query) || fp.isEmpty(params.query)) {
       params.query = fp.assign({}, data);  // default find by input data
     }
-    params.mongoose = fp.assign({}, params.mongoose, { upsert: true });
+    params.mongoose = fp.assign({}, params.mongoose, {
+      setDefaultsOnInsert: true, upsert: true
+    });
 
+    // TODO: setDefaultsOnInsert already done this?
     // upsert do not set default value in schema, so ...
-    const schemas = this.Model.schema && this.Model.schema.paths;
-    if (schemas) {
-      for (const key in schemas) {
-        const val = fp.path(key.split('.'), data);
-        if (!key.startsWith('_') && val === undefined && schemas[key].defaultValue !== undefined) {
-          data[key] = typeof schemas[key].defaultValue === 'function'
-            ? schemas[key].defaultValue() : schemas[key].defaultValue;
-        }
-      }
-    }
+    // const schemas = this.Model.schema && this.Model.schema.paths;
+    // if (schemas) {
+    //   for (const key in schemas) {
+    //     const val = fp.path(key.split('.'), data);
+    //     if (!key.startsWith('_') && val === undefined && schemas[key].defaultValue !== undefined) {
+    //       data[key] = typeof schemas[key].defaultValue === 'function'
+    //         ? schemas[key].defaultValue() : schemas[key].defaultValue;
+    //     }
+    //   }
+    // }
     return super.patch(null, data, params).then(fp.head).then(transform);
   }
 
