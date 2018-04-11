@@ -66,7 +66,7 @@ export class Service extends BaseService {
     this.app = app;
   }
 
-  find (params) {
+  find (params = {}) {
     params = fp.assign({ query: {} }, params);
     params = filterSelect(params); // filter $select
 
@@ -113,7 +113,7 @@ export class Service extends BaseService {
     return this._action('find', action, null, null, params);
   }
   
-  get (id, params) {
+  get (id, params = {}) {
     params = fp.assign({ query: {} }, params);
     params = filterSelect(params); // filter $select
 
@@ -129,7 +129,7 @@ export class Service extends BaseService {
     return this._action('get', action, id, null, params);
   }
 
-  create (data, params) {
+  create (data, params = {}) {
     params = fp.assign({ query: {} }, params);
 
     const [, action] = idAction(null, params);
@@ -144,7 +144,7 @@ export class Service extends BaseService {
     return this._action('create', action, null, data, params);
   }
 
-  update (id, data, params) {
+  update (id, data, params = {}) {
     params = fp.assign({}, params);
 
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
@@ -162,8 +162,8 @@ export class Service extends BaseService {
     return this._action('update', action, id, data, params);
   }
 
-  patch (id, data, params) {
-    params = fp.assign({}, params);
+  patch (id, data, params = {}) {
+    params = fp.assign({ query: {} }, params);
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
     let action = null;
@@ -179,8 +179,8 @@ export class Service extends BaseService {
     return this._action('patch', action, id, data, params);
   }
 
-  remove (id, params) {
-    params = fp.assign({}, params);
+  remove (id, params = {}) {
+    params = fp.assign({ query: {} }, params);
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
     let action;
