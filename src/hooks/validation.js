@@ -11,7 +11,7 @@ var helpers = require('../helpers');
 var debug = require('debug')('mostly:feathers-mongoose:hooks:validation');
 
 export default function validation (accepts) {
-  return (hook) => {
+  return async (hook) => {
     if (typeof accepts === 'function') {
       accepts = accepts(hook);
     }
@@ -24,14 +24,14 @@ export default function validation (accepts) {
       case 'get':
       case 'remove':
         if (accepts[action]) {
-          errors = Validate(hook.params, accepts[action]);
+          errors = await Validate(hook.params, accepts[action]);
         }
         break;
       case 'create':
       case 'update':
       case 'patch':
         if (accepts[action]) {
-          errors = Validate(hook.data, accepts[action]);
+          errors = await Validate(hook.data, accepts[action]);
         }
         break;
     }
@@ -95,7 +95,7 @@ function Validator () {}
   'matches'
 ].forEach(function (name) {
   if (typeof __validator__[name] === 'function') {
-    Validator[name] = function () {
+    Validator[name] = async function () {
       return __validator__[name].apply(__validator__, arguments);
     };
   }
@@ -245,20 +245,20 @@ ValidationError.prototype.any = function () {
  * ]
  * ```
  */
-export function Validate (params, accepts) {
+export async function Validate (params, accepts) {
 
   var validationError = new ValidationError();
   params = params || {};
   accepts = accepts || [];
 
-  var performValidator = function (name, val, validatorOpts, validatorName) {
+  var performValidator = async function (name, val, validatorOpts, validatorName) {
     validatorOpts = validatorOpts || {};
 
     // if validator is a custom function, then execute it
     // else find cooresponding validator in built in Validator
     if (_.isFunction(validatorOpts)) {
       try {
-        var result = validatorOpts(val, params);
+        const result = await validatorOpts(val, params);
         if (result) {
           validationError.add(name, validatorName, result);
         }
@@ -266,12 +266,11 @@ export function Validate (params, accepts) {
         debug('Error: \'%s\' when calling function \'%s\'', e.message, validatorName);
       }
     } else {
+      if (!validatorOpts) return;
+      const validator = Validator[validatorName];
+      let args = [val];
 
-      if (!validatorOpts) { return; }
-      var validator = Validator[validatorName];
-      var args = [val];
-
-      var message = _.isString(validatorOpts) ? validatorOpts : validatorOpts.message;
+      const message = _.isString(validatorOpts) ? validatorOpts : validatorOpts.message;
 
       // build arguments for validator
       if (validatorOpts && validatorOpts.args) {
@@ -281,7 +280,8 @@ export function Validate (params, accepts) {
 
       if (validator && _.isFunction(validator)) {
         // if validation failed, then add error message
-        if (!validator.apply(Validator, args)) {
+        const result = await validator.apply(Validator, args);
+        if (!result) {
           validationError.add(name, validatorName, message);
         }
       } else {
@@ -290,7 +290,7 @@ export function Validate (params, accepts) {
     }
   };
 
-  _.each(accepts, function (accept) {
+  _.each(accepts, async function (accept) {
     var name = accept.arg;
     var val = params[name];
 
@@ -305,13 +305,13 @@ export function Validate (params, accepts) {
       if (_.isNil(val)) {
         // check if value exists, if not, then check whether the value is required
         if (validators.hasOwnProperty('required')) {
-          performValidator(name, val, validators.required, 'required');
+          await performValidator(name, val, validators.required, 'required');
         }
       } else {
         // delete `required` validator for latter iteration
         delete validators.required;
-        _.each(validators, function (validatorOpts, validatorName) {
-          performValidator(name, val, validatorOpts, validatorName);
+        _.each(validators, async function (validatorOpts, validatorName) {
+          await performValidator(name, val, validatorOpts, validatorName);
         });
       }
     } else {
@@ -341,7 +341,7 @@ export function Validate (params, accepts) {
  * ```
  */
 Validate.extend = function (name, fn) {
-  Validator[name] = function () {
+  Validator[name] = async function () {
     var args = Array.prototype.slice.call(arguments);
     args[0] = __validator__.toString(args[0]);
     return fn.apply(Validator, args);
