@@ -1,3 +1,4 @@
+import fp from 'mostly-func';
 import { BadRequest } from 'feathers-errors';
 
 /**
@@ -11,8 +12,10 @@ var debug = require('debug')('mostly:feathers-mongoose:hooks:validation');
 
 export default function validation (accepts) {
   return (hook) => {
+    if (typeof accepts === 'function') {
+      accepts = accepts(hook);
+    }
     const action = hook.params.__action || hook.method;
-    debug("validation action %s with %j", action, accepts[action]);
     if (!accepts[action]) return hook;
 
     let errors = null;
@@ -32,7 +35,6 @@ export default function validation (accepts) {
         }
         break;
     }
-    debug('validation errors', action, errors);
     if (errors && errors.any()) {
       if (hook.data) {
         hook.data.errors = errors.toHuman();
@@ -224,9 +226,9 @@ ValidationError.prototype.any = function () {
  *
  * ``` javascript
  * {
- *  name: 'Felix Liu',
+ *  name: 'Dummy',
  *  age: 25,
- *  email: 'lyfeyaj@gmail.com'
+ *  email: 'dummy@gmail.com'
  * }
  * ```
  *
@@ -256,7 +258,6 @@ export function Validate (params, accepts) {
     // else find cooresponding validator in built in Validator
     if (_.isFunction(validatorOpts)) {
       try {
-        debug('perform validatorOpts', validator);
         var result = validatorOpts(val, params);
         if (result) {
           validationError.add(name, validatorName, result);
@@ -278,7 +279,6 @@ export function Validate (params, accepts) {
         args = _.flatten(args);
       }
 
-      debug('perform validator', name, val, validator);
       if (validator && _.isFunction(validator)) {
         // if validation failed, then add error message
         if (!validator.apply(Validator, args)) {
@@ -301,17 +301,14 @@ export function Validate (params, accepts) {
       validators.required = accept.required;
     }
 
-    debug(' => validate', name, validators, val);
     if (validators && _.isPlainObject(validators)) {
       if (_.isNil(val)) {
         // check if value exists, if not, then check whether the value is required
-        debug(' => isEmpty', name, validators, val);
         if (validators.hasOwnProperty('required')) {
           performValidator(name, val, validators.required, 'required');
         }
       } else {
         // delete `required` validator for latter iteration
-        debug(' => each', name, validators, val);
         delete validators.required;
         _.each(validators, function (validatorOpts, validatorName) {
           performValidator(name, val, validatorOpts, validatorName);
@@ -369,5 +366,5 @@ Validate.method = function (name) {
  * Add default validator `required`
  */
 Validate.extend('required', function (val) {
-  return !_.isNil(val);
+  return fp.isValid(val);
 });
