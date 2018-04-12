@@ -23,7 +23,6 @@ import presentEntity from './present-entity';
 import publishEvent from './publish-event';
 import responder from './responder';
 import restrictToAcls from './restrict-to-acls';
-import validation from './validation';
 
 export {
   addDelay,
@@ -50,6 +49,5 @@ export {
   presentEntity,
   publishEvent,
   responder,
-  restrictToAcls,
-  validation
+  restrictToAcls
 };
