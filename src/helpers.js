@@ -373,7 +373,7 @@ const populateList = (list, idField, options = {}) => (data) => {
       return String(obj[idField]) === String(item.id);
     });
     if (options.merge) {
-      // retain _id for orignal id
+      // retain _id for original id
       const retained = fp.reduce((acc, field) => {
         acc['_' + field] = obj[field];
         return acc;
