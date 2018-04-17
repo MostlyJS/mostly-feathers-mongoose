@@ -4,7 +4,6 @@ import addQuery from './add-query';
 import asUpsert from './as-upsert';
 import assoc from './assoc';
 import authenticate from './authenticate';
-import authorize from './authorize';
 import cascadeUpdate from './cascade-update';
 import convertId from './convert-id';
 import defaultAcls from './default-acls';
@@ -31,7 +30,6 @@ export {
   asUpsert,
   assoc,
   authenticate,
-  authorize,
   cascadeUpdate,
   convertId,
   defaultAcls,
