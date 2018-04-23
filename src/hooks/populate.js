@@ -20,8 +20,13 @@ function isPopulated (obj) {
   }, true, [].concat(obj));
 }
 
+function kebabServiceName (name) {
+  return fp.kebabCase(plural(name));
+}
+
 function populateField (app, item, target, params, options) {
   let field = options.field || target;
+  const serviceName = options.getService || kebabServiceName; // get service name
 
   // Find by the field value by default or a custom query
   let entry = null;
@@ -145,7 +150,8 @@ function populateField (app, item, target, params, options) {
       let sParams = fp.assign({}, params);
       if (services[service]) {
         sParams.query['_id'] = { $in: services[service] };
-        return app.service(plural(service)).find(sParams);
+        const name = fp.kebabCase(plural(service));
+        return app.service(serviceName(name)).find(sParams);
       }
     }, Object.keys(services)));
   } else {
@@ -153,7 +159,7 @@ function populateField (app, item, target, params, options) {
     let id = entry;
     if (options.path) {
       if (entry[options.path]) {
-        service = plural(entry[options.path]);
+        service = serviceName(entry[options.path]);
       } else {
         service = options.path;
       }
