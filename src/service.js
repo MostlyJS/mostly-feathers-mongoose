@@ -35,7 +35,9 @@ const assertMultiple = function (id, params, message) {
 
 const unsetOptions = fp.pipe(
   fp.dissoc('Model'),
-  fp.dissoc('ModelName')
+  fp.dissoc('ModelName'),
+  fp.dissoc('actions'),
+  fp.dissoc('name')
 );
 
 const filterSelect = function (params) {
@@ -58,8 +60,9 @@ export class Service extends BaseService {
     options = Object.assign({}, defaultOptions, options);
     super(options);
 
-    this.options = unsetOptions(options);
     this.name = options.name || 'mongoose-service';
+    this.actions = options.actions;
+    this.options = unsetOptions(options);
   }
 
   setup (app) {
@@ -240,28 +243,50 @@ export class Service extends BaseService {
     };
   }
 
-  _action (method, action, id, data, params) {
+  /**
+   * Proxy to a action service
+   */
+  async _action (method, action, id, data, params) {
+    assert(action, 'action is not provided');
+    let origin = null, actionId = null;
+    if (id) {
+      // get target item with params.query (without provider)
+      origin = await this.get(id, {
+        query: params.query || {},
+        user: params.user
+      });
+      if (!origin) {
+        throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
+      }
+    }
+    // check for registered action service
+    [action, actionId] = action.split('/');
+    if (fp.has(action, this.actions)) {
+      const actionService = this.app.service(this.actions[action]);
+      if (method === 'get') method = actionId? 'get' : 'find';
+      params = fp.dissoc('__action', fp.assoc('origin', origin, params));
+      switch (method) {
+        case 'find': return actionService.find(params);
+        case 'get': return actionService.get(actionId, params);
+        case 'create': return actionService.create(data, params);
+        case 'update': return actionService.update(actionId, data, params);
+        case 'patch': return actionService.patch(actionId, data, params);
+        case 'remove': return actionService.remove(actionId, data, params);
+        default: throw new Error('Not supported method: ' + method);
+      }
+    }
+
+    // fall through old function action way
     if (!fp.isFunction(this[action]) || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
-    if (params.__action) {
-      params = fp.dissoc('__action', params);
-    }
+    params = fp.dissoc('__action', params);
     if (params.query && params.query.$action) {
       params.query = fp.dissoc('$action', params.query);
     }
     debug('service %s %s action %s id %j => %j', this.name, method, action, id, data);
 
-    // get target item with params.query (without provider)
-    let query = (id) => id
-      ? this.get(id, { query: params.query || {}, user: params.user })
-      : Promise.resolve(null);
-    return query(id).then(origin => {
-      if (id && !origin) {
-        throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
-      }
-      return this[action].call(this, id, data, params, origin);
-    });
+    return this[action].call(this, id, data, params, origin);
   }
 
   upsert (id, data, params) {
