@@ -57,7 +57,7 @@ const filterSelect = function (params) {
 
 export class Service extends BaseService {
   constructor (options) {
-    options = Object.assign({}, defaultOptions, options);
+    options = fp.assign(defaultOptions, options);
     super(options);
 
     this.name = options.name || 'mongoose-service';
