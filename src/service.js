@@ -271,7 +271,7 @@ export class Service extends BaseService {
         case 'create': return actionService.create(data, params);
         case 'update': return actionService.update(actionId, data, params);
         case 'patch': return actionService.patch(actionId, data, params);
-        case 'remove': return actionService.remove(actionId, data, params);
+        case 'remove': return actionService.remove(actionId, params);
         default: throw new Error('Not supported method: ' + method);
       }
     }
