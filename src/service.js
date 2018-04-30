@@ -61,7 +61,7 @@ export class Service extends BaseService {
     super(options);
 
     this.name = options.name || 'mongoose-service';
-    this.actions = options.actions;
+    this.actions = options.actions || {};
     this.options = unsetOptions(options);
   }
 
