@@ -202,7 +202,7 @@ export class Service extends BaseService {
     }
 
     // TODO secure action call by get
-    this._action('remove', action, id, null, params);
+    return this._action('remove', action, id, null, params);
   }
 
   /**
