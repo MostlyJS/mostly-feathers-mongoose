@@ -105,15 +105,15 @@ export class Service extends BaseService {
       }
     });
 
-    const action = params.action || (params.query && params.query.$action);
+    //const action = params.action || (params.query && params.query.$action);
 
-    if (!action || action === 'find') {
-      debug('service %s find %j', this.name, params.query);
-      return super.find(params).then(transform);
-    }
+    //if (!action || action === 'find') {
+    debug('service %s find %j', this.name, params.query);
+    return super.find(params).then(transform);
+    //}
 
     // TODO secure action call by find
-    return this._action('find', action, null, null, params);
+    //return this._action('find', action, null, null, params);
   }
   
   get (id, params = {}) {
