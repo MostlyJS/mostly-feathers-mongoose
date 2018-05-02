@@ -135,16 +135,16 @@ export class Service extends BaseService {
   create (data, params = {}) {
     params = fp.assign({ query: {} }, params);
 
-    const [, action] = idAction(null, params);
+    //const [, action] = idAction(null, params);
 
-    if (!action || action === 'create') {
-      params = filterSelect(params); // filter $select
-      debug('service %s create %j', this.name, data);
-      return super.create(data, params).then(transform);
-    }
+    //if (!action || action === 'create') {
+    params = filterSelect(params); // filter $select
+    debug('service %s create %j', this.name, data);
+    return super.create(data, params).then(transform);
+    //}
 
     // TODO secure action call by get
-    return this._action('create', action, params.__id, data, params);
+    //return this._action('create', action, params.__id, data, params);
   }
 
   update (id, data, params = {}) {
