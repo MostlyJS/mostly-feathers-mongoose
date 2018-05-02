@@ -1,7 +1,8 @@
 import fp from 'mostly-func';
 
 const defaultOptions = {
-  field: 'sid'
+  field: 'sid',
+  select: '*'
 };
 
 /**
@@ -28,7 +29,7 @@ export default function nestServiceObject (name, opts) {
     }
 
     const service = context.app.service(options.service);
-    const object = await service.get(sid);
+    const object = await service.get(sid, { query: { $select: opts.select }});
     if (!object) {
       throw new Error(`Not found service object ${name} of ${sid}`);
     }
