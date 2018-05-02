@@ -6,7 +6,7 @@ export default function isAction (...actions) {
   }
 
   return hook => {
-    const hookAction = (hook.params || {}).__action;
+    const hookAction = (hook.params || {}).action;
 
     return actions.some(action => action === hookAction);
   };

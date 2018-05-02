@@ -58,7 +58,7 @@ export function setFieldByKey (item, field, data) {
   return cloneDeep(item);
 }
 
-// get field by path
+// set field by path
 export function setField (item, target, data, field, options) {
   //debug('setField ==== %s, \n  >>>> %s / %s, \n  >>>> %s ',
   //  util.inspect(item), target, field, util.inspect(data));

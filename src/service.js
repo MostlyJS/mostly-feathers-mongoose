@@ -105,7 +105,7 @@ export class Service extends BaseService {
       }
     });
 
-    const action = params.__action || (params.query && params.query.$action);
+    const action = params.action || (params.query && params.query.$action);
 
     if (!action || action === 'find') {
       debug('service %s find %j', this.name, params.query);
@@ -212,32 +212,32 @@ export class Service extends BaseService {
   action (action) {
     return {
       find: (params = {}) => {
-        params.__action = action;
+        params.action = action;
         return this.find(params);
       },
 
       get: (id, params = {}) => {
-        params.__action = action;
+        params.action = action;
         return this.get(id, params);
       },
 
       create: (data, params = {}) => {
-        params.__action = action;
+        params.action = action;
         return this.create(data, params);
       },
 
       update: (id, data, params = {}) => {
-        params.__action = action;
+        params.action = action;
         return this.update(id, data, params);
       },
 
       patch: (id, data, params = {}) => {
-        params.__action = action;
+        params.action = action;
         return this.patch(id, data, params);
       },
 
       remove: (id, params = {}) => {
-        params.__action = action;
+        params.action = action;
         return this.remove(id, params);
       }
     };
@@ -264,7 +264,7 @@ export class Service extends BaseService {
     if (fp.has(action, this.actions)) {
       const actionService = this.app.service(this.actions[action]);
       if (method === 'get') method = actionId? 'get' : 'find';
-      params = fp.dissoc('__action', fp.assoc('origin', origin, params));
+      params = fp.dissoc('action', fp.assoc('origin', origin, params));
       switch (method) {
         case 'find': return actionService.find(params);
         case 'get': return actionService.get(actionId, params);
@@ -280,7 +280,7 @@ export class Service extends BaseService {
     if (!fp.isFunction(this[action]) || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
-    params = fp.dissoc('__action', params);
+    params = fp.dissoc('action', params);
     if (params.query && params.query.$action) {
       params.query = fp.dissoc('$action', params.query);
     }
