@@ -47,6 +47,10 @@ function populateField (app, item, target, params, options) {
 
   // absolute path for the service
   if (options.path && options.path.startsWith('@')) {
+    // already populated entry
+    if (isPopulated(entry)) {
+      return Promise.resolve(item);
+    }
     const getPath = function (value) {
       return {
         _type: getField(value, options.path.substr(1)),
@@ -54,21 +58,25 @@ function populateField (app, item, target, params, options) {
       };
     };
 
+    options.path = '_type';
     if (Array.isArray(item)) {
       entry = fp.map(getPath, item);
-      item.forEach((it) => setField(it, field, entry, field, { idField: options.idField }));
+      item.forEach(it => setField(it, field, entry, field, { idField: options.idField }));
     } else {
       entry = getPath(item);
       setField(item, field, entry, field, { idField: options.idField });
     }
-    options.path = '_type';
   }
 
   // typed id with service like `document:1`, convert as options.path
   if (!options.path && !options.service) {
+    // already populated entry
+    if (isPopulated(entry)) {
+      return Promise.resolve(item);
+    }
     // convert typed id to to { _id, _type } structure
     const getPath =  function (value) {
-      if (value.indexOf(':') > 0) {
+      if (fp.is(String, value) && value.indexOf(':') > 0) {
         let [path, id] = value.split(':');
         return { _id: value, _type: path, [options.idField]: id };
       } else {
@@ -78,30 +86,28 @@ function populateField (app, item, target, params, options) {
     };
 
     // transform the data with _type path
+    options.path = '_type';
     if (Array.isArray(entry)) {
       entry = fp.map(getPath, entry);
       if (Array.isArray(item)) {
-        item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
+        item.forEach(it => setField(it, field, entry, field, { idField: '_id' }));
       } else {
         setField(item, field, entry, field, { idField: '_id' });
       }
     } else {
       entry = getPath(entry);
       if (Array.isArray(item)) {
-        item.forEach((it) => setField(it, field, entry, field, { idField: '_id' }));
+        item.forEach(it => setField(it, field, entry, field, { idField: '_id' }));
       } else {
         setField(item, field, entry, field, { idField: '_id' });
       }
     }
-    options.path = '_type';
   }
 
   //debug('==> %s populate %s/%s, \n\tid: %j', options.service, target, field, entry);
   //debug(' \n\twith: %j', item);
 
   if (!options.path && isPopulated(entry)) {
-    //debug('==> %s target %s is already populated (service %s)',
-    //  (item[0] || item).id, target, options.service || options.path);
     return Promise.resolve(item);
   }
 
