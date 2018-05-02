@@ -28,12 +28,14 @@ export default function nestServiceObject (name, opts) {
       throw new Error(`No service id field ${options.field} found in the context params`);
     }
 
-    const service = context.app.service(options.service);
-    const object = await service.get(sid, { query: { $select: opts.select }});
-    if (!object) {
-      throw new Error(`Not found service object ${name} of ${sid}`);
+    if (!context.params[name]) {
+      const service = context.app.service(options.service);
+      const object = await service.get(sid, { query: { $select: opts.select }});
+      if (!object) {
+        throw new Error(`Not found service object ${name} of ${sid}`);
+      }
+      context.params = fp.assoc(name, object, context.params);
     }
-    context.params = fp.assoc(name, object, context.params);
     return context;
   };
 }
