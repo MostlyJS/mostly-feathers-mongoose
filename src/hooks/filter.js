@@ -53,7 +53,7 @@ export default function filter (target, opts) {
           let conditions = _.map(results, result => {
             if (_.isObject(result)) {
               return {
-                $in: _.flatMap(result.data || result, (it) => {
+                $in: _.flatMap(result.data || result, it => {
                   return getId(it);
                 })
               };

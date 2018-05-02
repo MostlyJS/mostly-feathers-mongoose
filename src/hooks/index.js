@@ -16,6 +16,7 @@ import isAction from './is-action';
 import isHeader from './is-header';
 import flatMerge from './flat-merge';
 import mapHookData from './map-hook-data';
+import nestServiceObject from './nest-service-object';
 import populate from './populate';
 import prefixSelect from './prefix-select';
 import presentEntity from './present-entity';
@@ -42,6 +43,7 @@ export {
   isAction,
   isHeader,
   mapHookData,
+  nestServiceObject,
   populate,
   prefixSelect,
   presentEntity,
