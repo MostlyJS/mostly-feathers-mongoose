@@ -1,21 +1,21 @@
 import fp from 'mostly-func';
 
 const defaultOptions = {
-  field: 'sid',
+  field: 'primary',
   select: '*'
 };
 
 /**
- * Add nest service object to hook.params
+ * Add primary service object to hook.params
  */
-export default function nestServiceObject (name, opts) {
+export default function primaryResource (name, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return async context => {
     let options = Object.assign({}, opts);
 
     if (context.type !== 'before') {
-      throw new Error(`The 'addQuery' hook should only be used as a 'before' hook.`);
+      throw new Error(`The 'primaryResource' hook should only be used as a 'before' hook.`);
     }
 
     if (!options.service || !options.field) {
@@ -23,16 +23,16 @@ export default function nestServiceObject (name, opts) {
     }
 
     context.params = context.params || {};
-    const sid = context.params[options.field];
-    if (!sid) {
-      throw new Error(`No service id field ${options.field} found in the context params`);
+    const primary = context.params[options.field];
+    if (!primary) {
+      throw new Error(`No primary service id found in the context params`);
     }
 
     if (!context.params[name]) {
       const service = context.app.service(options.service);
-      const object = await service.get(sid, { query: { $select: opts.select }});
+      const object = await service.get(primary, { query: { $select: opts.select }});
       if (!object) {
-        throw new Error(`Not found service object ${name} of ${sid}`);
+        throw new Error(`Not found primary service object ${name} of ${primary}`);
       }
       context.params = fp.assoc(name, object, context.params);
     }
