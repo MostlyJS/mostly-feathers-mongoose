@@ -71,9 +71,9 @@ export function setField (item, target, data, field, options) {
   while (parts.length) {
     part = parts.shift();
     if (value[part] !== undefined) value = value[part];
-    if (fp.is(Array, value) && parts.length > 0) {
+    if (fp.isArray(value) && parts.length > 0) {
       let subValue = fp.map(fp.prop(parts[0]), value);
-      if (fp.any(fp.is(Array), subValue)) {
+      if (fp.any(fp.isArray, subValue)) {
         value = [].concat.apply([], subValue); // flatten the array of array
         continue;
       } else {
@@ -288,7 +288,7 @@ export const getHookData = (context) => {
 
 export const getHookDataAsArray = (context) => {
   const items = getHookData(context);
-  return fp.is(Array, items)? items : [].concat(items || []);
+  return fp.asArray(items);
 };
 
 export const setHookData = (context, items) => {

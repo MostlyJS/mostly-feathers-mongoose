@@ -14,7 +14,7 @@ export default function addQuery (query) {
       if (k === '$select' && l) {
         return fp.is(String, l)? [k, l].join(',') : fp.concat(l, r); // join or concat
       }
-      return fp.is(Array, l)? fp.concat(l, r) : r; // concat or overwrite
+      return fp.isArray(l)? fp.concat(l, r) : r; // concat or overwrite
     }, hook.params, { query });
     return hook;
   };
