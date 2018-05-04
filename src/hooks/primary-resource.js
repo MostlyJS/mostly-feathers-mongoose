@@ -29,12 +29,16 @@ export default function primaryResource (name, opts) {
     }
 
     if (!context.params[name]) {
-      const service = context.app.service(options.service);
-      const object = await service.get(primary, { query: { $select: opts.select }});
-      if (!object) {
-        throw new Error(`Not found primary service object ${name} of ${primary}`);
+      try {
+        const service = context.app.service(options.service);
+        const object = await service.get(primary, { query: { $select: opts.select }});
+        if (!object) {
+          throw new Error(`Not found primary service object ${name} of ${primary}`);
+        }
+        context.params = fp.assoc(name, object, context.params);
+      } catch (err) {
+        throw new Error(`Not found primary service object ${name}: ` + err.message);
       }
-      context.params = fp.assoc(name, object, context.params);
     }
     return context;
   };

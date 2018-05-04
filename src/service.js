@@ -143,7 +143,7 @@ export class Service extends BaseService {
     //}
 
     // TODO secure action call by get
-    //return this._action('create', action, params.__id, data, params);
+    //return this._action('create', action, params.primary, data, params);
   }
 
   update (id, data, params = {}) {
