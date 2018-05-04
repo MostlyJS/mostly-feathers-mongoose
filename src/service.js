@@ -61,7 +61,6 @@ export class Service extends BaseService {
     super(options);
 
     this.name = options.name || 'mongoose-service';
-    this.actions = options.actions || {};
     this.options = unsetOptions(options);
   }
 
@@ -210,35 +209,40 @@ export class Service extends BaseService {
    * syntax sugar for calling from other services, do not call them by super
    */
   action (action) {
+    assert(action, 'action is not provided');
+    
+    if (!fp.isFunction(this[action]) || defaultMethods.indexOf(action) >= 0) {
+      throw new Error(`No such action ${action} method found`);
+    }
     return {
       find: (params = {}) => {
         params.action = action;
-        return this.find(params);
+        return this[action].call(this, params);
       },
 
       get: (id, params = {}) => {
         params.action = action;
-        return this.get(id, params);
+        return this[action].call(this, id, params);
       },
 
       create: (data, params = {}) => {
         params.action = action;
-        return this.create(data, params);
+        return this[action].call(this, data, params);
       },
 
       update: (id, data, params = {}) => {
         params.action = action;
-        return this.update(id, data, params);
+        return this[action].call(this, id, data, params);
       },
 
       patch: (id, data, params = {}) => {
         params.action = action;
-        return this.patch(id, data, params);
+        return this[action].call(this, id, data, params);
       },
 
       remove: (id, params = {}) => {
         params.action = action;
-        return this.remove(id, params);
+        return this[action].call(this, id, params);
       }
     };
   }
@@ -248,35 +252,7 @@ export class Service extends BaseService {
    */
   async _action (method, action, id, data, params) {
     assert(action, 'action is not provided');
-    let origin = null, actionId = null;
-    if (id) {
-      // get target item with params.query (without provider)
-      origin = await this.get(id, {
-        query: params.query || {},
-        user: params.user
-      });
-      if (!origin) {
-        throw new Error('Not found record ' + id + ' in ' + this.Model.modelName);
-      }
-    }
-    // check for registered action service
-    [action, actionId] = action.split('/');
-    if (fp.has(action, this.actions)) {
-      const actionService = this.app.service(this.actions[action]);
-      if (method === 'get') method = actionId? 'get' : 'find';
-      params = fp.dissoc('action', fp.assoc('origin', origin, params));
-      switch (method) {
-        case 'find': return actionService.find(params);
-        case 'get': return actionService.get(actionId, params);
-        case 'create': return actionService.create(data, params);
-        case 'update': return actionService.update(actionId, data, params);
-        case 'patch': return actionService.patch(actionId, data, params);
-        case 'remove': return actionService.remove(actionId, params);
-        default: throw new Error('Not supported method: ' + method);
-      }
-    }
-
-    // fall through old function action way
+    
     if (!fp.isFunction(this[action]) || defaultMethods.indexOf(action) >= 0) {
       throw new Error(`No such **${method}** action: ${action}`);
     }
@@ -286,10 +262,10 @@ export class Service extends BaseService {
     }
     debug('service %s %s action %s id %j => %j', this.name, method, action, id, data);
 
-    return this[action].call(this, id, data, params, origin);
+    return this[action].call(this, id, data, params);
   }
 
-  upsert (id, data, params) {
+  upsert (id, data, params = {}) {
     params = fp.assign({}, params);
     if (fp.isNil(params.query) || fp.isEmpty(params.query)) {
       params.query = fp.assign({}, data);  // default find by input data
@@ -313,16 +289,16 @@ export class Service extends BaseService {
     return super.patch(null, data, params).then(fp.head).then(transform);
   }
 
-  count (id, data, params) {
-    params = fp.assign({ query: {} }, params || id);
+  count (params = {}) {
+    params = fp.assign({ query: {} }, params);
 
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
-  first (id, data, params) {
+  first (params = {}) {
     // filter $select
-    params = filterSelect(params || id);
+    params = filterSelect(params);
 
     params = fp.assign({ query: {} }, params);
 
@@ -334,13 +310,13 @@ export class Service extends BaseService {
     }).then(transform);
   }
 
-  last (id, data, params) {
+  last (params = {}) {
     // filter $select
-    params = filterSelect(params || id);
+    params = filterSelect(params);
 
     params = fp.assign({ query: {} }, params);
 
-    return this.count(id, data, params).then(total => {
+    return this.count(params).then(total => {
       params.query.$limit = 1;
       params.query.$skip = total - 1;
       params.paginate = false;
@@ -350,7 +326,7 @@ export class Service extends BaseService {
     });
   }
 
-  restore (id, data, params) {
+  restore (id, data, params = {}) {
     return super.patch(id, { destroyedAt: null }, params).then(transform);
   }
 }
