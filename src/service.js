@@ -36,7 +36,6 @@ const assertMultiple = function (id, params, message) {
 const unsetOptions = fp.pipe(
   fp.dissoc('Model'),
   fp.dissoc('ModelName'),
-  fp.dissoc('actions'),
   fp.dissoc('name')
 );
 
@@ -168,40 +167,40 @@ export class Service extends BaseService {
     params = fp.assign({ query: {} }, params);
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
-    //let action = null;
-    //[id, action] = idAction(id, params);
+    let action = null;
+    [id, action] = idAction(id, params);
 
-    //if (!action || action === 'patch') {
-    params = filterSelect(params); // filter $select
-    debug('service %s patch %j', this.name, id, data);
-    return super.patch(id, data, params).then(transform);
-    //}
+    if (!action || action === 'patch') {
+      params = filterSelect(params); // filter $select
+      debug('service %s patch %j', this.name, id, data);
+      return super.patch(id, data, params).then(transform);
+    }
 
     // TODO secure action call by get
-    //return this._action('patch', action, id, data, params);
+    return this._action('patch', action, id, data, params);
   }
 
   remove (id, params = {}) {
     params = fp.assign({ query: {} }, params);
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
-    //let action;
-    //[id, action] = idAction(id, params);
+    let action;
+    [id, action] = idAction(id, params);
 
-    //if (!action || action === 'remove') {
-    if (params.query && params.query.$soft) {
-      params = filterSelect(params); // filter $select
-      params = fp.dissocPath(['query', '$soft'], params); // remove soft
-      debug('service %s remove soft %j', this.name, id);
-      return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
-    } else {
-      debug('service %s remove %j', this.name, id);
-      return super.remove(id, params).then(transform);
+    if (!action || action === 'remove') {
+      if (params.query && params.query.$soft) {
+        params = filterSelect(params); // filter $select
+        params = fp.dissocPath(['query', '$soft'], params); // remove soft
+        debug('service %s remove soft %j', this.name, id);
+        return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
+      } else {
+        debug('service %s remove %j', this.name, id);
+        return super.remove(id, params).then(transform);
+      }
     }
-    //}
 
     // TODO secure action call by get
-    //return this._action('remove', action, id, null, params);
+    return this._action('remove', action, id, null, params);
   }
 
   /**
