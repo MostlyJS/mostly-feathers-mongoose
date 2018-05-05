@@ -288,7 +288,7 @@ export const getHookData = (context) => {
 
 export const getHookDataAsArray = (context) => {
   const items = getHookData(context);
-  return fp.asArray(items);
+  return items? fp.asArray(items) : [];
 };
 
 export const setHookData = (context, items) => {
