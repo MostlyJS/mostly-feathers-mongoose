@@ -153,11 +153,11 @@ export class Service {
       .lean(this.lean)
       .exec()
       .then(data => {
-        if (!data) {
-          const msg = query[this.id]? `No record found for id '${query[this.id]}'` : 'No record found';
-          throw new errors.NotFound(msg);
-        }
-
+        // Fix feathers default behavior, don't throw error, let caller handle it
+        // if (!data) {
+        //   const msg = query[this.id]? `No record found for id '${query[this.id]}'` : 'No record found';
+        //   throw new errors.NotFound(msg);
+        // }
         return data;
       })
       .catch(errorHandler);
