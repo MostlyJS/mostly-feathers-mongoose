@@ -23,7 +23,7 @@ export default function primaryResource (name, opts) {
     }
 
     context.params = context.params || {};
-    const primary = context.params[options.field];
+    const primary = options.field === 'id'? context.id : context.params[options.field];
     if (!primary) {
       throw new Error(`No primary service id found in the context params`);
     }
