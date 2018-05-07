@@ -1,6 +1,7 @@
 import addDelay from './add-delay';
 import addParams from './add-params';
 import addQuery from './add-query';
+import addRouteObject from './add-route-object';
 import asUpsert from './as-upsert';
 import assoc from './assoc';
 import authenticate from './authenticate';
@@ -19,7 +20,6 @@ import mapHookData from './map-hook-data';
 import populate from './populate';
 import prefixSelect from './prefix-select';
 import presentEntity from './present-entity';
-import primaryResource from './primary-resource';
 import publishEvent from './publish-event';
 import responder from './responder';
 import restrictToAcls from './restrict-to-acls';
@@ -28,6 +28,7 @@ export {
   addDelay,
   addParams,
   addQuery,
+  addRouteObject,
   asUpsert,
   assoc,
   authenticate,
@@ -46,7 +47,6 @@ export {
   populate,
   prefixSelect,
   presentEntity,
-  primaryResource,
   publishEvent,
   responder,
   restrictToAcls

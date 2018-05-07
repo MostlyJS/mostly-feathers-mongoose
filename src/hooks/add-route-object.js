@@ -6,16 +6,16 @@ const defaultOptions = {
 };
 
 /**
- * Add primary service object to hook.params
+ * Add route service object to hook.params
  */
-export default function primaryResource (name, opts) {
+export default function addRouteObject (name, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return async context => {
     let options = Object.assign({}, opts);
 
     if (context.type !== 'before') {
-      throw new Error(`The 'primaryResource' hook should only be used as a 'before' hook.`);
+      throw new Error(`The 'addRouteObject' hook should only be used as a 'before' hook.`);
     }
 
     if (!options.service || !options.field) {
