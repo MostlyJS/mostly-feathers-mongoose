@@ -1,7 +1,7 @@
 import assert from 'assert';
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { idAction } from 'mostly-feathers';
+import { defaultMethods, isAction } from 'mostly-feathers';
 
 import { Service as BaseService } from './base';
 import { normalizeSelect, transform } from './helpers';
@@ -19,7 +19,6 @@ const defaultOptions = {
   }
 };
 
-const defaultMethods = ['find', 'get', 'create', 'update', 'patch', 'remove'];
 const descSorts = ['desc', 'descending', '-1', -1];
 
 // prevent accidental multiple operations
@@ -103,165 +102,133 @@ export class Service extends BaseService {
       }
     });
 
-    //const action = params.action || (params.query && params.query.$action);
-
-    //if (!action || action === 'find') {
     debug('service %s find %j', this.name, params.query);
     return super.find(params).then(transform);
-    //}
-
-    // TODO secure action call by find
-    //return this._action('find', action, null, null, params);
   }
   
   get (id, params = {}) {
     params = fp.assign({ query: {} }, params);
     params = filterSelect(params); // filter $select
 
-    //let action = null;
-    //[id, action] = idAction(id, params);
-
-    //if (!action || action === 'get') {
+    if (this._isAction(id, params)) {
+      return this._action('get', id, null, params);
+    }
     debug('service %s get %j', this.name, id, params.query);
     return super.get(id, params).then(transform);
-    //}
-
-    // TODO secure action call by get
-    //return this._action('get', action, id, null, params);
   }
 
   create (data, params = {}) {
     params = fp.assign({ query: {} }, params);
-
-    //const [, action] = idAction(null, params);
-
-    //if (!action || action === 'create') {
     params = filterSelect(params); // filter $select
+
     debug('service %s create %j', this.name, data);
     return super.create(data, params).then(transform);
-    //}
-
-    // TODO secure action call by get
-    //return this._action('create', action, params.primary, data, params);
   }
 
   update (id, data, params = {}) {
     params = fp.assign({}, params);
-
+    params = filterSelect(params); // filter $select
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
-    //let action = null;
-    //[id, action] = idAction(id, params);
-
-    //if (!action || action === 'update') {
-    params = filterSelect(params); // filter $select
+    if (this._isAction(id, params)) {
+      return this._action('update', id, data, params);
+    }
     debug('service %s update %j', this.name, id, data);
     return super.update(id, data, params).then(transform);
-    //}
-    
-    // TODO secure action call by get
-    //return this._action('update', action, id, data, params);
   }
 
   patch (id, data, params = {}) {
     params = fp.assign({ query: {} }, params);
+    params = filterSelect(params); // filter $select
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
-    let action = null;
-    [id, action] = idAction(id, params);
-
-    if (!action || action === 'patch') {
-      params = filterSelect(params); // filter $select
-      debug('service %s patch %j', this.name, id, data);
-      return super.patch(id, data, params).then(transform);
+    if (this._isAction(id, params)) {
+      return this._action('patch', id, data, params);
     }
-
-    // TODO secure action call by get
-    return this._action('patch', action, id, data, params);
+    debug('service %s patch %j', this.name, id, data);
+    return super.patch(id, data, params).then(transform);
   }
 
   remove (id, params = {}) {
     params = fp.assign({ query: {} }, params);
+    params = filterSelect(params); // filter $select
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
-    let action;
-    [id, action] = idAction(id, params);
-
-    if (!action || action === 'remove') {
-      if (params.query && params.query.$soft) {
-        params = filterSelect(params); // filter $select
-        params = fp.dissocPath(['query', '$soft'], params); // remove soft
-        debug('service %s remove soft %j', this.name, id);
-        return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
-      } else {
-        debug('service %s remove %j', this.name, id);
-        return super.remove(id, params).then(transform);
-      }
+    if (this._isAction(id, params)) {
+      return this._action('remove', id, null, params);
     }
-
-    // TODO secure action call by get
-    return this._action('remove', action, id, null, params);
+    if (params.query && params.query.$soft) {
+      params = fp.dissocPath(['query', '$soft'], params); // remove soft
+      debug('service %s remove soft %j', this.name, id);
+      return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
+    } else {
+      debug('service %s remove %j', this.name, id);
+      return super.remove(id, params).then(transform);
+    }
   }
 
   /**
-   * proxy to action method
+   * proxy to action method (same code as in mostly-feathers)
    * syntax sugar for calling from other services, do not call them by super
    */
   action (action) {
     assert(action, 'action is not provided');
-    
-    if (!fp.isFunction(this[action]) || defaultMethods.indexOf(action) >= 0) {
-      throw new Error(`No such action ${action} method found`);
-    }
     return {
-      find: (params = {}) => {
+      get: async (params = {}) => {
         params.action = action;
-        return this[action].call(this, params);
+        return this.get(null, params);
       },
 
-      get: (id, params = {}) => {
+      create: async (data, params = {}) => {
         params.action = action;
-        return this[action].call(this, id, params);
+        return this.patch(null, data, params);
       },
 
-      create: (data, params = {}) => {
+      update: async (id, data, params = {}) => {
         params.action = action;
-        return this[action].call(this, data, params);
+        return this.update(id, data, params);
       },
 
-      update: (id, data, params = {}) => {
+      patch: async (id, data, params = {}) => {
         params.action = action;
-        return this[action].call(this, id, data, params);
+        return this.patch(id, data, params);
       },
 
-      patch: (id, data, params = {}) => {
+      remove: async (id, params = {}) => {
         params.action = action;
-        return this[action].call(this, id, data, params);
-      },
-
-      remove: (id, params = {}) => {
-        params.action = action;
-        return this[action].call(this, id, params);
+        return this.remove(id, params);
       }
     };
   }
 
   /**
+   * check if name is a service method
+   */
+  _isAction (id, params) {
+    return isAction(this, id, params);
+  }
+
+  /**
    * Proxy to a action service
    */
-  async _action (method, action, id, data, params) {
+  async _action (method, id, data, params) {
+    const action = params && (params.action || (params.query && params.query.$action)) || id;
     assert(action, 'action is not provided');
-    
+
     if (!fp.isFunction(this[action]) || defaultMethods.indexOf(action) >= 0) {
-      throw new Error(`No such **${method}** action: ${action}`);
+      throw new Error(`Not implemented **${method}** action: ${action}`);
     }
-    params = fp.dissoc('action', params);
-    if (params.query && params.query.$action) {
-      params.query = fp.dissoc('$action', params.query);
-    }
+    params = fp.dissoc('action', fp.dissocPath(['query', '$action'], params));
     debug('service %s %s action %s id %j => %j', this.name, method, action, id, data);
 
-    return this[action].call(this, id, data, params);
+    switch (method) {
+      case 'get': return this[action].call(this, params);
+      case 'create': return this[action].call(this, null, data, params);
+      case 'update': return this[action].call(this, id, data, params);
+      case 'patch': return this[action].call(this, id, data, params);
+      case 'remove': return this[action].call(this, id, params);
+      default: throw new Error(`Invalid method ${method}`);
+    }
   }
 
   upsert (id, data, params = {}) {
@@ -290,16 +257,14 @@ export class Service extends BaseService {
 
   count (params = {}) {
     params = fp.assign({ query: {} }, params);
-
+    
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
   first (params = {}) {
-    // filter $select
-    params = filterSelect(params);
-
     params = fp.assign({ query: {} }, params);
+    params = filterSelect(params); // filter $select
 
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
@@ -310,10 +275,8 @@ export class Service extends BaseService {
   }
 
   last (params = {}) {
-    // filter $select
-    params = filterSelect(params);
-
     params = fp.assign({ query: {} }, params);
+    params = filterSelect(params); // filter $select
 
     return this.count(params).then(total => {
       params.query.$limit = 1;
