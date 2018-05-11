@@ -13,7 +13,7 @@ function getAccessToken (hook) {
 }
 
 export default function authenticate (strategies, opts = {}, fields) {
-  opts = fp.assign(defaultOptions, opts);
+  opts = fp.assignAll(defaultOptions, opts);
   assert(strategies, "The 'authenticate' hook requires one of your registered passport strategies.");
 
   const verifyIdentity = auth.authenticate(strategies);

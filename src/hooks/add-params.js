@@ -8,7 +8,7 @@ export default function addParams (params) {
     if (hook.type !== 'before') {
       throw new Error(`The 'addParams' hook should only be used as a 'before' hook.`);
     }
-    hook.params = fp.assign(hook.params, params);
+    hook.params = fp.assignAll(hook.params, params);
     return hook;
   };
 }

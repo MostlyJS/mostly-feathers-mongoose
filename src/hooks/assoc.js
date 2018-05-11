@@ -141,7 +141,7 @@ export default function assoc (target, opts) {
     if (fp.isNil(data) || fp.isEmpty(data)) return hook;
 
     // each assoc field should have its own params
-    let params = fp.assign({ query: {} }, hook.params);
+    let params = fp.assignAll({ query: {} }, hook.params);
 
     // target must be specified by $select to assoc
     if (!isSelected(target, params.query.$select)) return hook;

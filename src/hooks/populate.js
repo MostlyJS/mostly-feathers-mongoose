@@ -153,7 +153,7 @@ function populateField (app, item, target, params, options) {
 
     params.paginate = false; // disable paginate
     promise = Promise.all(fp.map((service) => {
-      let serviceParams = fp.assign({ query: {} }, params);
+      let serviceParams = fp.assignAll({ query: {} }, params);
       if (services[service]) {
         serviceParams.query['_id'] = { $in: services[service] };
         const name = fp.kebabCase(plural(service));
@@ -240,7 +240,7 @@ export default function populate (target, opts) {
     }
 
     // each target field should have its own params
-    let params = fp.assign({ query: {} }, hook.params);
+    let params = fp.assignAll({ query: {} }, hook.params);
 
     // target field must be specified by $select to populate
     if (!isSelected(options.field || target, params.query.$select)) return hook;
