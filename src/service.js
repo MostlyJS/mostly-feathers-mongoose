@@ -67,7 +67,7 @@ export class Service extends BaseService {
   }
 
   find (params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
     if (params.query) {
@@ -107,7 +107,7 @@ export class Service extends BaseService {
   }
   
   get (id, params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
     if (this._isAction(id, params)) {
@@ -118,7 +118,7 @@ export class Service extends BaseService {
   }
 
   create (data, params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
     debug('service %s create %j', this.name, data);
@@ -138,7 +138,7 @@ export class Service extends BaseService {
   }
 
   patch (id, data, params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
     assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
@@ -150,7 +150,7 @@ export class Service extends BaseService {
   }
 
   remove (id, params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
 
@@ -256,14 +256,14 @@ export class Service extends BaseService {
   }
 
   count (params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
   first (params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
     params.query.$limit = 1;
@@ -275,7 +275,7 @@ export class Service extends BaseService {
   }
 
   last (params = {}) {
-    params = fp.assign({ query: {} }, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
     return this.count(params).then(total => {
