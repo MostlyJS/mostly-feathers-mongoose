@@ -153,11 +153,11 @@ function populateField (app, item, target, params, options) {
 
     params.paginate = false; // disable paginate
     promise = Promise.all(fp.map((service) => {
-      let sParams = fp.assign({}, params);
+      let serviceParams = fp.assign({ query: {} }, params);
       if (services[service]) {
-        sParams.query['_id'] = { $in: services[service] };
+        serviceParams.query['_id'] = { $in: services[service] };
         const name = fp.kebabCase(plural(service));
-        return app.service(serviceName(name)).find(sParams);
+        return app.service(serviceName(name)).find(serviceParams);
       }
     }, Object.keys(services)));
   } else {

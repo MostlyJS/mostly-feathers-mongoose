@@ -23,11 +23,9 @@ export default function authenticate (strategies, opts = {}, fields) {
     // verify and fetch user with $select fields
     const select = fp.reject(fp.isNil, [fields, opts.local && opts.local.fields]).join(',');
     if (select) {
-      context.params = fp.assign(context.params, {
-        $auth: {
-          query: { $select: select }
-        }
-      });
+      context.params.$auth = {
+        query: { $select: select }
+      };
     }
     return await verifyIdentity(context);
   };

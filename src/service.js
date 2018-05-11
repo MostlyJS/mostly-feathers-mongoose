@@ -126,7 +126,7 @@ export class Service extends BaseService {
   }
 
   update (id, data, params = {}) {
-    params = fp.assign({}, params);
+    params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
     assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
@@ -232,11 +232,11 @@ export class Service extends BaseService {
   }
 
   upsert (id, data, params = {}) {
-    params = fp.assign({}, params);
-    if (fp.isNil(params.query) || fp.isEmpty(params.query)) {
-      params.query = fp.assign({}, data);  // default find by input data
+    params = { query: {}, ...params };
+    if (fp.isEmpty(params.query)) {
+      params.query = { ...data };  // default find by input data
     }
-    params.mongoose = fp.assign({}, params.mongoose, {
+    params.mongoose = Object.assign({}, params.mongoose, {
       setDefaultsOnInsert: true, upsert: true
     });
 
