@@ -106,7 +106,7 @@ export default function assoc (target, opts) {
       return service.find(params).then((results) => {
         const filterById = function (id) {
           return fp.filter(obj => {
-            let prop = Array.concat([], obj[options.field] || []);
+            let prop = [].concat(obj[options.field] || []);
             // assoc with array field
             if (options.elemMatch) {
               return fp.find(elem => pathId(options.elemMatch, elem) === id, prop);
