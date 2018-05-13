@@ -175,7 +175,7 @@ export const transform = function (results) {
   return results;
 };
 
-export function reorderPosition (Model, item, newPos, options = {}) {
+export const reorderPosition = async function (Model, item, newPos, options = {}) {
   const prevPos = parseInt(item.position || 0);
   newPos = parseInt(newPos || 0);
 
@@ -189,11 +189,10 @@ export function reorderPosition (Model, item, newPos, options = {}) {
   if (options.classify) {
     cond[options.classify] = { $eq : item[options.classify] };
   }
-  return Model.update(cond, { $inc: { position: whichWay } }, { multi: true })
-    .then(() => {
-      return Model.findOneAndUpdate({ _id: item._id || item.id }, { position: newPos });
-    });
-}
+  // update position one way down
+  await Model.update(cond, { $inc: { position: whichWay } }, { multi: true });
+  return Model.findOneAndUpdate({ _id: item._id || item.id }, { position: newPos });
+};
 
 // get mongo id as string (object, mongo id, typed id)
 export const pathId = fp.curry((idField, obj) => {
