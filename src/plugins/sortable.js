@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import fp from 'mostly-func';
 
 /*
  * options:
@@ -58,9 +59,12 @@ export default function (schema, options) {
   schema.pre('update', function (next) {
     const update = this.getUpdate();
     if (this.model && update && update.$set) {
+      if (update.$inc && !fp.isNil(update.$inc.position)) {
+        return next();
+      }
       preUpdate(update.$set, this.model, next);
     } else {
-      next();
+      return next();
     }
   });
 
