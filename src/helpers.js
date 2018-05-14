@@ -175,7 +175,8 @@ export const transform = function (results) {
   return results;
 };
 
-export const reorderPosition = async function (Model, item, newPos, options = {}) {
+export const reorderPosition = async function (Model, item, newPos, options) {
+  const idField = options.idField || '_id';
   const prevPos = parseInt(item.position || 0);
   newPos = parseInt(newPos || 0);
 
@@ -183,15 +184,31 @@ export const reorderPosition = async function (Model, item, newPos, options = {}
   const start = (newPos > prevPos) ? prevPos + 1 : newPos;
   const end = (newPos > prevPos) ? newPos : prevPos - 1;
 
-  const cond = {
+  const others = {
     position: { '$gte': start, '$lte': end }
+  };
+  if (options.classify) {
+    others[options.classify] = { $eq : item[options.classify] };
+  }
+  // update others position one way down
+  await Model.update(others, {
+    $inc: { position: whichWay }
+  }, {
+    multi: true
+  });
+
+  const cond = {
+    [idField]: item._id || item.id
   };
   if (options.classify) {
     cond[options.classify] = { $eq : item[options.classify] };
   }
-  // update position one way down
-  await Model.update(cond, { $inc: { position: whichWay } }, { multi: true });
-  return Model.findOneAndUpdate({ _id: item._id || item.id }, { position: newPos });
+  // update position of the item
+  return Model.findOneAndUpdate(cond, {
+    position: newPos
+  }, {
+    new : true
+  });
 };
 
 // get mongo id as string (object, mongo id, typed id)
