@@ -128,11 +128,11 @@ export class Service extends BaseService {
   update (id, data, params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
-    assertMultiple(id, params, "Found null id, update must be called with $multi.");
 
     if (this._isAction(id, params)) {
       return this._action('update', id, data, params);
     }
+    assertMultiple(id, params, "Found null id, update must be called with $multi.");
     debug('service %s update %j', this.name, id, data);
     return super.update(id, data, params).then(transform);
   }
@@ -140,11 +140,11 @@ export class Service extends BaseService {
   patch (id, data, params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
-    assertMultiple(id, params, "Found null id, patch must be called with $multi.");
 
     if (this._isAction(id, params)) {
       return this._action('patch', id, data, params);
     }
+    assertMultiple(id, params, "Found null id, patch must be called with $multi.");
     debug('service %s patch %j', this.name, id, data);
     return super.patch(id, data, params).then(transform);
   }
