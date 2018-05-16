@@ -3,7 +3,7 @@ import { checkContextIf } from 'feathers-hooks-common';
 import { getHookData, setHookData } from '../helpers';
 
 export default function discardFields (...fieldNames) {
-  return context => {
+  return async context => {
     checkContextIf(context, 'before', ['create', 'update', 'patch'], 'discard');
 
     let items = getHookData(context);

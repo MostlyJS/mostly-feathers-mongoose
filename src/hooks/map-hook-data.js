@@ -8,7 +8,7 @@ export default function mapHookData (func) {
     throw new errors.BadRequest('Function required. (alter)');
   }
 
-  return context => {
+  return async context => {
     let items = getHookData(context);
     if (items) {
       if (Array.isArray(items)) {

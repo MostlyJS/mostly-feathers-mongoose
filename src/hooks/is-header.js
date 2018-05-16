@@ -3,8 +3,8 @@ export default function isHeader (header, value) {
     throw new Error('Calling iff() predicate incorrectly. (isHeader)');
   }
 
-  return hook => {
-    const hookHeader = ((hook.params || {}).headers || {})[header];
+  return async context => {
+    const hookHeader = ((context.params || {}).headers || {})[header];
     if (hookHeader) {
       const enrichers = hookHeader.split(',').map(e => e.trim());
       if (value) {

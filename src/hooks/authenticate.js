@@ -18,7 +18,7 @@ export default function authenticate (strategies, opts = {}, fields) {
 
   const verifyIdentity = auth.authenticate(strategies);
 
-  return async function (context) {
+  return async context => {
     const accessToken = getAccessToken(context);
     // verify and fetch user with $select fields
     const select = fp.reject(fp.isNil, [fields, opts.local && opts.local.fields]).join(',');
@@ -27,6 +27,6 @@ export default function authenticate (strategies, opts = {}, fields) {
         query: { $select: select }
       };
     }
-    return await verifyIdentity(context);
+    return verifyIdentity(context);
   };
 }

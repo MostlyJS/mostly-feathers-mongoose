@@ -1,20 +1,16 @@
-import _ from 'lodash';
-
 export default function filterField (field, preset) {
-  return hook => {
+  return async context => {
     // If it was an internal call then skip this hook
-    if (!hook.params.provider) {
-      return hook;
-    }
+    if (!context.params.provider) return context;
 
     if(!Array.isArray(preset)) {
       preset = [preset];
     }
 
-    if (hook.params.query && !hook.params.query[field]) {
-      hook.params.query[field] = { $in: preset };
+    if (context.params.query && !context.params.query[field]) {
+      context.params.query[field] = { $in: preset };
     }
 
-    return hook;
+    return context;
   };
 }

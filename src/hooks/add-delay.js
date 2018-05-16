@@ -1,5 +1,5 @@
 export default function addDelay (delay) {
-  return (hook, next) => {
+  return (context, next) => {
     setTimeout(next, delay);
   };
 }

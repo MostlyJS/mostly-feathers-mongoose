@@ -9,14 +9,14 @@ export default function publishEvent (name, opts) {
   opts = Object.assign({}, defaultOptions, opts);
   const topic = `${opts.prefix}.events`;
 
-  return async function (hook) {
+  return async context => {
     let options = Object.assign({}, opts);
 
-    if (hook.type !== 'after') {
+    if (context.type !== 'after') {
       throw new Error(`The 'publishEvent' hook should only be used as a 'after' hook.`);
     }
 
-    const trans = hook.app.trans;
+    const trans = context.app.trans;
     const publish = function (event) {
       trans.act({
         pubsub$: true,
@@ -26,9 +26,9 @@ export default function publishEvent (name, opts) {
       });
     };
 
-    const data = getHookDataAsArray(hook);
+    const data = getHookDataAsArray(context);
     fp.map(publish, data);
 
-    return hook;
+    return context;
   };
 }

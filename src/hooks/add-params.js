@@ -4,11 +4,11 @@ import fp from 'mostly-func';
  * Add params to hook.params
  */
 export default function addParams (params) {
-  return hook => {
-    if (hook.type !== 'before') {
+  return async context => {
+    if (context.type !== 'before') {
       throw new Error(`The 'addParams' hook should only be used as a 'before' hook.`);
     }
-    hook.params = fp.assignAll(hook.params, params);
-    return hook;
+    context.params = fp.assignAll(context.params, params);
+    return context;
   };
 }

@@ -5,10 +5,10 @@ import { isSelected } from '../helpers';
 
 export default function flatMerge (field, opts = { idField: 'id' }) {
 
-  return hook => {
+  return async context => {
     let options = Object.assign({}, opts);
     
-    if (hook.type !== 'after') {
+    if (context.type !== 'after') {
       throw new errors.GeneralError('Can not merge on before hook.');
     }
 
@@ -53,18 +53,18 @@ export default function flatMerge (field, opts = { idField: 'id' }) {
       }
     };
 
-    let params = { query: {}, ...hook.params };
+    let params = { query: {}, ...context.params };
 
     // target must be specified by $select to merge
-    if (!isSelected(field, params.query.$select)) return hook;
+    if (!isSelected(field, params.query.$select)) return context;
 
-    if (hook.result) {
-      if (hook.result.data) {
-        hook.result.data = mergeData(hook.result.data);
+    if (context.result) {
+      if (context.result.data) {
+        context.result.data = mergeData(context.result.data);
       } else {
-        hook.result = mergeData(hook.result);
+        context.result = mergeData(context.result);
       }
     }
-    return hook;
+    return context;
   };
 }

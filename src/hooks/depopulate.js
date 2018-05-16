@@ -6,7 +6,7 @@ import { getField, setField } from '../helpers';
 export default function depopulate (target, opts = { idField: 'id' }) {
   assert(target, 'target is empty');
 
-  return function (hook) {
+  return async context => {
     let options = Object.assign({}, opts);
 
     const depopulated = function (data, target) {
@@ -26,17 +26,17 @@ export default function depopulate (target, opts = { idField: 'id' }) {
       return data;
     };
 
-    if (hook.type === 'before') {
-      hook.data = depopulated(hook.data, target);
+    if (context.type === 'before') {
+      context.data = depopulated(context.data, target);
     } else {
-      if (hook.result) {
-        if (hook.result.data) {
-          hook.result.data = depopulated(hook.result.data, target);
+      if (context.result) {
+        if (context.result.data) {
+          context.result.data = depopulated(context.result.data, target);
         } else {
-          hook.result = depopulated(hook.result, target);
+          context.result = depopulated(context.result, target);
         }
       }
     }
-    return hook;
+    return context;
   };
 }
