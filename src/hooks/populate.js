@@ -24,7 +24,7 @@ function kebabServiceName (name) {
   return fp.kebabCase(plural(name));
 }
 
-function populateField (app, item, target, params, options) {
+const populateField = async function (app, item, target, params, options) {
   let field = options.field || target;
   const serviceName = options.getService || kebabServiceName; // get service name
 
@@ -124,9 +124,7 @@ function populateField (app, item, target, params, options) {
 
   // pass infomation of the $select and specified by options.fallThrough
   const selection = { $select: params.query.$select };
-  params = options.fallThrough
-    ? fp.pick(options.fallThrough, params)
-    : {};
+  params = options.fallThrough? fp.pick(options.fallThrough, params) : {};
   params.query = selection;
 
   //console.log('populate:', field, entry, params);
@@ -135,7 +133,7 @@ function populateField (app, item, target, params, options) {
 
   // If the relationship is an array of ids, fetch and resolve an object for each,
   // otherwise just fetch the object.
-  let promise = null;
+  let fetchAll = null;
 
   if (Array.isArray(entry)) {
     let services = [];
@@ -152,7 +150,7 @@ function populateField (app, item, target, params, options) {
     debug('populate =>', field, services, params.query.$select);
 
     params.paginate = false; // disable paginate
-    promise = Promise.all(fp.map((service) => {
+    fetchAll = Promise.all(fp.map((service) => {
       let serviceParams = fp.assignAll({ query: {} }, params);
       if (services[service]) {
         serviceParams.query['_id'] = { $in: services[service] };
@@ -173,10 +171,11 @@ function populateField (app, item, target, params, options) {
     }
     debug('populate =>', field, { [service]: id }, params.query.$select);
 
-    promise = app.service(service).get(id, params);
+    fetchAll = app.service(service).get(id, params);
   }
 
-  return promise.then((results) => {
+  try {
+    let results = await fetchAll;
     // debug('populate services found', results);
     results = results && results.data || results;
     if (Array.isArray(results)) {
@@ -189,12 +188,12 @@ function populateField (app, item, target, params, options) {
       setField(item, target, results, field, options);
     }
     return item;
-  }).catch(function (err) {
+  } catch (err) {
     console.error(" ERROR: populate %s error %s", options.service, util.inspect(err));
     setField(item, target, {}, field, options);
     return item;
-  });
-}
+  }
+};
 
 /**
  * The populate hook uses a property from the result (or every item if it is a list)
@@ -232,36 +231,35 @@ function populateField (app, item, target, params, options) {
 export default function populate (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  return function (hook) {
+  return async (context) => {
     const options = Object.assign({}, opts);  // clone for change
 
-    if (hook.type !== 'after') {
+    if (context.type !== 'after') {
       throw new errors.GeneralError('Can not populate on before hook. (populate)');
     }
 
     // each target field should have its own params
-    let params = fp.assignAll({ query: {} }, hook.params);
+    let params = fp.assignAll({ query: {} }, context.params);
 
     // target field must be specified by $select to populate
-    if (!isSelected(options.field || target, params.query.$select)) return hook;
+    if (!isSelected(options.field || target, params.query.$select)) return context;
 
     // $select with * for next level
     if (params.query.$select) {
       params.query.$select = selectNext(options.field || target, params.query.$select);
     }
 
-    const data = (hook.result && hook.result.data) || hook.result;
+    const data = (context.result && context.result.data) || context.result;
 
-    if (fp.isNil(data) || fp.isEmpty(data)) return hook;
-    
-    return populateField(hook.app, data, target, params, options).then(result => {
-      //debug('> populate result', util.inspect(result));
-      if (hook.result.data) {
-        hook.result.data = result;
-      } else {
-        hook.result = result;
-      }
-      return hook;
-    });
+    if (fp.isNil(data) || fp.isEmpty(data)) return context;
+
+    const result = await populateField(context.app, data, target, params, options);
+    //debug('> populate result', util.inspect(result));
+    if (context.result.data) {
+      context.result.data = result;
+    } else {
+      context.result = result;
+    }
+    return context;
   };
 }
