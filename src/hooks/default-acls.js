@@ -6,55 +6,53 @@ export default function defaultAcls (policy, permission, opts) {
   assert(policy !== undefined, 'defaultAcls policy not provided');
   assert(permission !== undefined, 'defaultAcls permission not provided');
 
-  return function (hook) {
+  return async context => {
     let options = Object.assign({}, opts);
 
-    if (hook.type !== 'before') {
+    if (context.type !== 'before') {
       throw new Error(`The 'defaultAcls' hook should only be used as a 'before' hook.`);
     }
 
-    const getACLs = function (names) {
+    const getACLs = async function (names) {
       const nameToIds = names.map(name => {
         if (mongoose.Types.ObjectId.isValid(name)) {
           return Promise.resolve(name);
         } else {
-          return hook.app.service(options.service).get(null, {
+          return context.app.service(options.service).get(null, {
             query: { [options.field] : name }
           }).then(obj => obj.id);
         }
       });
-      return Promise.all(nameToIds).then(ids => {
-        let aces = fp.reduce((acc, id) => {
-          acc[id] = {
-            permission: permission,
-            granted: true,
-            begin: options.begin,
-            end: options.end
-          };
-          return acc;
-        }, {}, ids || []);
-        return aces;
-      });
+      const ids = await Promise.all(nameToIds);
+      return fp.reduce((acc, id) => {
+        acc[id] = {
+          permission: permission,
+          granted: true,
+          begin: options.begin,
+          end: options.end
+        };
+        return acc;
+      }, {}, ids || []);
     };
     
-    if (hook.data) {
-      let promise = Promise.resolve({});
+    if (context.data) {
+      let promiseACLs = Promise.resolve({});
       switch (policy) {
         case 'restrictToOwner':
-          promise = getACLs([hook.params.user.id]);
+          promiseACLs = getACLs([context.params.user.id]);
           break;
         case 'restrictToGroups':
           assert(options.groups && Array.isArray(options.groups), 'defaultAcls groups not provided');
           assert(options.service && options.field, 'defaultAcls service and field not provided');
-          promise = getACLs(options.groups);
+          promiseACLs = getACLs(options.groups);
           break;
         case 'restrictToRoles':
           assert(options.roles && Array.isArray(options.roles), 'defaultAcls roles not provided');
           assert(options.service && options.field, 'defaultAcls service and field not provided');
-          promise = getACLs(options.roles);
+          promiseACLs = getACLs(options.roles);
           break;
         case 'restrictToPublic':
-          promise = Promise.resolve({
+          promiseACLs = Promise.resolve({
             '*': {
               permission: permission,
               granted: true
@@ -62,7 +60,7 @@ export default function defaultAcls (policy, permission, opts) {
           });
           break;
         case 'inheriteParent':
-          promise = Promise.resolve({
+          promiseACLs = Promise.resolve({
             '*': {
               inherited: permission
             }
@@ -71,11 +69,9 @@ export default function defaultAcls (policy, permission, opts) {
         default:
           throw new Error('Unkown defaultAcls policy ' + policy);
       }
-      return promise.then((acls) => {
-        hook.data.ACL = Object.assign({}, hook.data.ACL || {}, acls);
-        return hook;
-      });
+      const acls = await promiseACLs;
+      context.data.ACL = Object.assign({}, context.data.ACL || {}, acls);
     }
-    return hook;
+    return context;
   };
 }
