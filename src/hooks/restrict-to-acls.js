@@ -18,26 +18,26 @@ export default function restrictToAcls (options = {}){
     throw new Error(`You need to provide an array of 'acls' to check against.`);
   }
 
-  return function (hook) {
-    if (hook.type !== 'before') {
+  return async context => {
+    if (context.type !== 'before') {
       throw new Error(`The 'restrictToRoles' hook should only be used as a 'before' hook.`);
     }
 
     // If it was an internal call then skip this hook
-    if (!hook.params.provider) {
-      return hook;
+    if (!context.params.provider) {
+      return context;
     }
 
-    if (!hook.params.user) {
+    if (!context.params.user) {
       debug('Auth user not populoated properly, check your hook chain!');
       throw new errors.NotAuthenticated();
     }
 
-    options = Object.assign({}, defaults, hook.app.get('auth'), options);
+    options = Object.assign({}, defaults, context.app.get('auth'), options);
 
     let authorized = false;
-    let roles = hook.params.user[options.rolesField];
-    const id = hook.params.user[options.idField];
+    let roles = context.params.user[options.rolesField];
+    const id = context.params.user[options.idField];
 
     if (id === undefined) {
       throw new Error(`'${options.idField} is missing from current user.'`);
@@ -68,7 +68,7 @@ export default function restrictToAcls (options = {}){
     // If we should allow users that own the resource and they don't already have
     // the permitted roles check to see if they are the owner of the requested resource
     if (options.owner && !authorized) {
-      if (!hook.id) {
+      if (!context.id) {
         throw new errors.MethodNotAllowed(`The 'restrictToRoles' hook should only be used on the 'get', 'update', 'patch' and 'remove' service methods if you are using the 'owner' field.`);
       }
 
@@ -76,9 +76,9 @@ export default function restrictToAcls (options = {}){
       return new Promise((resolve, reject) => {
         // Set provider as undefined so we avoid an infinite loop if this hook is
         // set on the resource we are requesting.
-        const params = Object.assign({}, hook.params, { provider: undefined });
+        const params = Object.assign({}, context.params, { provider: undefined });
 
-        this.get(hook.id, params).then(data => {
+        this.get(context.id, params).then(data => {
           if (data.toJSON) {
             data = data.toJSON();
           }
@@ -97,7 +97,7 @@ export default function restrictToAcls (options = {}){
             reject(new errors.Forbidden('You do not have the permissions to access this.'));
           }
 
-          resolve(hook);
+          resolve(context);
         }).catch(reject);
       });
     }
