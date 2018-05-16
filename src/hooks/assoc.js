@@ -153,7 +153,7 @@ export default function assoc (target, opts) {
       params.query.$select = selectNext(target, params.query.$select);
     }
 
-    const results = assocField(data, params, target, options);
+    const results = await assocField(data, params, target, options);
     if (hook.result.data) {
       hook.result.data = results;
     } else {

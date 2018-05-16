@@ -27,6 +27,6 @@ export default function authenticate (strategies, opts = {}, fields) {
         query: { $select: select }
       };
     }
-    return verifyIdentity(context);
+    return await verifyIdentity(context);
   };
 }
