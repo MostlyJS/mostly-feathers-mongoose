@@ -18,7 +18,7 @@ function isPresent (obj, target) {
 export default function assoc (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  return function (hook) {
+  return async hook => {
     let options = Object.assign({}, opts);
 
     if (hook.type !== 'after') {
@@ -29,14 +29,12 @@ export default function assoc (target, opts) {
       throw new Error('You need to provide a service and a field');
     }
 
-    const assocField = function (data, params, target) {
+    const assocField = async function (data, params, target) {
       const service = hook.app.service(options.service);
 
       // pass infomation of the $select and specified by options.fallThrough
       const selection = { $select: params.query.$select };
-      params = options.fallThrough
-        ? fp.pick(options.fallThrough, params)
-        : {};
+      params = options.fallThrough? fp.pick(options.fallThrough, params) : {};
       params.query = selection;
 
       // if options.typeField specified, assoc as typed id like `document:1`
@@ -103,37 +101,38 @@ export default function assoc (target, opts) {
 
       debug('assoc =>', target, options.service, params.query);
 
-      return service.find(params).then((results) => {
-        const filterById = function (id) {
-          return fp.filter(obj => {
-            let prop = [].concat(obj[options.field] || []);
-            // assoc with array field
-            if (options.elemMatch) {
-              return fp.find(elem => pathId(options.elemMatch, elem) === id, prop);
-            } else {
-              return fp.find(elem => pathId(options.idField, elem) === id, prop);
+      const filterById = function (id) {
+        return fp.filter(obj => {
+          let prop = [].concat(obj[options.field] || []);
+          // assoc with array field
+          if (options.elemMatch) {
+            return fp.find(elem => pathId(options.elemMatch, elem) === id, prop);
+          } else {
+            return fp.find(elem => pathId(options.idField, elem) === id, prop);
+          }
+        });
+      };
+
+      const assocResult = function (results) {
+        return fp.map((item) => {
+          let values = filterById(item[options.idField])(results);
+          if (values) {
+            if (options.sort) {
+              values = fp.sortBy(fp.prop(options.sort), values);
             }
-          });
-        };
-        const assocResult = function (results) {
-          return fp.map((item) => {
-            let values = filterById(item[options.idField])(results);
-            if (values) {
-              if (options.sort) {
-                values = fp.sortBy(fp.prop(options.sort), values);
-              }
-              return fp.assoc(target, values, item);
-            }
-            return item;
-          });
-        };
-        results = results && results.data || results;
-        if (Array.isArray(data)) {
-          return assocResult(results)(data);
-        } else {
-          return fp.assoc(target, results, data);
-        }
-      });
+            return fp.assoc(target, values, item);
+          }
+          return item;
+        });
+      };
+
+      let results = await service.find(params);
+      results = results && results.data || results;
+      if (Array.isArray(data)) {
+        return assocResult(results)(data);
+      } else {
+        return fp.assoc(target, results, data);
+      }
     };
 
     let data = hook.result && hook.result.data || hook.result;
@@ -154,14 +153,13 @@ export default function assoc (target, opts) {
       params.query.$select = selectNext(target, params.query.$select);
     }
 
-    return assocField(data, params, target, options).then(result => {
-      if (hook.result.data) {
-        hook.result.data = result;
-      } else {
-        hook.result = result;
-      }
-      return hook;
-    });
+    const results = assocField(data, params, target, options);
+    if (hook.result.data) {
+      hook.result.data = results;
+    } else {
+      hook.result = results;
+    }
+    return hook;
   };
 }
 
