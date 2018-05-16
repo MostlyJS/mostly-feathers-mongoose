@@ -8,18 +8,17 @@ export default function convertId (target, opts) {
 
   var field = opts.field;
 
-  return function (hook) {
+  return async context => {
     let options = Object.assign({}, opts);
 
-    if (hook.type !== 'before') {
+    if (context.type !== 'before') {
       throw new Error(`The 'convertId' hook should only be used as a 'before' hook.`);
     }
     
-    let data = hook.data;
-    if (field && data) {
-      let values = getField(data, target);
+    if (field && context.data) {
+      const values = getField(context.data, target);
       if (values) {
-        const service = hook.app.service(options.service);
+        const service = context.app.service(options.service);
         if (!service) {
           throw new Error("No such service: " + options.service);
         }
@@ -27,13 +26,11 @@ export default function convertId (target, opts) {
         let params = {};
         params.query = { [field]: { $in: flatten(values) } };
         params.paginate = false;
-        return service.find(params).then(result => {
-          let dataByKey = mapValues(keyBy(result, field), 'id');
-          hook.data = setFieldByKey(data, target, dataByKey);
-          return hook;
-        });
+        const result = await service.find(params);
+        const dataByKey = mapValues(keyBy(result, field), 'id');
+        context.data = setFieldByKey(context.data, target, dataByKey);
       }
     }
-    return hook;
+    return context;
   };
 }
