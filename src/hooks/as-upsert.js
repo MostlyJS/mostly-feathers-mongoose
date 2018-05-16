@@ -8,15 +8,14 @@ export default function asUpsert (upsertQuery) {
     throw new Error('You need to provide a upsertQuery function');
   }
 
-  return function (hook) {
-    const { service, data, params } = hook;
+  return async context => {
+    const { service, data, params } = context;
 
     params.mongoose = Object.assign({}, params.mongoose, { upsert: true });
-    params.query = upsertQuery(hook);
+    params.query = upsertQuery(context);
 
-    return service.patch(null, data, params).then(result => {
-      hook.result = result;
-      return hook;
-    });
+    context.result = await service.patch(null, data, params);
+
+    return context;
   };
 }
