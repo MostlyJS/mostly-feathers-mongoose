@@ -1,30 +1,30 @@
 import fp from 'mostly-func';
 
-// 返回值定制
+// custom response
 export default function responder () {
-  return function (hook) {
+  return async context => {
     // If it was an internal call then skip this hook
-    if (!hook.params.provider) {
-      return hook;
+    if (!context.params.provider) {
+      return context;
     }
 
     let metadata = {};
-    let data = hook.result;
+    let data = context.result;
     let message = '';
 
-    if (hook.result && hook.result.data) {
-      metadata = hook.result.metadata || fp.omit(['data'], hook.result);
-      data = hook.result.data;
-      message = hook.result.message || '';
+    if (context.result && context.result.data) {
+      metadata = context.result.metadata || fp.omit(['data'], context.result);
+      data = context.result.data;
+      message = context.result.message || '';
     }
 
-    hook.result = {
+    context.result = {
       status: 0,
       message: message,
       metadata: metadata,
       errors: [],
       data: data
     };
-    return hook;
+    return context;
   };
 }
