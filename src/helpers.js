@@ -143,7 +143,7 @@ export function setField (item, target, data, field, options) {
   return item;
 }
 
-const unset_id = function (obj) {
+const unsetIdv = function (obj) {
   if (obj && obj._id) {
     return fp.pipe(
       fp.assoc('id', String(obj.id || obj._id)),
@@ -157,9 +157,9 @@ const unset_id = function (obj) {
 
 const unsetObj = function (obj) {
   if (Array.isArray(obj)) {
-    return fp.map(unset_id, obj);
+    return fp.map(unsetIdv, obj);
   } else {
-    return unset_id(obj);
+    return unsetIdv(obj);
   }
 };
 
@@ -268,6 +268,11 @@ export const isSelected = (target, select) => {
 export const addToSelect = (select, ...args) => {
   select = select? normalizeSelect(select) : [];
   return fp.uniq(select.concat(args));
+};
+
+export const prefixSelect = (select, prefix) => {
+  const fields = fp.splitOrArray(select);
+  return fp.map(fp.concat(prefix + '.'), fields);
 };
 
 export const selectNext = (target, select) => {
