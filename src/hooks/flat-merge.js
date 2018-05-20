@@ -1,7 +1,36 @@
 import errors from 'feathers-errors';
 import fp from 'mostly-func';
 import mongose from 'mongoose';
-import { isSelected } from '../helpers';
+import { getHookData, isSelected, setHookData } from '../helpers';
+
+const mergeField = function (prop, data, options) {
+  let value = fp.prop(prop, data);
+  if (fp.isNil(value) || fp.isIdLike(value)) {
+    value = { [options.idField]: value };
+  }
+  return fp.merge(fp.omit(prop, data), value);
+};
+
+const mergeData = function (field, data, options) {
+  const path = fp.init(field.split('.'));
+  const prop = fp.last(field.split('.'));
+  const merge = (data) => {
+    const fieldData = path.length? fp.path(path, data) : data;
+    const result = fp.isArray(fieldData)
+      ? fp.map(item => mergeField(prop, item, options), fieldData)
+      : mergeField(prop, fieldData, options);
+    return path.length? fp.assocPath(path, result, data) : result;
+  };
+  if (Array.isArray(data)) {
+    let results = fp.map(merge, data);
+    if (results && options.sort) {
+      results = fp.sortBy(fp.prop(options.sort), results);
+    }
+    return results;
+  } else {
+    return merge(data);
+  }
+};
 
 export default function flatMerge (field, opts = { idField: 'id' }) {
 
@@ -12,58 +41,10 @@ export default function flatMerge (field, opts = { idField: 'id' }) {
       throw new errors.GeneralError('Can not merge on before hook.');
     }
 
-    const getData = function (value) {
-      const data = fp.path(field.split('.'), value);
-      if (Array.isArray(data)) {
-        throw new errors.GeneralError('Cannot merge with array field');
-      }
-      return data;
-    };
-
-    const setData = function (data, value) {
-      if (fp.isNil(value)) return data;
-      const mergeData = (data, value) => {
-        const path = field.split('.');
-        // merge deep left except the id
-        let merged = fp.mergeDeepWithKey((k, l, r) => {
-          return (k === 'id')? r : l;
-        }, data, value);
-        if (!fp.path(path, value)) {
-          return fp.dissocPath(path, merged);
-        } else {
-          return merged;
-        }
-      };
-      if (!mongose.Types.ObjectId.isValid(value)) {
-        return mergeData(data, value);
-      } else {
-        return mergeData(data, { [options.idField]: value });
-      }
-    };
-
-    const mergeData = function (data) {
-      if (Array.isArray(data)) {
-        let results = fp.map(item => setData(item, getData(item)), data);
-        if (results && options.sort) {
-          results = fp.sortBy(fp.prop(options.sort), results);
-        }
-        return results;
-      } else {
-        return setData(data, getData(data));
-      }
-    };
-
-    let params = { query: {}, ...context.params };
-
-    // target must be specified by $select to merge
-    if (!isSelected(field, params.query.$select)) return context;
-
     if (context.result) {
-      if (context.result.data) {
-        context.result.data = mergeData(context.result.data);
-      } else {
-        context.result = mergeData(context.result);
-      }
+      const data = getHookData(context);
+      const result = mergeData(field, data, options);
+      setHookData(context, result);
     }
     return context;
   };
