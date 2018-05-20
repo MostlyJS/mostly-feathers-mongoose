@@ -284,7 +284,7 @@ export const selectNext = (target, select) => {
       fp.filter(fp.startsWith(target)),
       fp.map(fp.replace(new RegExp('^' + target + '\.?'), '')),
       fp.reject(fp.isEmpty),
-      fp.when(fp.complement(fp.isEmpty), fp.append('*')) // add * for non-empty
+      fp.unless(fp.isEmpty, fp.append('*')) // add * for non-empty
     )(select);
   }
   return select;
@@ -315,10 +315,12 @@ export const getHookDataAsArray = (context) => {
 export const setHookData = (context, items) => {
   if (context.type === 'before') {
     context.data = items;
-  } else if (context.result && context.result.data) {
-    context.result.data = items;
   } else {
-    context.result = items;
+    if (context.result && context.result.data) {
+      context.result.data = items;
+    } else {
+      context.result = items;
+    }
   }
 };
 
