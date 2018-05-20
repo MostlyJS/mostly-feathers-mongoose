@@ -14,10 +14,7 @@ const defaultOptions = {
 };
 
 function isPopulated (obj) {
-  const isPlain = (val) => val && !(fp.is(String, val) || fp.isObjectId(val.toString()));
-  return fp.reduce((result, val) => {
-    return result && isPlain(val);
-  }, true, [].concat(obj));
+  return fp.all(fp.complement(fp.isIdLike), [].concat(obj));
 }
 
 function kebabServiceName (name) {
