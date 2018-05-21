@@ -30,7 +30,7 @@ export default function depopulate (target, opts = { idField: 'id' }) {
       context.data = depopulated(context.data, target);
     } else {
       if (context.result) {
-        if (context.result.data) {
+        if (fp.hasProp('data', context.result)) {
           context.result.data = depopulated(context.result.data, target);
         } else {
           context.result = depopulated(context.result, target);

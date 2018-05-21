@@ -3,6 +3,8 @@ import Proto from 'uberproto';
 import filter from 'feathers-query-filters';
 import { select } from 'feathers-commons';
 import errors from 'feathers-errors';
+import fp from 'mostly-func';
+
 import errorHandler from './error-handler';
 
 // Base service copy from feathers-mongoose for bug fix and optimize
@@ -44,7 +46,7 @@ export class Service {
     const q = model.find(query).lean(this.lean);
 
     // $select uses a specific find syntax, so it has to come first.
-    if (Array.isArray(filters.$select)) {
+    if (fp.isArray(filters.$select)) {
       let fields = {};
 
       for (let key of filters.$select) {
@@ -176,7 +178,7 @@ export class Service {
   }
 
   create (data, params) {
-    if (Array.isArray(data)) {
+    if (fp.isArray(data)) {
       if (!data.length) {
         return Promise.reject(new errors.BadRequest('Cannot pass empty array to create.'));
       }
@@ -188,10 +190,11 @@ export class Service {
     return model.create(data)
       .then(result => {
         if (this.lean) {
-          if (Array.isArray(result)) {
-            return result.map(item => (item.toObject ? item.toObject() : item));
+          if (fp.isArray(result)) {
+            return fp.map(item => (item.toObject ? item.toObject() : item), result);
+          } else {
+            return result.toObject ? result.toObject() : result;
           }
-          return result.toObject ? result.toObject() : result;
         }
         return result;
       })
@@ -201,10 +204,11 @@ export class Service {
 
   _createBulk (data, params) {
     return this._insertMany(data).then(({ data, errors }) => {
-      if (!Array.isArray(data)) {
-        return { data, errors };
+      if (fp.isArray(data)) {
+        data = fp.map(result => {
+          return (this.lean && result.toObject) ? result.toObject() : result;
+        }, data || []);
       }
-      data = data.map(result => (this.lean && result.toObject) ? result.toObject() : result);
       return { data, errors };
     }).then(({ data, errors }) => {
       data = data || [];
@@ -219,13 +223,11 @@ export class Service {
         params[this.bulkErrorsKey] = params[this.bulkErrorsKey].concat(errors);
       }
 
-      if (!Array.isArray(data)) {
+      if (fp.isNotArray(data)) {
         return data;
+      } else {
+        return fp.map(result => select(params, this.id)(result), data);
       }
-
-      data = data.map(result => select(params, this.id)(result));
-
-      return data;
     }).catch(errorHandler);
   }
 
@@ -241,9 +243,7 @@ export class Service {
     let errorDocs, successDocs;
 
     return new Promise((resolve, reject) => {
-      if (!Array.isArray(data)) {
-        data = [data];
-      }
+      data = fp.asArray(data);
 
       // validate the docs against the mongoose schema
       const validate = function validate (doc) {

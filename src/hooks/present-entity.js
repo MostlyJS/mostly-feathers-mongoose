@@ -1,4 +1,5 @@
 import assert from 'assert';
+import fp from 'mostly-func';
 
 export default function presentEntity (entity, options = {}) {
   assert(entity && entity.parse, 'Must be a valid Entity: ' + entity);
@@ -7,7 +8,7 @@ export default function presentEntity (entity, options = {}) {
     options.provider = context.params.provider;
     
     if (context.result) {
-      if (context.result.data) {
+      if (fp.hasProp('data', context.result)) {
         context.result.data = entity.parse(context.result.data, options);
       } else {
         context.result = entity.parse(context.result, options);

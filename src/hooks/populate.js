@@ -252,7 +252,7 @@ export default function populate (target, opts) {
 
     const result = await populateField(context.app, data, target, params, options);
     //debug('> populate result', util.inspect(result));
-    if (context.result.data) {
+    if (fp.hasProp('data', context.result)) {
       context.result.data = result;
     } else {
       context.result = result;

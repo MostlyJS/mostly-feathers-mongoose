@@ -166,7 +166,7 @@ const unsetObj = function (obj) {
 // transform the results
 export const transform = function (results) {
   if (results) {
-    if (results.data) {
+    if (fp.has('data', results)) {
       results.data = unsetObj(results.data);
     } else {
       results = unsetObj(results);
@@ -316,7 +316,7 @@ export const setHookData = (context, items) => {
   if (context.type === 'before') {
     context.data = items;
   } else {
-    if (context.result && fp.has('data', context.result)) {
+    if (fp.hasProp('data', context.result)) {
       context.result.data = items;
     } else {
       context.result = items;
@@ -374,7 +374,7 @@ export const discriminatedFind = (app, keyType, result, params, options) => {
 
   // find the grouped entries by descriminated service
   return findEntriesByType(app, entriesByType, params, options).then(data => {
-    if (result.data) {
+    if (fp.hasProp('data', result)) {
       result.data = data;
     } else {
       result = data;

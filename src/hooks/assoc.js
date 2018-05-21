@@ -154,7 +154,7 @@ export default function assoc (target, opts) {
     }
 
     const results = await assocField(data, params, target, options);
-    if (hook.result.data) {
+    if (fp.hasProp('data', hook.result)) {
       hook.result.data = results;
     } else {
       hook.result = results;
