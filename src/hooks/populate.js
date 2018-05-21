@@ -174,9 +174,9 @@ const populateField = async function (app, item, target, params, options) {
   try {
     let results = await fetchAll;
     // debug('populate services found', results);
-    results = results && results.data || results;
+    results = fp.propOf('data', results);
     if (Array.isArray(results)) {
-      results = fp.flatMap(result => result && result.data || result, results);
+      results = fp.flatMap(fp.propOf('data'), results);
     }
     // debug('setField %j \n ==> %s \n ==> %j', entry, field, data);
     if (Array.isArray(item)) {

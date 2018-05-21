@@ -1,5 +1,7 @@
 import { get } from 'lodash';
 import makeDebug from 'debug';
+import fp from 'mostly-func';
+
 import { getId } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cascade-update');
@@ -18,7 +20,7 @@ export default function cascadeUpdate (target, opts) {
       throw new Error(`The 'cascadeUpdate' hook should only be used as a 'after' hook.`);
     }
 
-    let data = context.result && context.result.data || context.result;
+    let data = fp.propOf('data', context.result);
     if (field && data) {
       let foreignField = get(data, target);
       if (data.id && foreignField) {

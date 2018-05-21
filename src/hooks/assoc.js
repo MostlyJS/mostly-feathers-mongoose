@@ -127,7 +127,7 @@ export default function assoc (target, opts) {
       };
 
       let results = await service.find(params);
-      results = results && results.data || results;
+      results = fp.propOf('data', results);
       if (Array.isArray(data)) {
         return assocResult(results)(data);
       } else {
@@ -135,7 +135,7 @@ export default function assoc (target, opts) {
       }
     };
 
-    let data = hook.result && hook.result.data || hook.result;
+    let data = fp.propOf('data', hook.result);
 
     if (fp.isNil(data) || fp.isEmpty(data)) return hook;
 

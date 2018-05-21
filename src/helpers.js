@@ -343,7 +343,7 @@ export const findEntriesByType = (app, entriesByType, params = {}, options = {})
   const promises = fp.values(findByType(entriesByType));
   return Promise.all(promises).then(entries => {
     // merge the results
-    const data = fp.flatMap(entry => entry && entry.data || entry, entries);
+    const data = fp.flatMap(fp.propOf('data'), entries);
     // sort again
     const sort = fp.dotPath('query.$sort', params) || options.sort;
     return sort? sortWith(sort, data) : data;
@@ -366,9 +366,11 @@ export const findWithTypedIds = (app, list, params, options) => {
 
 // find and merge the results from various descriminated services
 export const discriminatedFind = (app, keyType, result, params, options) => {
-  if (!result || !fp.isValid(result.data || result)) return Promise.resolve(result);
+  if (!result || !fp.isValid(fp.propOf('data', result))) {
+    return Promise.resolve(result);
+  }
 
-  const entriesByType = fp.groupBy(fp.prop('type'), result.data || result);
+  const entriesByType = fp.groupBy(fp.prop('type'), fp.propOf('data', result));
 
   // find the grouped entries by descriminated service
   return findEntriesByType(app, entriesByType, params, options).then(data => {
