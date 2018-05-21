@@ -304,7 +304,7 @@ export const sortWith = (sort, data) => {
 
 export const getHookData = (context) => {
   const items = context.type === 'before'? context.data : context.result;
-  return items && items.data || items;
+  return fp.propOf('data', items);
 };
 
 export const getHookDataAsArray = (context) => {
@@ -316,7 +316,7 @@ export const setHookData = (context, items) => {
   if (context.type === 'before') {
     context.data = items;
   } else {
-    if (context.result && context.result.data) {
+    if (context.result && fp.has('data', context.result)) {
       context.result.data = items;
     } else {
       context.result = items;
