@@ -14,12 +14,16 @@ const mergeField = function (prop, data, options) {
 const mergeData = function (field, data, options) {
   const path = fp.init(field.split('.'));
   const prop = fp.last(field.split('.'));
-  const merge = (data) => {
+  const merge = data => {
     const fieldData = path.length? fp.path(path, data) : data;
-    const result = fp.isArray(fieldData)
+    if (fieldData) {
+      const result = fp.isArray(fieldData)
       ? fp.map(item => mergeField(prop, item, options), fieldData)
       : mergeField(prop, fieldData, options);
-    return path.length? fp.assocPath(path, result, data) : result;
+      return path.length? fp.assocPath(path, result, data) : result;
+    } else {
+      return data;
+    }
   };
   if (Array.isArray(data)) {
     let results = fp.map(merge, data);
