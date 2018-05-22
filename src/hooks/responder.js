@@ -12,7 +12,7 @@ export default function responder () {
     let data = context.result;
     let message = '';
 
-    if (context.result && context.result.data) {
+    if (fp.hasProp('data', context.result)) {
       metadata = context.result.metadata || fp.omit(['data'], context.result);
       data = context.result.data;
       message = context.result.message || '';
