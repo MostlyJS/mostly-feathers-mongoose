@@ -1,3 +1,4 @@
+import assert from 'assert';
 import fp from 'mostly-func';
 
 const defaultOptions = {
@@ -8,7 +9,8 @@ const defaultOptions = {
 /**
  * Add route service object to hook.params
  */
-export default function addRouteObject (name = 'primary', opts) {
+export default function addRouteObject (name, opts) {
+  assert(name === 'primary' || name === 'secondary', 'Invalid name for addRouteObject');
   opts = Object.assign({}, defaultOptions, opts);
 
   return async context => {
