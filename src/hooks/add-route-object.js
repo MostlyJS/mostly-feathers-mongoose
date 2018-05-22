@@ -30,11 +30,16 @@ export default function addRouteObject (name, opts) {
 
     if (!context.params[name]) {
       try {
-        const service = context.app.service(options.service);
-        const object = await service.get(primary, {
-          query: { $select: opts.select },
-          user: context.params.user
-        });
+        let object = null;
+        if (fp.isIdLike(primary)) {
+          const service = context.app.service(options.service);
+          object = await service.get(primary, {
+            query: { $select: opts.select },
+            user: context.params.user
+          });
+        } else {
+          object = primary;
+        }
         if (!object) {
           throw new Error(`Not found primary service object ${name} of ${primary}`);
         }
