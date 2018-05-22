@@ -103,13 +103,14 @@ export default function assoc (target, opts) {
 
       const filterById = function (id) {
         return fp.filter(obj => {
-          let prop = [].concat(obj[options.field] || []);
+          let prop = fp.asArray(obj[options.field]);
           // assoc with array field
-          if (options.elemMatch) {
-            return fp.find(elem => pathId(options.elemMatch, elem) === id, prop);
-          } else {
-            return fp.find(elem => pathId(options.idField, elem) === id, prop);
-          }
+          return fp.find(elem => {
+            // if elemMatch field not exists, use idField (e.g. results may be flat merged)
+            const idField = options.elemMatch && fp.hasProp(options.elemMatch, elem)
+              ? options.elemMatch : options.idField;
+            return pathId(idField, elem) === id;
+          }, prop);
         });
       };
 
