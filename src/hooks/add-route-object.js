@@ -8,7 +8,7 @@ const defaultOptions = {
 /**
  * Add route service object to hook.params
  */
-export default function addRouteObject (name, opts) {
+export default function addRouteObject (name = 'primary', opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return async context => {
