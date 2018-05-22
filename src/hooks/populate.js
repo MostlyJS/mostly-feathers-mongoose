@@ -246,7 +246,7 @@ export default function populate (target, opts) {
       params.query.$select = selectNext(target || options.field, params.query.$select);
     }
 
-    const data = (context.result && context.result.data) || context.result;
+    const data = fp.propOf('data', context.result);
 
     if (fp.isNil(data) || fp.isEmpty(data)) return context;
 
