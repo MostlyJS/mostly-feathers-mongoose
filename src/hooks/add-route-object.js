@@ -31,24 +31,20 @@ export default function addRouteObject (name, opts) {
     }
 
     if (fp.isNil(context.params[name]) || fp.isIdLike(context.params[name])) {
-      try {
-        let object = null;
-        if (fp.isIdLike(id)) {
-          const service = context.app.service(options.service);
-          object = await service.get(id, {
-            query: { $select: opts.select },
-            user: context.params.user
-          });
-        } else {
-          object = id;
-        }
-        if (!object) {
-          throw new Error(`Not found primary service object ${name} of ${id}`);
-        }
-        context.params = fp.assoc(name, object, context.params);
-      } catch (err) {
-        throw new Error(`Not found primary service object ${name}: ` + err.message);
+      let object = null;
+      if (fp.isIdLike(id)) {
+        const service = context.app.service(options.service);
+        object = await service.get(id, {
+          query: { $select: opts.select },
+          user: context.params.user
+        });
+      } else {
+        object = id;
       }
+      if (!object) {
+        throw new Error(`Not found primary service object ${name} of ${id}`);
+      }
+      context.params = fp.assoc(name, object, context.params);
     }
     return context;
   };
