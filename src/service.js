@@ -157,7 +157,7 @@ export class Service extends BaseService {
     if (this._isAction(id, params)) {
       return this._action('remove', id, null, params);
     }
-    if (params.query && params.query.$soft) {
+    if (params.query && (params.$soft || params.query.$soft)) {
       params = fp.dissocPath(['query', '$soft'], params); // remove soft
       debug('service %s remove soft %j', this.name, id);
       return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
