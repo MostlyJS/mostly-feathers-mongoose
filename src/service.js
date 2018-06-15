@@ -84,14 +84,15 @@ export class Service extends BaseService {
         params.query.$sort = fp.map(dir => {
           return descSorts.indexOf(dir) === -1 ? 1 : -1;
         }, params.query.$sort);
-      }
-      // filter destroyed item by default
-      if (!params.query.destroyedAt) {
-        params.query.destroyedAt = null;
-      }
-      // default sort
-      if (!params.query.$sort) {
+      } else {
+        // default sort
         params.query.$sort = this.options.sort;
+      }
+      // filter destroyed item by default unless $soft is true
+      if (params.$soft || params.query.$soft) {
+        params = fp.dissocPath(['query', '$soft'], params); // remove soft
+      } else if (params.query.destroyedAt === undefined) {
+        params.query.destroyedAt = null;
       }
     }
 
