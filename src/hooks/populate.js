@@ -136,7 +136,7 @@ const populateField = async function (app, item, target, params, options) {
     let services = [];
     if (options.path) {
       let entries = fp.groupBy(fp.prop(options.path), entry);
-      services = fp.map((entry) => {
+      services = fp.map(entry => {
         return fp.map(fp.prop(options.idField), entry);
       }, entries);
     } else {
@@ -147,7 +147,7 @@ const populateField = async function (app, item, target, params, options) {
     debug('populate =>', field, services, params.query.$select);
 
     params.paginate = false; // disable paginate
-    fetchAll = Promise.all(fp.map((service) => {
+    fetchAll = Promise.all(fp.map(service => {
       let serviceParams = fp.assignAll({ query: {} }, params);
       if (services[service]) {
         serviceParams.query['_id'] = { $in: services[service] };

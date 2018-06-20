@@ -25,7 +25,7 @@ export default function (schema, options) {
       if (options.classify) {
         query.where(options.classify).eq(item[options.classify]);
       }
-      query.sort('-position').then((max) => {
+      query.sort('-position').then(max => {
         item.position = (max && max.position) ? max.position + 1 : 1;
         done();
       });
@@ -35,7 +35,7 @@ export default function (schema, options) {
       Model.where('position').exists().setOptions({ multi: true })
         .update({
           $inc: { position: 1 }
-        }, (err) => {
+        }, err => {
           if (err) {
             console.error('sortable $inc error:', err);
             return addLast(next);

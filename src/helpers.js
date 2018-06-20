@@ -415,7 +415,7 @@ export function populateByService (app, idField, typeField, options = {}) {
   return (list) => {
     let types = fp.groupBy(fp.prop(typeField), list);
     return Promise.all(
-      fp.map((type) => {
+      fp.map(type => {
         let entries = types[type];
         return app.service(plural(type)).find(Object.assign({
           query: {
@@ -424,7 +424,7 @@ export function populateByService (app, idField, typeField, options = {}) {
           paginate: false
         }, options));
       }, Object.keys(types))
-    ).then((results) => {
+    ).then(results => {
       const data = fp.flatten(results);
       const populated = populateList(list, idField, options)(data);
       return fp.reject(fp.isNil, populated);
