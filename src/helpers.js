@@ -346,6 +346,9 @@ export const findEntriesByType = (app, entriesByType, params = {}, options = {})
       typeParams.query.id = {
         $in: fp.map(fp.prop('id'), entries)
       };
+      if (!typeParams.query.$sort) {
+        typeParams.query.$sort = options.sort; // default sort
+      }
       typeParams.paginate = false;
       return app.service(plural(type)).find(typeParams);
     }
@@ -356,8 +359,12 @@ export const findEntriesByType = (app, entriesByType, params = {}, options = {})
     // merge the results
     const data = fp.flatMap(fp.propOf('data'), entries);
     // sort again
-    const sort = fp.dotPath('query.$sort', params) || options.sort;
-    return sort? sortWith(sort, data) : data;
+    if (entries.length > 1) {
+      const sort = fp.dotPath('query.$sort', params) || options.sort;
+      return sort? sortWith(sort, data) : data;
+    } else {
+      return data;
+    }
   });
 };
 
