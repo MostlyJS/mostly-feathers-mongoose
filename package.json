@@ -1,6 +1,6 @@
 {
   "name": "mostly-feathers-mongoose",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "Create a Mostly Mongoose Service for Feathers.",
   "author": "Forafish",
   "license": "MIT",
