@@ -1,3 +1,4 @@
+import assert from 'assert';
 import makeDebug from 'debug';
 import { cloneDeep, compact, defaults, find, flatten, get, set, map } from 'lodash';
 import fp from 'mostly-func';
@@ -176,11 +177,16 @@ export const transform = function (results) {
 };
 
 export const reorderPosition = async function (Model, item, newPos, options) {
+  const items = fp.asArray(item);
+  assert(items.length, 'At least one item must be provided');
   const idField = options.idField || '_id';
-  const prevPos = parseInt(item.position || 0);
+  const prevPos = fp.reduce((acc, item) => {
+    return Math.min(acc, item.position);
+  }, Infinity, items);
   newPos = parseInt(newPos || 0);
+  assert(prevPos !== Infinity, 'No position found in items');
 
-  const whichWay = (newPos > prevPos) ? -1 : 1;
+  const whichWay = items.length * (newPos > prevPos ? -1 : 1);
   const start = (newPos > prevPos) ? prevPos + 1 : newPos;
   const end = (newPos > prevPos) ? newPos : prevPos - 1;
 
@@ -188,7 +194,7 @@ export const reorderPosition = async function (Model, item, newPos, options) {
     position: { '$gte': start, '$lte': end }
   };
   if (options.classify) {
-    others[options.classify] = { $eq : item[options.classify] };
+    others[options.classify] = { $eq : items[0][options.classify] };
   }
   // update others position one way down
   await Model.update(others, {
@@ -197,18 +203,23 @@ export const reorderPosition = async function (Model, item, newPos, options) {
     multi: true
   });
 
-  const cond = {
-    [idField]: item._id || item.id
+  const updatePosition = function (item, index) {
+    const cond = {
+      [idField]: item._id || item.id
+    };
+    const update = {
+      position: newPos + index,
+    };
+    if (options.classify) {
+      assert(item[options.classify], 'item classify is not exists');
+      cond[options.classify] = { $eq : item[options.classify] };
+      update[options.classify] = item[options.classify]; // must provided with position
+    }
+    // update position of the item
+    return Model.findOneAndUpdate(cond, update, { new : true });
   };
-  if (options.classify) {
-    cond[options.classify] = { $eq : item[options.classify] };
-  }
-  // update position of the item
-  return Model.findOneAndUpdate(cond, {
-    position: newPos
-  }, {
-    new : true
-  });
+
+  return Promise.all(fp.mapIndexed(updatePosition, items));
 };
 
 // get mongo id as string (object, mongo id, typed id)
