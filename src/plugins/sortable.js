@@ -17,7 +17,7 @@ export default function (schema, options) {
   schema.index({ position: 1 });
 
   const preUpdate = function (item, Model, next) {
-    if (item.position && !isNaN(item.position)) {
+    if (fp.isValid(item.position)) {
       return next();
     }
 
