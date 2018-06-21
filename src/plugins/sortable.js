@@ -1,3 +1,4 @@
+import assert from 'assert';
 import mongoose from 'mongoose';
 import fp from 'mostly-func';
 
@@ -23,10 +24,11 @@ export default function (schema, options) {
     const addLast = function (done) {
       let query = Model.findOne();
       if (options.classify) {
+        assert(item[options.classify], 'classify field is not provided with item');
         query.where(options.classify).eq(item[options.classify]);
       }
       query.sort('-position').then(max => {
-        item.position = (max && max.position) ? max.position + 1 : 1;
+        item.position = (max && max.position) ? max.position + 1 : 0;
         done();
       });
     };
@@ -40,7 +42,7 @@ export default function (schema, options) {
             console.error('sortable $inc error:', err);
             return addLast(next);
           } else {
-            item.position = 1;
+            item.position = 0;
             return next();
           }
         });
