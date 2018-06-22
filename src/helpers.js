@@ -194,7 +194,7 @@ export const reorderPosition = async function (Model, item, newPos, options) {
     position: { '$gte': start, '$lte': end }
   };
   if (options.classify) {
-    others[options.classify] = { $eq : items[0][options.classify] };
+    others[options.classify] = items[0][options.classify];
   }
   // update others position one way down
   await Model.update(others, {
@@ -212,7 +212,7 @@ export const reorderPosition = async function (Model, item, newPos, options) {
     };
     if (options.classify) {
       assert(item[options.classify], 'item classify is not exists');
-      cond[options.classify] = { $eq : item[options.classify] };
+      cond[options.classify] = item[options.classify];
       update[options.classify] = item[options.classify]; // must provided with position
     }
     // update position of the item
