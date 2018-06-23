@@ -180,25 +180,25 @@ export const reorderPosition = async function (Model, item, newPos, options) {
   const items = fp.asArray(item);
   assert(items.length, 'At least one item must be provided');
   const idField = options.idField || '_id';
-  const prevPos = fp.reduce((acc, item) => {
-    return Math.min(acc, item.position);
-  }, Infinity, items);
+  const prevPos = fp.reduce((acc, item) => Math.max(acc, item.position), 0, items); // last position
   newPos = parseInt(newPos || 0);
-  assert(prevPos !== Infinity, 'No position found in items');
 
-  const whichWay = items.length * (newPos > prevPos ? -1 : 1);
+  const whichWay = (newPos > prevPos ? -1 : 1); // down : up
   const start = (newPos > prevPos) ? prevPos + 1 : newPos;
   const end = (newPos > prevPos) ? newPos : prevPos - 1;
+
+  // sort item reverse (desc) for moving down and asc for moving up
+  const sortedItems = fp.sort((a, b) => whichWay * (a.position - b.position), items);
 
   const others = {
     position: { '$gte': start, '$lte': end }
   };
   if (options.classify) {
-    others[options.classify] = items[0][options.classify];
+    others[options.classify] = sortedItems[0][options.classify];
   }
   // update others position one way down
   await Model.update(others, {
-    $inc: { position: whichWay }
+    $inc: { position: sortedItems.length * whichWay }
   }, {
     multi: true
   });
@@ -208,7 +208,7 @@ export const reorderPosition = async function (Model, item, newPos, options) {
       [idField]: item._id || item.id
     };
     const update = {
-      position: newPos + index,
+      position: newPos + index * whichWay,
     };
     if (options.classify) {
       assert(item[options.classify], 'item classify is not exists');
@@ -219,7 +219,7 @@ export const reorderPosition = async function (Model, item, newPos, options) {
     return Model.findOneAndUpdate(cond, update, { new : true });
   };
 
-  return Promise.all(fp.mapIndexed(updatePosition, items));
+  return Promise.all(fp.mapIndexed(updatePosition, sortedItems));
 };
 
 // get mongo id as string (object, mongo id, typed id)
