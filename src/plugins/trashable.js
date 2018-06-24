@@ -11,7 +11,7 @@ export default function (schema) {
 
   schema.statics.findSoft = function (conditions, projection, options) {
     const Model = mongoose.model(this.modelName);
-    
+
     if (!conditions || typeof conditions === 'function') {
       conditions = {};
     }
@@ -23,7 +23,7 @@ export default function (schema) {
 
   schema.statics.findOneSoft = function (conditions, projection, options) {
     const Model = mongoose.model(this.modelName);
-    
+
     if (!conditions || typeof conditions === 'function') {
       conditions = {};
     }
@@ -45,7 +45,7 @@ export default function (schema) {
     return Model.count(conditions, projection, options);
   };
 
-  schema.methods.softDelete = function () {
+  schema.methods.trash = function () {
     this.destroyedAt = new Date();
     return this.save();
   };
