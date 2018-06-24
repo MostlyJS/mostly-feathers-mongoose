@@ -3,8 +3,9 @@ import mongoose from 'mongoose';
 import fp from 'mostly-func';
 
 const defaultOptions = {
-  classify: null,            // classify position by a specified field
-  unshift: false             // insert at first
+  delete: null,        // shift poisiton with soft delete field
+  classify: null,      // classify position by a specified field
+  unshift: false       // insert at first
 };
 
 export default function (schema, options) {
@@ -17,42 +18,63 @@ export default function (schema, options) {
   schema.index({ position: 1 });
 
   const preUpdate = function (item, Model, next) {
-    if (fp.isValid(item.position)) {
-      return next();
-    }
 
-    const addLast = function (done) {
-      let query = Model.findOne();
+    const classifyQuery = function (query) {
       if (options.classify) {
         assert(item[options.classify], 'classify field is not provided with item');
         query.where(options.classify).eq(item[options.classify]);
       }
-      query.sort('-position').then(max => {
+      return query;
+    };
+
+    const addLast = function (done) {
+      let query = Model.findOne();
+      if (options.delete) {
+        query.where(options.delete, null);
+      }
+      classifyQuery(query).sort('-position').then(max => {
         item.position = (max && max.position) ? max.position + 1 : 0;
         done();
       });
     };
 
-    if (options.unshift === true) {
+    const addFirst = function (done) {
       let query = Model.where('position').exists();
-      if (options.classify) {
-        assert(item[options.classify], 'classify field is not provided with item');
-        query.where(options.classify).eq(item[options.classify]);
-      }
-      query.setOptions({ multi: true })
+      classifyQuery(query).setOptions({ multi: true })
         .update({
           $inc: { position: 1 }
         }, err => {
           if (err) {
             console.error('sortable $inc error:', err);
-            return addLast(next);
+            addLast(done);
           } else {
             item.position = 0;
-            return next();
+            done();
           }
         });
+    };
+
+    // if item has the delete field
+    if (options.delete && item[options.delete] !== undefined) {
+      if (item[options.delete]) {
+        return next();
+      } else {
+        if (options.unshift === true) {
+          return addFirst(next);
+        } else {
+          return addLast(next);
+        }
+      }
+    }
+
+    if (fp.isValid(item.position)) {
+      return next();
     } else {
-      return addLast(next);
+      if (options.unshift === true) {
+        return addFirst(next);
+      } else {
+        return addLast(next);
+      }
     }
   };
 
