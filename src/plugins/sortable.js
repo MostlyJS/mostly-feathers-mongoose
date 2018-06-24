@@ -2,13 +2,13 @@ import assert from 'assert';
 import mongoose from 'mongoose';
 import fp from 'mostly-func';
 
-/*
- * options:
- * classify: classify position by a specified field
- * unshift: insert at first
- */
+const defaultOptions = {
+  classify: null,            // classify position by a specified field
+  unshift: false             // insert at first
+};
+
 export default function (schema, options) {
-  options = options || {};
+  options = fp.assignAll(defaultOptions, options);
 
   if (!schema.get('position')) {
     schema.add({ position: { type: Number } });
@@ -34,7 +34,12 @@ export default function (schema, options) {
     };
 
     if (options.unshift === true) {
-      Model.where('position').exists().setOptions({ multi: true })
+      let query = Model.where('position').exists();
+      if (options.classify) {
+        assert(item[options.classify], 'classify field is not provided with item');
+        query.where(options.classify).eq(item[options.classify]);
+      }
+      query.setOptions({ multi: true })
         .update({
           $inc: { position: 1 }
         }, err => {
