@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import fp from 'mostly-func';
 
 const defaultOptions = {
-  delete: null,        // shift poisiton with soft delete field
+  trash: null,         // trashable field
   classify: null,      // classify position by a specified field
   unshift: false       // insert at first
 };
@@ -29,8 +29,8 @@ export default function (schema, options) {
 
     const addLast = function (done) {
       let query = Model.findOne();
-      if (options.delete) {
-        query.where(options.delete, null);
+      if (options.trash) {
+        query.where(options.trash, null);
       }
       classifyQuery(query).sort('-position').then(max => {
         item.position = (max && max.position) ? max.position + 1 : 0;
@@ -55,8 +55,8 @@ export default function (schema, options) {
     };
 
     // if item has the delete field
-    if (options.delete && item[options.delete] !== undefined) {
-      if (item[options.delete]) {
+    if (options.trash && item[options.trash] !== undefined) {
+      if (item[options.trash]) {
         return next();
       } else {
         if (options.unshift === true) {
