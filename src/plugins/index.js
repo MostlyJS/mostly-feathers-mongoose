@@ -2,7 +2,7 @@ import acl from './acl';
 import mongooseCache from './mongoose-cache';
 import mongoosePaginator from './mongoose-paginator';
 import mongooseRandom from './mongoose-random';
-import softDelete from './soft-delete';
+import trashable from './trashable';
 import sortable from './sortable';
 
 export {
@@ -10,6 +10,6 @@ export {
   mongooseCache,
   mongoosePaginator,
   mongooseRandom,
-  softDelete,
+  trashable,
   sortable
 };
