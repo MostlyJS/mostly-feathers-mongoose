@@ -335,6 +335,27 @@ export const setHookData = (context, items) => {
   }
 };
 
+export const findEntries = (service, ids, select = '*') => {
+  return service.find({
+    query: {
+      _id: { $in: ids },
+      $select: select
+    },
+    paginate: false
+  });
+};
+
+export const findUserEntries = (service, ids, user, select = '*') => {
+  return service.find({
+    query: {
+      _id: { $in: ids },
+      user: user,
+      $select: select
+    },
+    paginate: false
+  });
+};
+
 // find with a groupby entries like { 'type1': [{ id: 1 }, { id: 2 }] }
 export const findEntriesByType = (app, entriesByType, params = {}, options = {}) => {
   // find by descriminated service
