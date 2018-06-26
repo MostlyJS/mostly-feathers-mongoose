@@ -66,7 +66,7 @@ export class Service extends BaseService {
     this.app = app;
   }
 
-  find (params = {}) {
+  async find (params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
@@ -126,7 +126,7 @@ export class Service extends BaseService {
     return super.create(data, params).then(transform);
   }
 
-  update (id, data, params = {}) {
+  async update (id, data, params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
@@ -138,7 +138,7 @@ export class Service extends BaseService {
     return super.update(id, data, params).then(transform);
   }
 
-  patch (id, data, params = {}) {
+  async patch (id, data, params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
@@ -150,7 +150,7 @@ export class Service extends BaseService {
     return super.patch(id, data, params).then(transform);
   }
 
-  remove (id, params = {}) {
+  async remove (id, params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
     assertMultiple(id, params, "Found null id, remove must be called with $multi.");
@@ -172,7 +172,7 @@ export class Service extends BaseService {
    * proxy to action method (same code as in mostly-feathers)
    * syntax sugar for calling from other services, do not call them by super
    */
-  action (action) {
+  async action (action) {
     assert(action, 'action is not provided');
     return {
       get: async (params = {}) => {
@@ -232,7 +232,7 @@ export class Service extends BaseService {
     }
   }
 
-  upsert (id, data, params = {}) {
+  async upsert (id, data, params = {}) {
     params = { query: {}, ...params };
     if (fp.isEmpty(params.query)) {
       params.query = { ...data };  // default find by input data
@@ -256,14 +256,14 @@ export class Service extends BaseService {
     return super.patch(null, data, params).then(fp.head).then(transform);
   }
 
-  count (params = {}) {
+  async count (params = {}) {
     params = { query: {}, ...params };
     
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
 
-  first (params = {}) {
+  async first (params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
@@ -275,7 +275,7 @@ export class Service extends BaseService {
     }).then(transform);
   }
 
-  last (params = {}) {
+  async last (params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
 
@@ -289,7 +289,7 @@ export class Service extends BaseService {
     });
   }
 
-  restore (id, data, params = {}) {
+  async restore (id, data, params = {}) {
     return super.patch(id, { destroyedAt: null }, params).then(transform);
   }
 }
