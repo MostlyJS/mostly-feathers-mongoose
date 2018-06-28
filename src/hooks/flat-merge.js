@@ -8,7 +8,7 @@ const mergeField = function (prop, data, options) {
   if (fp.isNil(value) || fp.isIdLike(value)) {
     value = { [options.idField]: value };
   }
-  return fp.merge(fp.omit(prop, data), value);
+  return fp.mergeDeepLeft(fp.omit(prop, data), value);
 };
 
 const mergeData = function (field, data, options) {
