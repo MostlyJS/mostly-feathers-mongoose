@@ -14,8 +14,8 @@ const mergeField = function (prop, data, options) {
   }
   // merge left except the idField, and keep populated object
   return fp.mergeWithKey((k, l, r) => {
-    if (k === options.idField) return l;
-    return fp.isObjLike(l)? l : r;
+    if (k === options.idField) return r;
+    return fp.isIdLike(r)? l : r;
   }, fp.omit(prop, data), value);
 };
 
