@@ -14,7 +14,7 @@ const defaultOptions = {
 };
 
 function isPopulated (obj) {
-  return fp.all(fp.complement(fp.isIdLike), [].concat(obj));
+  return fp.none(fp.isIdLike, [].concat(obj));
 }
 
 function kebabServiceName (name) {
