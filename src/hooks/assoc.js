@@ -1,6 +1,6 @@
 import makeDebug from 'debug';
 import fp from 'mostly-func';
-import { pathId, isSelected, selectNext } from '../helpers';
+import { getHookData, pathId, isSelected, selectNext, setHookData } from '../helpers';
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 
@@ -18,10 +18,10 @@ function isPresent (obj, target) {
 export default function assoc (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
-  return async hook => {
+  return async context => {
     let options = Object.assign({}, opts);
 
-    if (hook.type !== 'after') {
+    if (context.type !== 'after') {
       throw new Error(`The 'assoc' hook should only be used as a 'after' hook.`);
     }
 
@@ -30,7 +30,7 @@ export default function assoc (target, opts) {
     }
 
     const assocField = async function (data, params, target) {
-      const service = hook.app.service(options.service);
+      const service = context.app.service(options.service);
 
       // pass infomation of the $select and specified by options.fallThrough
       const selection = { $select: params.query.$select };
@@ -85,7 +85,7 @@ export default function assoc (target, opts) {
         for (const filter of options.filters) {
           if (filter.field && filter.value) {
             const value = typeof filter.value === 'function'
-              ? filter.value.call(null, hook) : filter.value;
+              ? filter.value.call(null, context) : filter.value;
             params.query[filter.field] = Array.isArray(value)? { $in: value } : value;
           }
         }
@@ -136,18 +136,18 @@ export default function assoc (target, opts) {
       }
     };
 
-    let data = fp.propOf('data', hook.result);
+    const data = getHookData(context);
 
-    if (fp.isNil(data) || fp.isEmpty(data)) return hook;
+    if (fp.isNil(data) || fp.isEmpty(data)) return context;
 
     // each assoc field should have its own params
-    let params = fp.assignAll({ query: {} }, hook.params);
+    let params = fp.assignAll({ query: {} }, context.params);
 
     // target must be specified by $select to assoc
-    if (!isSelected(target, params.query.$select)) return hook;
+    if (!isSelected(target, params)) return context;
 
     // already associcated
-    if (isPresent(data, target)) return hook;
+    if (isPresent(data, target)) return context;
 
     // $select with * for next level
     if (params.query.$select) {
@@ -155,12 +155,9 @@ export default function assoc (target, opts) {
     }
 
     const results = await assocField(data, params, target, options);
-    if (fp.hasProp('data', hook.result)) {
-      hook.result.data = results;
-    } else {
-      hook.result = results;
-    }
-    return hook;
+    setHookData(context, results);
+
+    return context;
   };
 }
 
