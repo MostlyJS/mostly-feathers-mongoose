@@ -323,6 +323,10 @@ export const getHookDataAsArray = (context) => {
   return items? fp.asArray(items) : [];
 };
 
+export const getCurrentUser = (context) => {
+  return context.params.query.user || context.params.user.id;
+};
+
 export const setHookData = (context, items) => {
   if (context.type === 'before') {
     context.data = items;
