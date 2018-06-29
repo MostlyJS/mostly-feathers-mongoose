@@ -239,7 +239,7 @@ export default function populate (target, opts) {
     let params = fp.assignAll({ query: {} }, context.params);
 
     // target field must be specified by $select to populate
-    if (!isSelected(target || options.field, params.query.$select)) return context;
+    if (!isSelected(target || options.field, params)) return context;
 
     // $select with * for next level
     if (params.query.$select) {
