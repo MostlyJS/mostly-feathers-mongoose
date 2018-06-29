@@ -53,11 +53,15 @@ export default function flatMerge (field, opts) {
       throw new errors.GeneralError('Can not merge on before hook.');
     }
 
-    if (context.result) {
-      const data = getHookData(context);
-      const result = mergeData(field, data, options);
-      setHookData(context, result);
-    }
+    const data = getHookData(context);
+    if (fp.isNil(data) || fp.isEmpty(data)) return context;
+
+    // field must be specified by $select to flatMerge
+    if (!isSelected(field, context.params)) return context;
+
+    const results = mergeData(field, data, options);
+    setHookData(context, results);
+
     return context;
   };
 }
