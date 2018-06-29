@@ -3,12 +3,20 @@ import fp from 'mostly-func';
 import mongose from 'mongoose';
 import { getHookData, isSelected, setHookData } from '../helpers';
 
+const defaultOptions = {
+  idField: 'id'
+};
+
 const mergeField = function (prop, data, options) {
   let value = fp.prop(prop, data);
   if (fp.isNil(value) || fp.isIdLike(value)) {
     value = { [options.idField]: value };
   }
-  return fp.mergeDeepLeft(fp.omit(prop, data), value);
+  // merge left except the idField, and keep populated object
+  return fp.mergeWithKey((k, l, r) => {
+    if (k === options.idField) return l;
+    return fp.isObjLike(l)? l : r;
+  }, fp.omit(prop, data), value);
 };
 
 const mergeData = function (field, data, options) {
@@ -36,10 +44,10 @@ const mergeData = function (field, data, options) {
   }
 };
 
-export default function flatMerge (field, opts = { idField: 'id' }) {
+export default function flatMerge (field, opts) {
 
   return async context => {
-    let options = Object.assign({}, opts);
+    let options = fp.assignAll(defaultOptions, opts);
     
     if (context.type !== 'after') {
       throw new errors.GeneralError('Can not merge on before hook.');
