@@ -266,7 +266,8 @@ export const normalizeSelect = function (select) {
   return select;
 };
 
-export const isSelected = (target, select) => {
+export const isSelected = (target, params) => {
+  let select = (params.query || {}).$select;
   if (select) {
     // normalize the $select
     select = normalizeSelect(select);
