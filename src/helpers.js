@@ -325,7 +325,12 @@ export const getHookDataAsArray = (context) => {
 };
 
 export const getCurrentUser = (context) => {
-  return context.params.query.user || context.params.user.id;
+  return context.params.query.user || (context.params.user && context.params.user.id);
+};
+
+export const getCurrentGroups = (path = ['id']) => (context) => {
+  const groups = context.params.query.groups || (context.params.user && context.params.user.groups);
+  return groups && fp.map(fp.pathOf(path), groups);
 };
 
 export const setHookData = (context, items) => {
