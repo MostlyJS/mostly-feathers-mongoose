@@ -21,7 +21,7 @@ export default function (schema, options) {
 
     const classifyQuery = function (query) {
       if (options.classify) {
-        assert(item[options.classify], 'classify field is not provided with item');
+        assert(options.classify in item, 'classify field is not provided with item');
         query.where(options.classify).eq(item[options.classify]);
       }
       return query;
