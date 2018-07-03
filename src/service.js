@@ -89,9 +89,11 @@ export class Service extends BaseService {
         params.query.$sort = this.options.sort;
       }
       // filter destroyed item by default unless $soft is true
-      if (params.$soft || params.query.$soft) {
+      const soft = params.$soft || params.query.$soft;
+      if (soft !== undefined) {
         params = fp.dissocPath(['query', '$soft'], params); // remove soft
-      } else if (params.query.destroyedAt === undefined) {
+      }
+      if (!fp.parseBool(soft) && params.query.destroyedAt === undefined) {
         params.query.destroyedAt = null;
       }
     }
@@ -158,8 +160,11 @@ export class Service extends BaseService {
     if (this._isAction(id, params)) {
       return this._action('remove', id, null, params);
     }
-    if (params.query && (params.$soft || params.query.$soft)) {
+    const soft = params.$soft || params.query.$soft;
+    if (soft !== undefined) {
       params = fp.dissocPath(['query', '$soft'], params); // remove soft
+    }
+    if (params.query && fp.parseBool(soft)) {
       debug('service %s remove soft %j', this.name, id);
       return super.patch(id, { destroyedAt: new Date() }, params).then(transform);
     } else {
