@@ -23,7 +23,7 @@ export function getField (item, field) {
     }
   }
 
-  return Array.isArray(value) ? fp.filter(fp.identity, value) : value;
+  return Array.isArray(value)? fp.filter(fp.identity, value) : value;
 }
 
 export function setFieldByKey (item, field, data) {
@@ -98,9 +98,9 @@ export function setField (item, target, data, field, options) {
   function cloneById (v, k) {
     if (Array.isArray(v)) {
       let match = find(v, it => String(it[options.idField]) === String(k));
-      return match ? cloneDeep(match) : (options.keepOrig ? k : null);
+      return match? cloneDeep(match) : (options.keepOrig? k : null);
     } else {
-      return String(v[options.idField]) === String(k)? cloneDeep(v) : (options.keepOrig ? k : null);
+      return String(v[options.idField]) === String(k)? cloneDeep(v) : (options.keepOrig? k : null);
     }
   }
 
@@ -183,9 +183,9 @@ export const reorderPosition = async function (Model, item, newPos, options) {
   const prevPos = fp.reduce((acc, item) => Math.max(acc, item.position), 0, items); // last position
   newPos = parseInt(newPos || 0);
 
-  const whichWay = (newPos > prevPos ? -1 : 1); // down : up
-  const start = (newPos > prevPos) ? prevPos + 1 : newPos;
-  const end = (newPos > prevPos) ? newPos : prevPos - 1;
+  const whichWay = (newPos > prevPos? -1 : 1); // down : up
+  const start = (newPos > prevPos)? prevPos + 1 : newPos;
+  const end = (newPos > prevPos)? newPos : prevPos - 1;
 
   // sort item reverse (desc) for moving down and asc for moving up
   const sortedItems = fp.sort((a, b) => whichWay * (a.position - b.position), items);

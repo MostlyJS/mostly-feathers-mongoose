@@ -33,7 +33,7 @@ export default function (schema, options) {
         query.where(options.trash, null);
       }
       classifyQuery(query).sort('-position').then(max => {
-        item.position = (max && max.position) ? max.position + 1 : 0;
+        item.position = (max && max.position)? max.position + 1 : 0;
         done();
       });
     };

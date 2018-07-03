@@ -30,7 +30,7 @@ export class Service {
     this.id = options.id || '_id';
     this.bulkErrorsKey = options.bulkErrorsKey || 'errors';
     this.paginate = options.paginate || {};
-    this.lean = options.lean === undefined ? true : options.lean;
+    this.lean = options.lean === undefined? true : options.lean;
     this.overwrite = options.overwrite !== false;
     this.events = options.events || [];
   }
@@ -108,7 +108,7 @@ export class Service {
   }
 
   find (params) {
-    const paginate = (params && typeof params.paginate !== 'undefined') ? params.paginate : this.paginate;
+    const paginate = (params && typeof params.paginate !== 'undefined')? params.paginate : this.paginate;
     const result = this._find(params, !!paginate.default,
       query => filter(query, paginate)
     );
@@ -191,9 +191,9 @@ export class Service {
       .then(result => {
         if (this.lean) {
           if (fp.isArray(result)) {
-            return fp.map(item => (item.toObject ? item.toObject() : item), result);
+            return fp.map(item => (item.toObject? item.toObject() : item), result);
           } else {
-            return result.toObject ? result.toObject() : result;
+            return result.toObject? result.toObject() : result;
           }
         }
         return result;
@@ -206,7 +206,7 @@ export class Service {
     return this._insertMany(data).then(({ data, errors }) => {
       if (fp.isArray(data)) {
         data = fp.map(result => {
-          return (this.lean && result.toObject) ? result.toObject() : result;
+          return (this.lean && result.toObject)? result.toObject() : result;
         }, data || []);
       }
       return { data, errors };
@@ -346,8 +346,8 @@ export class Service {
             return doc;
           });
 
-          errorDocs = errorDocs.length ? errorDocs : null;
-          successDocs = successDocs.length ? successDocs : null;
+          errorDocs = errorDocs.length? errorDocs : null;
+          successDocs = successDocs.length? successDocs : null;
 
           // return combination of success and error documents
           resolve({ data: successDocs, errors: errorDocs });
@@ -407,8 +407,9 @@ export class Service {
     // By default we will just query for the one id. For multi patch
     // we create a list of the ids of all items that will be changed
     // to re-query them after the update
-    const ids = id === null ? this._find(params)
-        .then(mapIds) : Promise.resolve([ id ]);
+    const ids = id === null
+      ? this._find(params).then(mapIds)
+      : Promise.resolve([ id ]);
 
     // Handle case where data might be a mongoose model
     if (typeof data.toObject === 'function') {

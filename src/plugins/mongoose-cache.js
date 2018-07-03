@@ -105,7 +105,7 @@ export default function mongooseCache (mongoose, redis, options) {
   // setup the default options
   options = options || {};
   Object.keys(defaultOptions).forEach(k => {
-    defaultOptions[k] = options[k] !== undefined ? options[k] : defaultOptions[k];
+    defaultOptions[k] = options[k] !== undefined? options[k] : defaultOptions[k];
   });
 
   // export some values for testing
@@ -277,7 +277,7 @@ export default function mongooseCache (mongoose, redis, options) {
   };
 
   protoQuery._touchCollectionCheck = function () {
-    var callback = arguments.length ? arguments[arguments.length - 1] : false;
+    var callback = arguments.length? arguments[arguments.length - 1] : false;
 
     // mquery doesn't run the write unless there is a callback so unless
     // there is one here, we do not want to touch the collection data.

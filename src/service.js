@@ -82,7 +82,7 @@ export class Service extends BaseService {
       }
       if (params.query.$sort) {
         params.query.$sort = fp.map(dir => {
-          return descSorts.indexOf(dir) === -1 ? 1 : -1;
+          return descSorts.indexOf(dir) === -1? 1 : -1;
         }, params.query.$sort);
       } else {
         // default sort

@@ -26,8 +26,8 @@ const mergeData = function (field, data, options) {
     const fieldData = path.length? fp.path(path, data) : data;
     if (fieldData) {
       const result = fp.isArray(fieldData)
-      ? fp.map(item => mergeField(prop, item, options), fieldData)
-      : mergeField(prop, fieldData, options);
+        ? fp.map(item => mergeField(prop, item, options), fieldData)
+        : mergeField(prop, fieldData, options);
       return path.length? fp.assocPath(path, result, data) : result;
     } else {
       return data;
