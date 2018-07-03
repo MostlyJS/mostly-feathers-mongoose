@@ -36,6 +36,7 @@ export default function addRouteObject (name, opts) {
         const service = context.app.service(options.service);
         object = await service.get(id, {
           query: { $select: opts.select },
+          headers: options.headers,
           user: context.params.user
         });
       } else {
