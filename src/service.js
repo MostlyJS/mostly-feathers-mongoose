@@ -177,10 +177,10 @@ export class Service extends BaseService {
    * proxy to action method (same code as in mostly-feathers)
    * syntax sugar for calling from other services, do not call them by super
    */
-  async action (action) {
+  action (action) {
     assert(action, 'action is not provided');
     return {
-      get: async (params = {}) => {
+      find: async (params = {}) => {
         params.action = action;
         return this.get(null, params);
       },
