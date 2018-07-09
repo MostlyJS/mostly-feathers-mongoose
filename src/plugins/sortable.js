@@ -56,10 +56,10 @@ export default function (schema, options) {
 
     // if item has the deleted field
     if (options.trash && item[options.trash] !== undefined) {
-      if (item[options.trash]) {
+      if (item[options.trash] || item.position === undefined) {
         return next(); // skip
       } else {
-        // untrash with new position
+        // untrash with new position (null)
         if (options.unshift === true) {
           return addFirst(next);
         } else {
@@ -72,7 +72,7 @@ export default function (schema, options) {
     if (fp.isValid(item.position) || (options.classify && !item[options.classify])) {
       return next(); // skip
     } else {
-      // update with new position
+      // update with new position (null/undefined)
       if (options.unshift === true) {
         return addFirst(next);
       } else {
