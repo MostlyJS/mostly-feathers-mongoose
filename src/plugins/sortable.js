@@ -54,11 +54,12 @@ export default function (schema, options) {
         });
     };
 
-    // if item has the delete field
+    // if item has the deleted field
     if (options.trash && item[options.trash] !== undefined) {
       if (item[options.trash]) {
-        return next();
+        return next(); // skip
       } else {
+        // untrash with new position
         if (options.unshift === true) {
           return addFirst(next);
         } else {
@@ -67,9 +68,11 @@ export default function (schema, options) {
       }
     }
 
-    if (fp.isValid(item.position)) {
-      return next();
+    // if item is with specified position or without specified classify field
+    if (fp.isValid(item.position) || (options.classify && !item[options.classify])) {
+      return next(); // skip
     } else {
+      // update with new position
       if (options.unshift === true) {
         return addFirst(next);
       } else {
