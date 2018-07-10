@@ -1,8 +1,8 @@
-import assert from 'assert';
-import mongoose from 'mongoose';
-import fp from 'mostly-func';
+const assert = require('assert');
+const mongoose = require('mongoose');
+const fp = require('mostly-func');
 
-export default function defaultAcls (policy, permission, opts) {
+module.exports = function defaultAcls (policy, permission, opts) {
   assert(policy !== undefined, 'defaultAcls policy not provided');
   assert(permission !== undefined, 'defaultAcls permission not provided');
 
@@ -74,4 +74,4 @@ export default function defaultAcls (policy, permission, opts) {
     }
     return context;
   };
-}
+};

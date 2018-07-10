@@ -1,7 +1,7 @@
-import fp from 'mostly-func';
+const fp = require('mostly-func');
 
 // custom response
-export default function responder () {
+module.exports = function responder () {
   return async context => {
     // If it was an internal call then skip this hook
     if (!context.params.provider) {
@@ -27,4 +27,4 @@ export default function responder () {
     };
     return context;
   };
-}
+};

@@ -1,11 +1,11 @@
-import assert from 'assert';
-import fp from 'mostly-func';
+const assert = require('assert');
+const fp = require('mostly-func');
 
 /**
  * prefix the $select with target excepts provided fields,
  * used for populating with absolute type path
  */
-export default function prefixSelect (target, opts = { excepts: [] }) {
+module.exports = function prefixSelect (target, opts = { excepts: [] }) {
   assert(target, 'select target not provided.');
 
   return async context => {
@@ -32,4 +32,4 @@ export default function prefixSelect (target, opts = { excepts: [] }) {
 
     return context;
   };
-}
+};

@@ -1,9 +1,5 @@
-import makeDebug from 'debug';
-
-const debug = makeDebug('mostly:feathers-mongoose:hooks:as-upsert');
-
 // do an upsert instead of a create
-export default function asUpsert (upsertQuery) {
+module.exports = function asUpsert (upsertQuery) {
   if (typeof upsertQuery !== 'function') {
     throw new Error('You need to provide a upsertQuery function');
   }
@@ -18,4 +14,4 @@ export default function asUpsert (upsertQuery) {
 
     return context;
   };
-}
+};

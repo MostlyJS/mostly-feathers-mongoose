@@ -1,4 +1,4 @@
-export default function isHeader (header, value) {
+module.exports = function isHeader (header, value) {
   if (!header || !value) {
     throw new Error('Calling iff() predicate incorrectly. (isHeader)');
   }
@@ -15,4 +15,4 @@ export default function isHeader (header, value) {
     }
     return false;
   };
-}
+};

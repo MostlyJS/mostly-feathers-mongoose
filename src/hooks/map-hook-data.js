@@ -1,9 +1,8 @@
-import assert from 'assert';
-import errors from 'feathers-errors';
-import fp from 'mostly-func';
-import { getHookData, setHookData } from '../helpers';
+const errors = require('feathers-errors');
+const fp = require('mostly-func');
+const { getHookData, setHookData } = require('../helpers');
 
-export default function mapHookData (func) {
+module.exports = function mapHookData (func) {
   if (!func || typeof func !== 'function') {
     throw new errors.BadRequest('Function required. (alter)');
   }
@@ -20,4 +19,4 @@ export default function mapHookData (func) {
     }
     return context;
   };
-}
+};

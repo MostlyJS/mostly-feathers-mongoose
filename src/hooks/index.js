@@ -1,30 +1,30 @@
-import addDelay from './add-delay';
-import addParams from './add-params';
-import addQuery from './add-query';
-import addRouteObject from './add-route-object';
-import asUpsert from './as-upsert';
-import assoc from './assoc';
-import authenticate from './authenticate';
-import cascadeUpdate from './cascade-update';
-import convertId from './convert-id';
-import defaultAcls from './default-acls';
-import depopulate from './depopulate';
-import discardFields from './discard-fields';
-import filter from './filter';
-import filterField from './filter-field';
-import idAsCurrentUser from './id-as-current-user';
-import isAction from './is-action';
-import isHeader from './is-header';
-import flatMerge from './flat-merge';
-import mapHookData from './map-hook-data';
-import populate from './populate';
-import prefixSelect from './prefix-select';
-import presentEntity from './present-entity';
-import publishEvent from './publish-event';
-import responder from './responder';
-import restrictToAcls from './restrict-to-acls';
+const addDelay = require('./add-delay');
+const addParams = require('./add-params');
+const addQuery = require('./add-query');
+const addRouteObject = require('./add-route-object');
+const asUpsert = require('./as-upsert');
+const assoc = require('./assoc');
+const authenticate = require('./authenticate');
+const cascadeUpdate = require('./cascade-update');
+const convertId = require('./convert-id');
+const defaultAcls = require('./default-acls');
+const depopulate = require('./depopulate');
+const discardFields = require('./discard-fields');
+const filter = require('./filter');
+const filterField = require('./filter-field');
+const idAsCurrentUser = require('./id-as-current-user');
+const isAction = require('./is-action');
+const isHeader = require('./is-header');
+const flatMerge = require('./flat-merge');
+const mapHookData = require('./map-hook-data');
+const populate = require('./populate');
+const prefixSelect = require('./prefix-select');
+const presentEntity = require('./present-entity');
+const publishEvent = require('./publish-event');
+const responder = require('./responder');
+const restrictToAcls = require('./restrict-to-acls');
 
-export {
+module.exports = {
   addDelay,
   addParams,
   addQuery,

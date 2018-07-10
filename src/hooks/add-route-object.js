@@ -1,5 +1,5 @@
-import assert from 'assert';
-import fp from 'mostly-func';
+const assert = require('assert');
+const fp = require('mostly-func');
 
 const defaultOptions = {
   field: 'primary',
@@ -9,7 +9,7 @@ const defaultOptions = {
 /**
  * Add route service object to hook.params
  */
-export default function addRouteObject (name, opts) {
+module.exports = function addRouteObject (name, opts) {
   assert(name === 'primary' || name === 'secondary', 'Invalid name for addRouteObject');
   opts = Object.assign({}, defaultOptions, opts);
 
@@ -49,4 +49,4 @@ export default function addRouteObject (name, opts) {
     }
     return context;
   };
-}
+};

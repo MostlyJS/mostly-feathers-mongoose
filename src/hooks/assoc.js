@@ -1,6 +1,6 @@
-import makeDebug from 'debug';
-import fp from 'mostly-func';
-import { getHookData, pathId, isSelected, selectNext, setHookData } from '../helpers';
+const makeDebug = require('debug');
+const fp = require('mostly-func');
+const { getHookData, pathId, isSelected, selectNext, setHookData } = require('../helpers');
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:assoc');
 
@@ -15,7 +15,7 @@ function isPresent (obj, target) {
 }
 
 // associcate current data as a foreign key to another service
-export default function assoc (target, opts) {
+module.exports = function assoc (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return async context => {
@@ -159,5 +159,4 @@ export default function assoc (target, opts) {
 
     return context;
   };
-}
-
+};

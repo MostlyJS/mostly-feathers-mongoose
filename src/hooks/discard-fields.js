@@ -1,8 +1,8 @@
-import fp from 'mostly-func';
-import { checkContextIf } from 'feathers-hooks-common';
-import { getHookData, setHookData } from '../helpers';
+const fp = require('mostly-func');
+const { checkContextIf } = require('feathers-hooks-common');
+const { getHookData, setHookData } = require('../helpers');
 
-export default function discardFields (...fieldNames) {
+module.exports = function discardFields (...fieldNames) {
   return async context => {
     checkContextIf(context, 'before', ['create', 'update', 'patch'], 'discard');
 
@@ -17,4 +17,4 @@ export default function discardFields (...fieldNames) {
     }
     return context;
   };
-}
+};

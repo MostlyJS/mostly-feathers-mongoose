@@ -1,12 +1,12 @@
-import { get } from 'lodash';
-import makeDebug from 'debug';
-import fp from 'mostly-func';
+const { get } = require('lodash');
+const makeDebug = require('debug');
+const fp = require('mostly-func');
 
-import { getId } from '../helpers';
+const { getId } = require('../helpers');
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:cascade-update');
 
-export default function cascadeUpdate (target, opts) {
+module.exports = function cascadeUpdate (target, opts) {
   if (!opts.service) {
     throw new Error('You need to provide a service');
   }
@@ -39,4 +39,4 @@ export default function cascadeUpdate (target, opts) {
     }
     return context;
   };
-}
+};

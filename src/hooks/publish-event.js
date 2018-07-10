@@ -1,11 +1,11 @@
-import fp from 'mostly-func';
-import { getHookDataAsArray } from '../helpers';
+const fp = require('mostly-func');
+const { getHookDataAsArray } = require('../helpers');
 
 const defaultOptions = {
   prefix: 'feathers'
 };
 
-export default function publishEvent (name, opts) {
+module.exports = function publishEvent (name, opts) {
   opts = Object.assign({}, defaultOptions, opts);
   const topic = `${opts.prefix}.events`;
 
@@ -31,4 +31,4 @@ export default function publishEvent (name, opts) {
 
     return context;
   };
-}
+};

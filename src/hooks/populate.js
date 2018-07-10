@@ -1,10 +1,10 @@
-import assert from 'assert';
-import makeDebug from 'debug';
-import errors from 'feathers-errors';
-import fp from 'mostly-func';
-import { plural } from 'pluralize';
-import util from 'util';
-import { getField, setField, isSelected, selectNext } from '../helpers';
+const assert = require('assert');
+const makeDebug = require('debug');
+const errors = require('feathers-errors');
+const fp = require('mostly-func');
+const { plural } = require('pluralize');
+const util = require('util');
+const { getField, setField, isSelected, selectNext } = require('../helpers');
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:populate');
 
@@ -193,8 +193,8 @@ const populateField = async function (app, item, target, params, options) {
 };
 
 /**
- * The populate hook uses a property from the result (or every item if it is a list)
- * to retrieve a single related object from a service and add it to the original object.
+ * The populate hook uses a property = require(the result (or every item if it is a list)
+ * to retrieve a single related object = require(a service and add it to the original object.
  * It is meant to be used as an after hook on any service method.
  *
  * @param {string} target - The prop name to contain the populated item or array of populated items.
@@ -225,7 +225,7 @@ const populateField = async function (app, item, target, params, options) {
  *
  * If 'senderId' is an array of keys, then 'sender' will be an array of populated items.
  */
-export default function populate (target, opts) {
+module.exports = function populate (target, opts) {
   opts = Object.assign({}, defaultOptions, opts);
 
   return async (context) => {
@@ -259,4 +259,4 @@ export default function populate (target, opts) {
     }
     return context;
   };
-}
+};

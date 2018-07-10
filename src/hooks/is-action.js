@@ -1,6 +1,6 @@
-import { errors } from 'feathers-errors';
+const { errors } = require('feathers-errors');
 
-export default function isAction (...actions) {
+module.exports = function isAction (...actions) {
   if (!actions.length) {
     throw new errors.MethodNotAllowed('Calling iff() predicate incorrectly. (isAction)');
   }
@@ -9,4 +9,4 @@ export default function isAction (...actions) {
     const hookAction = (context.params || {}).action;
     return actions.some(action => action === hookAction);
   };
-}
+};

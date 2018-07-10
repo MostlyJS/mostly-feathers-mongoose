@@ -1,9 +1,9 @@
-import fp from 'mostly-func';
+const fp = require('mostly-func');
 
 /**
  * Add query to hook.params.query
  */
-export default function addQuery (query) {
+module.exports = function addQuery (query) {
   return async context => {
     if (context.type !== 'before') {
       throw new Error(`The 'addQuery' hook should only be used as a 'before' hook.`);
@@ -18,4 +18,4 @@ export default function addQuery (query) {
     }, context.params, { query });
     return context;
   };
-}
+};

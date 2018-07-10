@@ -1,9 +1,8 @@
-import assert from 'assert';
-import fp from 'mostly-func';
-import { get, set, map } from 'lodash';
-import { getField, setField } from '../helpers';
+const assert = require('assert');
+const fp = require('mostly-func');
+const { get } = require('lodash');
 
-export default function depopulate (target, opts = { idField: 'id' }) {
+module.exports = function depopulate (target, opts = { idField: 'id' }) {
   assert(target, 'target is empty');
 
   return async context => {
@@ -39,4 +38,4 @@ export default function depopulate (target, opts = { idField: 'id' }) {
     }
     return context;
   };
-}
+};

@@ -1,7 +1,7 @@
-import { flatten, keyBy, mapValues } from 'lodash';
-import { getField, setFieldByKey } from '../helpers';
+const { flatten, keyBy, mapValues } = require('lodash');
+const { getField, setFieldByKey } = require('../helpers');
 
-export default function convertId (target, opts) {
+module.exports = function convertId (target, opts) {
   if (!opts.service) {
     throw new Error('You need to provide a service');
   }
@@ -33,4 +33,4 @@ export default function convertId (target, opts) {
     }
     return context;
   };
-}
+};

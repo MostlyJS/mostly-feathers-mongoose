@@ -1,7 +1,7 @@
-import assert from 'assert';
-import fp from 'mostly-func';
+const assert = require('assert');
+const fp = require('mostly-func');
 
-export default function presentEntity (entity, options = {}) {
+module.exports = function presentEntity (entity, options = {}) {
   assert(entity && entity.parse, 'Must be a valid Entity: ' + entity);
 
   return async context => {
@@ -16,4 +16,4 @@ export default function presentEntity (entity, options = {}) {
     }
     return context;
   };
-}
+};

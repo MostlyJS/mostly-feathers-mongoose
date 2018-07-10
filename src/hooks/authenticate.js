@@ -1,7 +1,6 @@
-import assert from 'assert';
-import { hooks as auth } from 'feathers-authentication';
-import { NotAuthenticated } from 'feathers-errors';
-import fp from 'mostly-func';
+const assert = require('assert');
+const { hooks: auth } = require('feathers-authentication');
+const fp = require('mostly-func');
 
 const defaultOptions = {
   anonymous: true,
@@ -12,7 +11,7 @@ function getAccessToken (hook) {
          fp.path(['accessToken'], hook.data);
 }
 
-export default function authenticate (strategies, opts = {}, fields) {
+module.exports = function authenticate (strategies, opts = {}, fields) {
   opts = fp.assignAll(defaultOptions, opts);
   assert(strategies, "The 'authenticate' hook requires one of your registered passport strategies.");
 
@@ -29,4 +28,4 @@ export default function authenticate (strategies, opts = {}, fields) {
     }
     return await verifyIdentity(context);
   };
-}
+};

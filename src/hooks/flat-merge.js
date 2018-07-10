@@ -1,7 +1,6 @@
-import errors from 'feathers-errors';
-import fp from 'mostly-func';
-import mongose from 'mongoose';
-import { getHookData, isSelected, setHookData } from '../helpers';
+const errors = require('feathers-errors');
+const fp = require('mostly-func');
+const { getHookData, isSelected, setHookData } = require('../helpers');
 
 const defaultOptions = {
   idField: 'id'
@@ -44,7 +43,7 @@ const mergeData = function (field, data, options) {
   }
 };
 
-export default function flatMerge (field, opts) {
+module.exports = function flatMerge (field, opts) {
 
   return async context => {
     let options = fp.assignAll(defaultOptions, opts);
@@ -64,4 +63,4 @@ export default function flatMerge (field, opts) {
 
     return context;
   };
-}
+};

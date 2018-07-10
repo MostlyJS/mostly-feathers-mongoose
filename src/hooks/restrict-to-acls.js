@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import errors from 'feathers-errors';
-import makeDebug from 'debug';
-import minimatch from 'minimatch';
+const _ = require('lodash');
+const errors = require('feathers-errors');
+const makeDebug = require('debug');
+const minimatch = require('minimatch');
 
 const debug = makeDebug('mostly:feathers-mongoose:hooks:restrict-to-acls');
 
@@ -13,7 +13,7 @@ const defaults = {
   owner: false
 };
 
-export default function restrictToAcls (options = {}){
+module.exports = function restrictToAcls (options = {}){
   if (!options.acls || !options.acls.length) {
     throw new Error(`You need to provide an array of 'acls' to check against.`);
   }
@@ -40,7 +40,7 @@ export default function restrictToAcls (options = {}){
     const id = context.params.user[options.idField];
 
     if (id === undefined) {
-      throw new Error(`'${options.idField} is missing from current user.'`);
+      throw new Error(`'${options.idField} is missing = require(current user.'`);
     }
 
     // If the user doesn't even have a `fieldName` field and we're not checking
@@ -106,4 +106,4 @@ export default function restrictToAcls (options = {}){
       throw new errors.Forbidden('Permissions denied to access this.');
     }
   };
-}
+};

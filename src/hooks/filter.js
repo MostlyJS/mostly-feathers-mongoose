@@ -1,7 +1,7 @@
-import _ from 'lodash';
-import { getId } from '../helpers';
+const _ = require('lodash');
+const { getId } = require('../helpers');
 
-export default function filter (target, opts) {
+module.exports = function filter (target, opts) {
   if (!opts.service) {
     throw new Error('You need to provide a service');
   }
@@ -75,4 +75,4 @@ export default function filter (target, opts) {
       return context;
     }
   };
-}
+};

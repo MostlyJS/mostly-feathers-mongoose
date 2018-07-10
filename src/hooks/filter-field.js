@@ -1,4 +1,4 @@
-export default function filterField (field, preset) {
+module.exports = function filterField (field, preset) {
   return async context => {
     // If it was an internal call then skip this hook
     if (!context.params.provider) return context;
@@ -13,4 +13,4 @@ export default function filterField (field, preset) {
 
     return context;
   };
-}
+};

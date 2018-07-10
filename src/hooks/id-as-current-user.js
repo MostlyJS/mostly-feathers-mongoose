@@ -1,6 +1,6 @@
-import errors from 'feathers-errors';
+const errors = require('feathers-errors');
 
-export default function idAsCurrentUser (id) {
+module.exports = function idAsCurrentUser (id) {
   return async context => {
     if (context.id === id && context.params.user) {
       if (context.params.user && context.params.user.id) {
@@ -11,4 +11,4 @@ export default function idAsCurrentUser (id) {
     }
     return context;
   };
-}
+};
