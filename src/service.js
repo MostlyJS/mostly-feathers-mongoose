@@ -1,10 +1,10 @@
-import assert from 'assert';
-import makeDebug from 'debug';
-import fp from 'mostly-func';
-import { defaultMethods, isAction } from 'mostly-feathers';
+const assert = require('assert');
+const makeDebug = require('debug');
+const fp = require('mostly-func');
+const { defaultMethods, isAction } = require('mostly-feathers');
 
-import { Service as BaseService } from './base';
-import { normalizeSelect, transform } from './helpers';
+const { Service: BaseService } = require('./base');
+const { normalizeSelect, transform } = require('./helpers');
 
 const debug = makeDebug('mostly:feathers-mongoose:service');
 
@@ -53,7 +53,7 @@ const filterSelect = function (params) {
   return params;
 };
 
-export class Service extends BaseService {
+class Service extends BaseService {
   constructor (options) {
     options = fp.assignAll(defaultOptions, options);
     super(options);
@@ -175,7 +175,7 @@ export class Service extends BaseService {
 
   /**
    * proxy to action method (same code as in mostly-feathers)
-   * syntax sugar for calling from other services, do not call them by super
+   * syntax sugar for calling = require(other services, do not call them by super
    */
   action (action) {
     assert(action, 'action is not provided');
@@ -299,6 +299,7 @@ export class Service extends BaseService {
   }
 }
 
-export default function init (options) {
+module.exports = function init (options) {
   return new Service(options);
-}
+};
+module.exports.Service = Service;

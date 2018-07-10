@@ -1,6 +1,8 @@
-import errors from 'feathers-errors';
+'use strict';
 
-export default function errorHandler (error) {
+const errors = require('feathers-errors');
+
+function errorHandler (error) {
   if (error.name) {
     switch (error.name) {
       case 'ValidationError':
@@ -43,3 +45,5 @@ export default function errorHandler (error) {
 
   return Promise.reject(error);
 }
+
+module.exports = errorHandler;

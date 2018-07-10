@@ -1,12 +1,12 @@
-import assert from 'assert';
-import makeDebug from 'debug';
-import mongoose from 'mongoose';
+const assert = require('assert');
+const makeDebug = require('debug');
+const mongoose = require('mongoose');
 
 const debug = makeDebug('mostly:feathers-mongoose:connect');
 
 mongoose.Promise = global.Promise;
 
-export function connectDb (url) {
+function connectDb (url) {
   return function (app) {
     mongoose.connection.once('open', function () {
       debug('MongoDB connected [%s]', url);
@@ -43,7 +43,7 @@ export function connectDb (url) {
 /**
  * Get or create the mongoose model if not exists
  */
-export function getModel (app, name, Model) {
+function getModel (app, name, Model) {
   const mongooseClient = app.get('mongoose');
   assert(mongooseClient, 'mongoose client not set by app');
   const modelNames = mongooseClient.modelNames();
@@ -58,7 +58,7 @@ export function getModel (app, name, Model) {
 /**
  * Create a mongoose model with free schema
  */
-export function createModel (app, name, options) {
+function createModel (app, name, options) {
   const mongooseClient = app.get('mongoose');
   assert(mongooseClient, 'mongoose client not set by app');
   const schema = new mongooseClient.Schema({ any: {} }, {strict: false});
@@ -68,7 +68,7 @@ export function createModel (app, name, options) {
 /**
  * Create a service with mogoose model
  */
-export function createService (app, Service, Model, options) {
+function createService (app, Service, Model, options) {
   Model = options.Model || Model;
   if (typeof Model === 'function') {
     assert(options.ModelName, 'createService but options.ModelName not provided');
@@ -79,3 +79,10 @@ export function createService (app, Service, Model, options) {
   const service = new Service(options);
   return service;
 }
+
+module.exports = {
+  connectDb,
+  getModel,
+  createModel,
+  createService
+};

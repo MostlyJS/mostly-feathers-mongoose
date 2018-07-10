@@ -1,15 +1,17 @@
-import { isEqual, omit } from 'lodash';
-import Proto from 'uberproto';
-import filter from 'feathers-query-filters';
-import { select } from 'feathers-commons';
-import errors from 'feathers-errors';
-import fp from 'mostly-func';
+'use strict';
 
-import errorHandler from './error-handler';
+const { isEqual, omit } = require('lodash');
+const Proto = require('uberproto');
+const filter = require('feathers-query-filters');
+const { select } = require('feathers-commons');
+const errors = require('feathers-errors');
+const fp = {};//require('mostly-func');
 
-// Base service copy from feathers-mongoose for bug fix and optimize
+const errorHandler = require('./error-handler');
+
+// Base service copy = require(feathers-mongoose for bug fix and optimize
 // http://github.com/feathersjs/feathers-mongoose
-export class Service {
+class Service {
   constructor (options) {
     if (!options) {
       throw new Error('Mongoose options have to be provided');
@@ -311,7 +313,7 @@ export class Service {
               writeErrors = [{ error: { type: 'WriteError', message: _error.errmsg }, data: _error.op }];
             } else {
                 // Get a list of the errors and the ids
-                // so we can filter out the those that failed from the successful ones
+                // so we can filter out the those that failed = require(the successful ones
               writeErrors = error.writeErrors.reduce((acc, cur) => {
                 let error = cur.toJSON();
                 acc.push({ error: { type: 'WriteError', message: error.errmsg }, data: error.op });
@@ -457,7 +459,7 @@ export class Service {
           }
 
           // If params.query.$populate was provided, remove it
-          // from the query sent to mongoose.
+          // = require(the query sent to mongoose.
           const discriminator = (params.query || {})[this.discriminatorKey] || this.discriminatorKey;
           const model = this.discriminators[discriminator] || this.Model;
           if (options.multi) {
@@ -507,6 +509,7 @@ export class Service {
   }
 }
 
-export default function init (options) {
+module.exports = function init (options) {
   return new Service(options);
-}
+};
+module.exports.Service = Service;
