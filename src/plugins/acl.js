@@ -1,5 +1,3 @@
-import mongoose from 'mongoose';
-
 /**
  * Add ACL schema
  * {
@@ -12,7 +10,7 @@ import mongoose from 'mongoose';
  *   user: ObjectId
  * }
  */
-export default function (schema) {
+module.exports = function (schema) {
 
   if (!schema.get('ACL')) {
     schema.add({ ACL: 'Mixed' });
@@ -29,4 +27,4 @@ export default function (schema) {
     this.ACL[user] = { permission: 'ReadWrite', granted: bool };
     return this.save();
   };
-}
+};

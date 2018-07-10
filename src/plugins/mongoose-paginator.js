@@ -1,14 +1,14 @@
 /**
  * Pagination Plugin
  */
-import { findIndex, isEmpty } from 'lodash';
-import util from 'util';
+const { findIndex, isEmpty } = require('lodash');
+const util = require('util');
 
 const defaults = {
   limit: 10 // 每页条数
 };
 
-export default function mongoosePaginator (mongoose, options) {
+module.exports = function mongoosePaginator (mongoose, options) {
 
   /**
    * paginate
@@ -86,5 +86,4 @@ export default function mongoosePaginator (mongoose, options) {
       }).catch(reject);
     });
   };
-}
-
+};

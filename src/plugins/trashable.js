@@ -1,7 +1,6 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
-
-export default function (schema) {
+module.exports = function (schema) {
 
   if (!schema.get('destroyedAt')) {
     schema.add({ destroyedAt: 'Date' });
@@ -54,4 +53,4 @@ export default function (schema) {
     this.destroyedAt = null;
     return this.save();
   };
-}
+};

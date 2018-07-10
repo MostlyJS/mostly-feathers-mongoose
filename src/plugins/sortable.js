@@ -1,6 +1,6 @@
-import assert from 'assert';
-import mongoose from 'mongoose';
-import fp from 'mostly-func';
+const assert = require('assert');
+const mongoose = require('mongoose');
+const fp = require('mostly-func');
 
 const defaultOptions = {
   trash: null,         // trashable field
@@ -8,7 +8,7 @@ const defaultOptions = {
   unshift: false       // insert at first
 };
 
-export default function (schema, options) {
+module.exports = function (schema, options) {
   options = fp.assignAll(defaultOptions, options);
 
   if (!schema.get('position')) {
@@ -107,4 +107,4 @@ export default function (schema, options) {
     preUpdate(item, Model, next);
   });
   
-}
+};

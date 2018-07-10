@@ -2,8 +2,8 @@
  * Mongoose Cache Plugin
  * Based on https://github.com/englercj/mongoose-cache-manager
  */
-import util from 'util';
-import crypto from 'crypto';
+const util = require('util');
+const crypto = require('crypto');
 
 const debug = require('debug')('mostly:feathers-mongoose:plugins:mongoose-cache');
 
@@ -17,8 +17,8 @@ const defaultOptions = {
 let isMongoosePatched = false;
 let redisClient = null;
 
-// get query result from redis cache and check lastWrite
-let getCacheQuery = function (collectionKey, queryKey) {
+// get query result = require(redis cache and check lastWrite
+const getCacheQuery = function (collectionKey, queryKey) {
   return new Promise(function (ok) {
     redisClient.multi().get(collectionKey).get(queryKey).exec(function (err, results) {
       if (err) {
@@ -42,14 +42,14 @@ let getCacheQuery = function (collectionKey, queryKey) {
   });
 };
 
-let touchCollection = function (name) {
+const touchCollection = function (name) {
   debug('mongoose touched: ', name, Date.now());
   redisClient.set(defaultOptions.prefix + name, JSON.stringify({
     lastWrite: Date.now()
   }));
 };
 
-let genKey = function (query, populate) {
+const genKey = function (query, populate) {
   if (query._pipeline) {
     return genKeyAggregate(query, populate);
   }
@@ -61,14 +61,14 @@ let genKey = function (query, populate) {
     .digest('hex');
 };
 
-let genDebugKey = function (query, populate) {
+const genDebugKey = function (query, populate) {
   return 'condition = ' + JSON.stringify(query._conditions || {})  + 
     ', options = ' + JSON.stringify(query._optionsForExec(query.model) || {}) + 
     ', fields = ' + JSON.stringify(query._fields || {}) + 
     ', populate = ' + JSON.stringify(populate);
 };
 
-let genKeyAggregate = function (aggregate, populate) {
+const genKeyAggregate = function (aggregate, populate) {
   return crypto.createHash('md5')
     .update(JSON.stringify(aggregate._conditions || {}))
     .update(JSON.stringify(aggregate._pipeline || {}))
@@ -95,7 +95,7 @@ if(!RegExp.prototype.hasOwnProperty('toJSON')) {
 }
 
 
-export default function mongooseCache (mongoose, redis, options) {
+module.exports = function mongooseCache (mongoose, redis, options) {
   // 'options' is an optional param
   // if (typeof options === 'function') {
   //   cb = options;
@@ -264,7 +264,7 @@ export default function mongooseCache (mongoose, redis, options) {
    * @method _createQueryCacheData
    * @private
    * @param docs {Mixed} The mongoose document data to store
-   * @param lastWrite {Number} The lastWrite value that was read from the collection cache
+   * @param lastWrite {Number} The lastWrite value that was read = require(the collection cache
    * @return {String} The cache data to write to the store
    */
   protoQuery._createQueryCacheData = function (docs, lastWrite) {
@@ -323,4 +323,4 @@ export default function mongooseCache (mongoose, redis, options) {
   isMongoosePatched = true;
 
   return mongoose;
-}
+};

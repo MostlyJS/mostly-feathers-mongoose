@@ -1,11 +1,11 @@
-import acl from './acl';
-import mongooseCache from './mongoose-cache';
-import mongoosePaginator from './mongoose-paginator';
-import mongooseRandom from './mongoose-random';
-import trashable from './trashable';
-import sortable from './sortable';
+const acl = require('./acl');
+const mongooseCache = require('./mongoose-cache');
+const mongoosePaginator = require('./mongoose-paginator');
+const mongooseRandom = require('./mongoose-random');
+const trashable = require('./trashable');
+const sortable = require('./sortable');
 
-export {
+module.exports = {
   acl,
   mongooseCache,
   mongoosePaginator,

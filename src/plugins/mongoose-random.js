@@ -1,10 +1,9 @@
 // A mongoose random select plugin using a random document instead of a random field
 
-import _ from 'lodash';
-import mongoose from 'mongoose';
+const _ = require('lodash');
+const mongoose = require('mongoose');
 
-
-export default function (schema, options) {
+module.exports = function (schema, options) {
   options = options || {};
 
   const RandomModel = mongoose.model(options.model || 'random');
@@ -89,4 +88,4 @@ export default function (schema, options) {
     return stream;
   };
 
-}
+};
