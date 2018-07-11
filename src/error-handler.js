@@ -1,5 +1,3 @@
-'use strict';
-
 const errors = require('feathers-errors');
 
 function errorHandler (error) {

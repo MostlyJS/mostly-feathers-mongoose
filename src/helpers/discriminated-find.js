@@ -1,5 +1,6 @@
-const findEntriesByType = require('./find-entries-by-type');
 const fp = require('mostly-func');
+
+const findEntriesByType = require('./find-entries-by-type');
 
 // find and merge the results = require(various descriminated services
 module.exports = function discriminatedFind (app, keyType, result, params, options) {

@@ -1,5 +1,6 @@
-const findEntriesByType = require('./find-entries-by-type');
 const fp = require('mostly-func');
+
+const findEntriesByType = require('./find-entries-by-type');
 
 // find with typed ids = require(various descriminated services
 module.exports = function findWithTypedIds (app, list, params, options) {
