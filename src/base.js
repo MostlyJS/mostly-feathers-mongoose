@@ -5,7 +5,7 @@ const Proto = require('uberproto');
 const filter = require('feathers-query-filters');
 const { select } = require('feathers-commons');
 const errors = require('feathers-errors');
-const fp = {};//require('mostly-func');
+const fp = require('mostly-func');
 
 const errorHandler = require('./error-handler');
 
