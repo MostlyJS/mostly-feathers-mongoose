@@ -108,7 +108,7 @@ class Service extends BaseService {
     debug('service %s find %j', this.name, params.query);
     return super.find(params).then(transform);
   }
-  
+
   get (id, params = {}) {
     params = { query: {}, ...params };
     params = filterSelect(params); // filter $select
@@ -263,7 +263,7 @@ class Service extends BaseService {
 
   async count (params = {}) {
     params = { query: {}, ...params };
-    
+
     params.query.$limit = 0;
     return super.find(params).then(result => result.total);
   }
@@ -274,7 +274,7 @@ class Service extends BaseService {
 
     params.query.$limit = 1;
     params.paginate = false; // disable paginate
-    
+
     return super.find(params).then(results => {
       return results && results.length > 0? results[0] : null;
     }).then(transform);

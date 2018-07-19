@@ -106,5 +106,4 @@ module.exports = function (schema, options) {
     const Model = mongoose.model(this.model.modelName);
     preUpdate(item, Model, next);
   });
-  
 };

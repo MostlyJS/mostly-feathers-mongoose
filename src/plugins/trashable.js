@@ -34,7 +34,7 @@ module.exports = function (schema) {
 
   schema.statics.countSoft = function (conditions, projection, options) {
     const Model = mongoose.model(this.modelName);
-    
+
     if (!conditions || typeof conditions === 'function') {
       conditions = {};
     }

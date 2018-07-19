@@ -14,7 +14,7 @@ module.exports = function convertId (target, opts) {
     if (context.type !== 'before') {
       throw new Error(`The 'convertId' hook should only be used as a 'before' hook.`);
     }
-    
+
     if (field && context.data) {
       const values = getField(context.data, target);
       if (values) {
@@ -22,7 +22,7 @@ module.exports = function convertId (target, opts) {
         if (!service) {
           throw new Error("No such service: " + options.service);
         }
-        
+
         let params = {};
         params.query = { [field]: { $in: flatten(values) } };
         params.paginate = false;

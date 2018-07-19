@@ -6,7 +6,7 @@ module.exports = function presentEntity (entity, options = {}) {
 
   return async context => {
     options.provider = context.params.provider;
-    
+
     if (context.result) {
       if (fp.hasProp('data', context.result)) {
         context.result.data = entity.parse(context.result.data, options);

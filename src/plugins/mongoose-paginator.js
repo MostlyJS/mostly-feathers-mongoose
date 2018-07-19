@@ -21,7 +21,7 @@ module.exports = function mongoosePaginator (mongoose, options) {
 
     let query = this;
     let model = query.model;
-    
+
     if (!query.options.sort) {
       query.options.sort = { _id: -1 };
     }

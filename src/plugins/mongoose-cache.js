@@ -112,7 +112,7 @@ module.exports = function mongooseCache (mongoose, redis, options) {
   mongooseCache._defaultOptions = defaultOptions;
 
   redisClient = redis;
-  
+
   // don't patch it again, just let the options/cache get updated
   debug('mongoose patched: ', isMongoosePatched);
   if (isMongoosePatched) {

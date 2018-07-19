@@ -9,7 +9,7 @@ module.exports = function filter (target, opts) {
 
   return async context => {
     let options = Object.assign({}, opts);
-    
+
     if (context.type !== 'before') {
       throw new Error(`The 'filter' hook should only be used as a 'before' hook.`);
     }
@@ -35,7 +35,7 @@ module.exports = function filter (target, opts) {
       if (!service) {
         throw new Error("No such service: " + options.service);
       }
-      
+
       const promises = _.map(filters, (filterField) => {
         if (_.isObject(filterField.$filter)) {
           return service.find({

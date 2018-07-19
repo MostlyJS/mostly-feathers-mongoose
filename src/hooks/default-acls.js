@@ -34,7 +34,7 @@ module.exports = function defaultAcls (policy, permission, opts) {
         return acc;
       }, {}, ids || []);
     };
-    
+
     if (context.data) {
       let promiseACLs = Promise.resolve({});
       switch (policy) {

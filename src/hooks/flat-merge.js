@@ -47,7 +47,7 @@ module.exports = function flatMerge (field, opts) {
 
   return async context => {
     let options = fp.assignAll(defaultOptions, opts);
-    
+
     if (context.type !== 'after') {
       throw new errors.GeneralError('Can not merge on before hook.');
     }
