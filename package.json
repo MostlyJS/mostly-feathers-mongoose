@@ -2,7 +2,11 @@
   "name": "mostly-feathers-mongoose",
   "version": "1.0.30",
   "description": "Create a Mostly Mongoose Service for Feathers.",
-  "author": "Forafish",
+  "author": {
+    "name": "mostly",
+    "email": "hello@playingio.com",
+    "url": "https://mostlyjs.github.com"
+  },
   "license": "MIT",
   "main": "index.js",
   "scripts": {
