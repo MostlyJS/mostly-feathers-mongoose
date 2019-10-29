@@ -37,7 +37,7 @@
     "lodash": "^4.17.4",
     "micromatch": "^3.0.4",
     "minimatch": "^3.0.4",
-    "mongoose": "^4.11.1",
+    "mongoose": "^5.7.5",
     "pluralize": "^7.0.0",
     "rubberduck": "^1.1.1",
     "uberproto": "^1.2.0",
